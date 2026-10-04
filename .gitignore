@@ -1,0 +1,18 @@
+# Temporary & Backup files
+*.bak
+storage/*.bak
+storage/*.v2.bak
+
+# Uploads directory contents (preserve directory structure)
+storage/receipts/*
+!storage/receipts/.gitkeep
+storage/products/*
+!storage/products/.gitkeep
+storage/tickets/*
+!storage/tickets/.gitkeep
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
