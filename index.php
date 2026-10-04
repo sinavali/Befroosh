@@ -6,12 +6,16 @@ require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/routes_auth.php';
 require_once __DIR__ . '/routes_admin.php';
 require_once __DIR__ . '/routes_shops.php';
+require_once __DIR__ . '/routes_shop_settings.php';
 require_once __DIR__ . '/routes_inventory.php';
 require_once __DIR__ . '/routes_accounting.php';
 require_once __DIR__ . '/routes_orders.php';
 require_once __DIR__ . '/routes_tickets.php';
 require_once __DIR__ . '/routes_cart.php';
+require_once __DIR__ . '/routes_bookmarks.php';
 require_once __DIR__ . '/routes_public.php';
+require_once __DIR__ . '/routes_public_products.php';
+require_once __DIR__ . '/routes_sync.php';
 require_once __DIR__ . '/routes_reports.php';
 
 // Global request rate limiting to protect server against overload (120 req / 60s)

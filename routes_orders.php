@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/routes_orders_create.php';
+require_once __DIR__ . '/routes_orders_detail.php';
 require_once __DIR__ . '/routes_orders_process.php';
 require_once __DIR__ . '/routes_orders_print.php';
 require_once __DIR__ . '/routes_orders_track.php';

@@ -2,6 +2,7 @@
 *.bak
 storage/*.bak
 storage/*.v2.bak
+storage/installed.lock
 
 # Uploads directory contents (preserve directory structure)
 storage/receipts/*
