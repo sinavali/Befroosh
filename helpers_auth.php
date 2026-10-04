@@ -90,13 +90,33 @@ function require_login(): array
     return $user;
 }
 
+function check_role_access(string $userRole, array $allowedRoles): bool
+{
+    if ($userRole === 'superadmin') return true;
+    if (in_array($userRole, $allowedRoles, true)) return true;
+
+    // Hierarchical role aliases
+    $aliases = [
+        'business_owner' => ['shop_owner', 'branch_manager', 'manager'],
+        'shop_owner' => ['business_owner', 'branch_manager', 'manager'],
+        'branch_manager' => ['shop_manager', 'manager'],
+        'shop_manager' => ['branch_manager', 'manager'],
+    ];
+
+    foreach ($aliases[$userRole] ?? [] as $alias) {
+        if (in_array($alias, $allowedRoles, true)) return true;
+    }
+
+    return false;
+}
+
 function require_roles(array $roles): array
 {
     $user = require_login();
 
-    if (!in_array($user['role'], $roles, true)) {
+    if (!check_role_access($user['role'], $roles)) {
         http_response_code(403);
-        error_page(403, 'دسترسی غیرمجاز', 'شما اجازه دسترسی به این صفحه را ندارید.');
+        error_page(403, 'دسترسی غیرمجاز', 'شما اجازه دسترسی به این بخش را ندارید.');
     }
 
     return $user;
@@ -105,7 +125,7 @@ function require_roles(array $roles): array
 function has_role(string ...$roles): bool
 {
     $user = current_user();
-    return $user && in_array($user['role'], $roles, true);
+    return $user && check_role_access($user['role'], $roles);
 }
 
 function is_authenticated(): bool

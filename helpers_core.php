@@ -110,9 +110,24 @@ function fa_to_en_digits(string $s): string
     );
 }
 
+function format_irt(float|int $amount): string
+{
+    return number_format((float) $amount, 0, '.', ',') . ' تومان';
+}
+
 function format_irr(float|int $amount): string
 {
-    return en_to_fa_digits(number_format((float) $amount, 0, '.', '،')) . ' ریال';
+    return format_irt($amount);
+}
+
+function clean_price_input(mixed $val): float
+{
+    if ($val === null || $val === '') {
+        return 0.0;
+    }
+    $s = fa_to_en_digits((string) $val);
+    $s = str_replace([',', ' '], '', $s);
+    return (float) $s;
 }
 
 function generate_uuid(): string

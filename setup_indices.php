@@ -49,4 +49,7 @@ function install_platform_indices(PDO $pdo): void
             $pdo->exec("ALTER TABLE users ADD COLUMN email TEXT NULL");
         }
     } catch (Throwable $e) {}
+
+    require_once __DIR__ . '/schema_extensions.php';
+    install_schema_extensions($pdo);
 }

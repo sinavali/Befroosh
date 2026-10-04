@@ -34,7 +34,7 @@ $profilePageHandler = function () use ($pdo) {
     </div>
 
     <!-- PROFILE EDIT FORM -->
-    <form method="post" action="/account/profile" style="margin-bottom:24px;">
+    <form method="post" action="/profile" style="margin-bottom:24px;">
         <?= csrf_field() ?>
         <div class="card">
             <div class="card-header">
@@ -88,7 +88,7 @@ $profilePageHandler = function () use ($pdo) {
     </form>
 
     <!-- PASSWORD CHANGE FORM -->
-    <form method="post" action="/account/password">
+    <form method="post" action="/profile/password">
         <?= csrf_field() ?>
         <div class="card">
             <div class="card-header">
@@ -129,7 +129,7 @@ route('GET', '/account/profile(?:\.php)?', [], $profilePageHandler);
 route('GET', '/profile(?:\.php)?', [], $profilePageHandler);
 
 // Save Profile Updates
-route('POST', '/account/profile', [], function () use ($pdo) {
+route('POST', '/(?:profile|account/profile)', [], function () use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 
@@ -145,12 +145,12 @@ route('POST', '/account/profile', [], function () use ($pdo) {
 
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         flash('error', 'فرمت آدرس ایمیل وارد شده نامعتبر است.');
-        safe_redirect_back('/account/profile');
+        safe_redirect_back('/profile');
     }
 
     if ($nationalCode !== '' && (!ctype_digit($nationalCode) || strlen($nationalCode) !== 10)) {
         flash('error', 'کد ملی باید دقیقاً ۱۰ رقم عددی باشد.');
-        safe_redirect_back('/account/profile');
+        safe_redirect_back('/profile');
     }
 
     $stmt = $pdo->prepare("
@@ -173,11 +173,11 @@ route('POST', '/account/profile', [], function () use ($pdo) {
     $_SESSION['user'] = $refresh->fetch(PDO::FETCH_ASSOC);
 
     flash('success', 'اطلاعات پروفایل شما با موفقیت به‌روزرسانی شد.');
-    redirect('/account/profile');
+    redirect('/profile');
 });
 
 // Change Password Handler
-route('POST', '/account/password', [], function () use ($pdo) {
+route('POST', '/(?:profile/password|account/password)', [], function () use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 
@@ -198,5 +198,5 @@ route('POST', '/account/password', [], function () use ($pdo) {
         flash('success', 'رمز عبور شما با موفقیت تغییر کرد.');
     }
 
-    redirect('/account/profile');
+    redirect('/profile');
 });

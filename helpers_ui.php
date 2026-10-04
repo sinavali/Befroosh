@@ -48,9 +48,12 @@ function role_fa(string $role): string
 {
     return [
         'superadmin' => 'مدیر ارشد سامانه',
-        'admin' => 'مدیر کل سامانه',
-        'shop_owner' => 'مالک فروشگاه',
-        'shop_manager' => 'مدیر فروشگاه',
+        'admin' => 'مدیر سامانه',
+        'business_owner' => 'مالک کسب‌وکار',
+        'shop_owner' => 'مالک کسب‌وکار',
+        'branch_manager' => 'مدیر شعبه',
+        'shop_manager' => 'مدیر شعبه',
+        'manager' => 'مسئول سفارشات و انبار',
         'customer' => 'مشتری',
     ][$role] ?? $role;
 }

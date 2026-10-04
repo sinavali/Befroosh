@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/layout_icons.php';
+require_once __DIR__ . '/helpers_shop.php';
 
 function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop): void
 {
@@ -23,41 +24,47 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         $navItems[] = ['url' => '/orders', 'label' => 'سفارشات من', 'icon' => 'orders'];
         $navItems[] = ['url' => '/orders/track', 'label' => 'پیگیری مرسوله', 'icon' => 'search'];
         $navItems[] = ['url' => '/tickets', 'label' => 'پشتیبانی و تیکت‌ها', 'icon' => 'tickets'];
-        $navItems[] = ['url' => '/account/addresses', 'label' => 'آدرس‌های من', 'icon' => 'location'];
-        $navItems[] = ['url' => '/account/profile', 'label' => 'پروفایل کاربری', 'icon' => 'user'];
-    } elseif ($role === 'shop_owner') {
+        $navItems[] = ['url' => '/profile/addresses', 'label' => 'آدرس‌های من', 'icon' => 'location'];
+        $navItems[] = ['url' => '/profile', 'label' => 'پروفایل کاربری', 'icon' => 'user'];
+    } elseif (in_array($role, ['business_owner', 'shop_owner'], true)) {
         $shopSlug = $currentShop['slug'] ?? 'central';
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد فروشگاه', 'icon' => 'dashboard'];
+        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد کسب‌وکار', 'icon' => 'dashboard'];
+        $navItems[] = ['url' => '/app/branches', 'label' => 'مدیریت شعب', 'icon' => 'store'];
+        $navItems[] = ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders'];
         $navItems[] = ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'];
         $navItems[] = ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'];
         $navItems[] = ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products'];
         $navItems[] = ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'];
         $navItems[] = ['url' => '/reports', 'label' => 'گزارش‌های جامع و مالیاتی', 'icon' => 'report'];
         $navItems[] = ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send'];
-        $navItems[] = ['url' => '/shop/settings', 'label' => 'تنظیمات و سیاست‌ها', 'icon' => 'settings'];
+        $navItems[] = ['url' => '/shop/settings', 'label' => 'تنظیمات کسب‌وکار', 'icon' => 'settings'];
         $navItems[] = ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'];
         $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'];
-        $navItems[] = ['url' => '/shop/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
-    } elseif ($role === 'shop_manager') {
+        $navItems[] = ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
+    } elseif (in_array($role, ['branch_manager', 'shop_manager', 'manager'], true)) {
         $shopSlug = $currentShop['slug'] ?? 'central';
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد فروشگاه', 'icon' => 'dashboard'];
-        $navItems[] = ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'];
+        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد شعبه', 'icon' => 'dashboard'];
+        $navItems[] = ['url' => '/app/branches', 'label' => 'شعب من', 'icon' => 'store'];
+        $navItems[] = ['url' => '/orders', 'label' => 'سفارشات شعبه', 'icon' => 'orders'];
         $navItems[] = ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'];
         $navItems[] = ['url' => '/inventory', 'label' => 'انبارداری و شمارش', 'icon' => 'products'];
         $navItems[] = ['url' => '/reports', 'label' => 'گزارش‌های فروش و کالا', 'icon' => 'report'];
         $navItems[] = ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send'];
         $navItems[] = ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'];
         $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'];
-        $navItems[] = ['url' => '/shop/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
+        $navItems[] = ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
     } else { // admin or superadmin
         $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد سامانه', 'icon' => 'dashboard'];
-        $navItems[] = ['url' => '/shops/manage', 'label' => 'مدیریت فروشگاه‌ها', 'icon' => 'store'];
+        $navItems[] = ['url' => '/shops/manage', 'label' => 'مدیریت کسب‌وکارها', 'icon' => 'store'];
+        $navItems[] = ['url' => '/app/branches', 'label' => 'مدیریت شعب سراسری', 'icon' => 'store'];
+        $navItems[] = ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders'];
+        $navItems[] = ['url' => '/app/plans', 'label' => 'پلن‌های اشتراک', 'icon' => 'shield'];
         $navItems[] = ['url' => '/orders', 'label' => 'سفارشات سراسری', 'icon' => 'orders'];
         $navItems[] = ['url' => '/products', 'label' => 'کاتالوگ محصولات', 'icon' => 'products'];
         $navItems[] = ['url' => '/inventory', 'label' => 'انبارداری کل', 'icon' => 'products'];
         $navItems[] = ['url' => '/accounting', 'label' => 'دفاتر حسابداری کل', 'icon' => 'report'];
         $navItems[] = ['url' => '/reports', 'label' => 'مرکز گزارشات و مالیات', 'icon' => 'report'];
-        $navItems[] = ['url' => '/admins', 'label' => 'مدیران و شعب', 'icon' => 'shield'];
+        $navItems[] = ['url' => '/admins', 'label' => 'مدیران و دسترسی‌ها', 'icon' => 'shield'];
         $navItems[] = ['url' => '/customers', 'label' => 'مشتریان سامانه', 'icon' => 'customers'];
         $navItems[] = ['url' => '/reports/system', 'label' => 'گزارشات و بازرسی', 'icon' => 'report'];
         $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های پشتیبانی', 'icon' => 'tickets'];
@@ -100,15 +107,63 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE seen_by_admin = 0")->fetchColumn();
         }
     } catch (Throwable $e) {}
+
+    // Multi-Business and Multi-Branch Resolution
+    $userBusinesses = [];
+    $assignedBranches = [];
+    $activeBranchId = active_branch_id();
+
+    if (in_array($role, ['superadmin', 'admin'], true)) {
+        $userBusinesses = all_active_shops();
+        $assignedBranches = get_business_branches($shopId);
+    } elseif (in_array($role, ['business_owner', 'shop_owner'], true)) {
+        $userBusinesses = get_user_businesses((int)$user['id']);
+        $assignedBranches = get_business_branches($shopId);
+    } elseif (in_array($role, ['branch_manager', 'shop_manager', 'manager'], true)) {
+        $assignedBranches = get_user_assigned_branches($user, $shopId);
+    }
     ?>
     <aside class="sidebar">
-        <div class="sidebar-header" style="padding:18px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <div style="width:36px; height:36px; background:#2563eb; color:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900;">بف</div>
-            <div style="flex:1; min-width:0;">
-                <div style="font-weight:800; font-size:1rem; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">سامانه بفروش</div>
-                <div style="font-size:0.75rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
+        <div class="sidebar-header" style="padding:16px 14px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:<?= (!empty($userBusinesses) && count($userBusinesses) > 1) || !empty($assignedBranches) ? '12px' : '0' ?>;">
+                <div style="width:36px; height:36px; background:#2563eb; color:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900;">بف</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; font-size:1rem; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">سامانه بفروش</div>
+                    <div style="font-size:0.75rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
+                </div>
+                <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:4px;" title="بستن منو">✕</button>
             </div>
-            <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:4px;" title="بستن منو">✕</button>
+
+            <?php if (!empty($userBusinesses) && count($userBusinesses) > 1): ?>
+                <form method="post" action="/app/switch-business" style="margin-bottom:8px;">
+                    <?= csrf_field() ?>
+                    <label style="display:block; font-size:0.68rem; color:#94a3b8; margin-bottom:2px;">🏢 کسب‌وکار انتخابی:</label>
+                    <select name="business_id" onchange="this.form.submit()" style="width:100%; font-size:0.78rem; padding:5px 7px; background:#1e293b; color:#e2e8f0; border:1px solid #334155; border-radius:6px; cursor:pointer;">
+                        <?php foreach ($userBusinesses as $biz): ?>
+                            <option value="<?= (int)$biz['id'] ?>" <?= (int)$biz['id'] === $shopId ? 'selected' : '' ?>>
+                                <?= e($biz['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php endif; ?>
+
+            <?php if (!empty($assignedBranches)): ?>
+                <form method="post" action="/app/switch-branch" style="margin:0;">
+                    <?= csrf_field() ?>
+                    <label style="display:block; font-size:0.68rem; color:#94a3b8; margin-bottom:2px;">📍 فیلتر شعبه:</label>
+                    <select name="branch_id" onchange="this.form.submit()" style="width:100%; font-size:0.78rem; padding:5px 7px; background:#1e293b; color:#e2e8f0; border:1px solid #334155; border-radius:6px; cursor:pointer;">
+                        <?php if (in_array($role, ['superadmin', 'admin', 'business_owner', 'shop_owner'], true)): ?>
+                            <option value="0" <?= $activeBranchId === null ? 'selected' : '' ?>>🏢 کل کسب‌وکار (سراسری)</option>
+                        <?php endif; ?>
+                        <?php foreach ($assignedBranches as $br): ?>
+                            <option value="<?= (int)$br['id'] ?>" <?= $activeBranchId === (int)$br['id'] ? 'selected' : '' ?>>
+                                📍 <?= e($br['name']) ?><?= !empty($br['is_main']) ? ' (اصلی)' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php endif; ?>
         </div>
 
         <nav class="sidebar-nav" style="padding:14px 10px; flex:1; overflow-y:auto;">

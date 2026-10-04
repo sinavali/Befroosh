@@ -110,9 +110,39 @@ function render_layout_head(string $title): void
         .ql-editor { direction: rtl; text-align: right; font-family: var(--font); min-height: 180px; font-size: 0.92rem; line-height: 1.8; }
         .ql-toolbar { direction: ltr; text-align: right; background: #f8fafc; border-top-left-radius: 8px; border-top-right-radius: 8px; }
         .ql-container { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+
+        /* Print Media Styles: Hide actions and layout chrome */
+        @media print {
+            .sidebar, .topbar, .store-header, .store-footer, .sidebar-backdrop, .btn, .action-cluster, .actions, th.actions, td.actions, .no-print, [data-no-print], .card-footer {
+                display: none !important;
+            }
+            body { background: #fff !important; color: #000 !important; }
+            .card { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+            .main-content { margin: 0 !important; }
+            .content-area { padding: 0 !important; max-width: 100% !important; }
+            .table th, .table td { border-bottom: 1px solid #ddd !important; }
+        }
     </style>
 
     <script>
+    // Live price comma formatting for inputs
+    document.addEventListener('input', function(e) {
+        var el = e.target;
+        if (el && el.matches('input[data-price-input], input[name="price"], input[name="cost_price"], input[name="price_irt"], input[name*="shipping"]')) {
+            var raw = el.value.replace(/[^0-9]/g, '');
+            if (raw) {
+                el.value = Number(raw).toLocaleString('en-US');
+            }
+        }
+    });
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form) {
+            form.querySelectorAll('input[data-price-input], input[name="price"], input[name="cost_price"], input[name="price_irt"], input[name*="shipping"]').forEach(function(inp) {
+                inp.value = inp.value.replace(/,/g, '');
+            });
+        }
+    });
     window.BefrooshStore = {
         getCart: function() {
             try { return JSON.parse(localStorage.getItem('befroosh_cart') || '[]'); } catch(e) { return []; }

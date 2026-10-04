@@ -4,8 +4,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
 require_once __DIR__ . '/routes_auth.php';
+require_once __DIR__ . '/routes_auth_profile.php';
+require_once __DIR__ . '/routes_addresses.php';
 require_once __DIR__ . '/routes_admin.php';
 require_once __DIR__ . '/routes_shops.php';
+require_once __DIR__ . '/routes_branches.php';
 require_once __DIR__ . '/routes_shop_settings.php';
 require_once __DIR__ . '/routes_inventory.php';
 require_once __DIR__ . '/routes_accounting.php';
@@ -19,6 +22,9 @@ require_once __DIR__ . '/routes_sync.php';
 require_once __DIR__ . '/routes_reports.php';
 require_once __DIR__ . '/routes_shop_reporting.php';
 require_once __DIR__ . '/routes_shop_messages.php';
+require_once __DIR__ . '/routes_landing.php';
+require_once __DIR__ . '/routes_storefront_branches.php';
+require_once __DIR__ . '/routes_subscription_plans.php';
 
 // Global request rate limiting to protect server against overload (120 req / 60s)
 throttle_request('global', 120, 60);

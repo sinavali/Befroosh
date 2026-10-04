@@ -8,7 +8,7 @@ declare(strict_types=1);
  */
 
 // 1. Directory of Shops
-route('GET', '/(?:shops)?', [], function () use ($pdo) {
+route('GET', '/shops(?:\.php)?', [], function () use ($pdo) {
     $user = current_user();
     $shops = all_active_shops();
 

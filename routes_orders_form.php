@@ -52,7 +52,7 @@ function render_order_create_form(
             <div class="card-body">
                 <?= empty_state('آدرسی برای تحویل ثبت نشده است', 'برای تکمیل سفارش، ابتدا باید حداقل یک نشانی معتبر ثبت فرمایید.', 'location') ?>
                 <div class="mt-3" style="text-align:center;">
-                    <a class="btn btn-primary" href="/account/addresses/create">افزودن نشانی جدید</a>
+                    <a class="btn btn-primary" href="/profile/addresses/create">افزودن نشانی جدید</a>
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@ function render_order_create_form(
             <div class="card mb-3">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <h2>۱. اطلاعات و آدرس تحویل سفارش</h2>
-                    <a class="btn btn-outline btn-sm" href="/account/addresses/create" target="_blank">+ آدرس جدید</a>
+                    <a class="btn btn-outline btn-sm" href="/profile/addresses/create" target="_blank">+ آدرس جدید</a>
                 </div>
                 <div class="card-body">
                     <div class="form-group mb-2">

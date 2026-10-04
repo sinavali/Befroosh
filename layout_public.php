@@ -70,17 +70,17 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
 
         <header class="store-header">
             <div class="store-nav-container">
-                <a href="/shop/<?= e($shopSlug) ?>" class="store-brand">
+                <a href="<?= $shop ? '/shop/' . e($shopSlug) : '/' ?>" class="store-brand">
                     <div class="store-brand-logo"><?= e(mb_substr($shopName, 0, 1)) ?></div>
                     <div>
                         <div style="line-height:1.2;"><?= e($shopName) ?></div>
-                        <span style="font-size:0.72rem; color:#64748b; font-weight:normal;">فروشگاه آنلاین رسمی</span>
+                        <span style="font-size:0.72rem; color:#64748b; font-weight:normal;"><?= $shop ? 'فروشگاه آنلاین رسمی' : 'پلتفرم هوشمند فروش آنلاین و شعب' ?></span>
                     </div>
                 </a>
 
-                <form action="/shop/<?= e($shopSlug) ?>/products" method="get" class="store-search-form">
+                <form action="<?= $shop ? '/shop/' . e($shopSlug) . '/products' : '/shops' ?>" method="get" class="store-search-form">
                     <span class="store-search-icon"><?= icon('search', 16) ?></span>
-                    <input type="text" name="q" class="store-search-input" placeholder="جستجو در محصولات این فروشگاه..." value="<?= e($_GET['q'] ?? '') ?>">
+                    <input type="text" name="q" class="store-search-input" placeholder="<?= $shop ? 'جستجو در محصولات این فروشگاه...' : 'جستجو در میان فروشگاه‌ها...' ?>" value="<?= e($_GET['q'] ?? '') ?>">
                 </form>
 
                 <div class="store-actions">
@@ -97,7 +97,7 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
 
                     <?php if ($user && !empty($user['id'])): ?>
                         <?php if ($user['role'] === 'customer'): ?>
-                            <a href="/my-orders" class="btn btn-outline btn-sm"><?= icon('orders', 14) ?> سفارش‌های من</a>
+                            <a href="/profile/orders" class="btn btn-outline btn-sm"><?= icon('orders', 14) ?> سفارش‌های من</a>
                             <a href="/profile" class="btn btn-primary btn-sm"><?= icon('user', 14) ?> <?= e($user['nickname']) ?></a>
                         <?php else: ?>
                             <a href="/dashboard" class="btn btn-primary btn-sm"><?= icon('dashboard', 14) ?> پنل مدیریت</a>
@@ -110,12 +110,19 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
 
             <nav class="store-menubar">
                 <ul class="store-menu-list">
-                    <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>" class="<?= $isPathActive('/shop/' . $shopSlug) ? 'active' : '' ?>">صفحه اصلی</a></li>
-                    <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/products" class="<?= $isPathActive('/shop/' . $shopSlug . '/products') ? 'active' : '' ?>">همه محصولات</a></li>
-                    <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/about" class="<?= $isPathActive('/shop/' . $shopSlug . '/about') ? 'active' : '' ?>">درباره فروشگاه</a></li>
-                    <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/policies" class="<?= $isPathActive('/shop/' . $shopSlug . '/policies') ? 'active' : '' ?>">قوانین و رویه ارسال</a></li>
-                    <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/faq" class="<?= $isPathActive('/shop/' . $shopSlug . '/faq') ? 'active' : '' ?>">سوالات متداول</a></li>
-                    <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/contact" class="<?= $isPathActive('/shop/' . $shopSlug . '/contact') ? 'active' : '' ?>">تماس با ما</a></li>
+                    <?php if ($shop): ?>
+                        <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>" class="<?= $isPathActive('/shop/' . $shopSlug) ? 'active' : '' ?>">صفحه اصلی</a></li>
+                        <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/products" class="<?= $isPathActive('/shop/' . $shopSlug . '/products') ? 'active' : '' ?>">همه محصولات</a></li>
+                        <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/about" class="<?= $isPathActive('/shop/' . $shopSlug . '/about') ? 'active' : '' ?>">درباره فروشگاه</a></li>
+                        <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/policies" class="<?= $isPathActive('/shop/' . $shopSlug . '/policies') ? 'active' : '' ?>">قوانین و رویه ارسال</a></li>
+                        <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/faq" class="<?= $isPathActive('/shop/' . $shopSlug . '/faq') ? 'active' : '' ?>">سوالات متداول</a></li>
+                        <li class="store-menu-item"><a href="/shop/<?= e($shopSlug) ?>/contact" class="<?= $isPathActive('/shop/' . $shopSlug . '/contact') ? 'active' : '' ?>">تماس با ما</a></li>
+                    <?php else: ?>
+                        <li class="store-menu-item"><a href="/" class="<?= $isPathActive('/') ? 'active' : '' ?>">صفحه اصلی</a></li>
+                        <li class="store-menu-item"><a href="/shops" class="<?= $isPathActive('/shops') ? 'active' : '' ?>">ویترین فروشگاه‌ها</a></li>
+                        <li class="store-menu-item"><a href="/policies" class="<?= $isPathActive('/policies') ? 'active' : '' ?>">قوانین و رویه‌ها</a></li>
+                        <li class="store-menu-item"><a href="/register" class="<?= $isPathActive('/register') ? 'active' : '' ?>">ثبت‌نام فروشندگان</a></li>
+                    <?php endif; ?>
                 </ul>
             </nav>
         </header>

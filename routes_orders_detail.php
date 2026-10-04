@@ -7,14 +7,14 @@ declare(strict_types=1);
  */
 
 // Order Detail View
-route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin', 'superadmin'], function ($id) use ($pdo) {
+route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function ($id) use ($pdo) {
     $user = require_login();
     release_expired_reservations();
 
     $id = (int)$id;
     $stmt = $pdo->prepare("
         SELECT o.*, u.nickname AS customer_name, u.phone AS customer_phone, u.national_code AS customer_national_code,
-               s.name AS shop_name, s.phone AS shop_phone, s.address AS shop_address, s.card_number AS shop_card_number,
+               s.name AS shop_name, s.slug AS shop_slug, s.phone AS shop_phone, s.address AS shop_address, s.card_number AS shop_card_number,
                s.card_holder AS shop_card_holder, s.bank_name AS shop_bank_name, s.shaba_number AS shop_shaba
         FROM orders o
         JOIN users u ON u.id = o.customer_id
@@ -30,10 +30,9 @@ route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin'
 
     // Tenant / Ownership checks
     $isCustomerOwner = ($user['role'] === 'customer' && (int)$order['customer_id'] === (int)$user['id']);
-    $isShopStaff = in_array($user['role'], ['shop_owner', 'shop_manager'], true) && (int)$order['shop_id'] === (int)($user['shop_id'] ?? 0);
-    $isPlatformAdmin = in_array($user['role'], ['superadmin', 'admin'], true);
+    $isShopStaff = can_manage_shop($user, (int)$order['shop_id']);
 
-    if (!$isCustomerOwner && !$isShopStaff && !$isPlatformAdmin) {
+    if (!$isCustomerOwner && !$isShopStaff) {
         error_page(403, 'دسترسی غیرمجاز', 'شما به این سفارش دسترسی ندارید.');
     }
 
@@ -75,6 +74,33 @@ route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin'
             <?= payment_badge($order['payment_status']) ?>
             <a class="btn btn-outline btn-sm" href="/orders/<?= $id ?>/print" target="_blank"><?= icon('print', 13) ?> چاپ فاکتور رسمی</a>
             <a class="btn btn-outline btn-sm" href="/orders/<?= $id ?>/shipping-label" target="_blank">برچسب پستی</a>
+        </div>
+    </div>
+
+    <!-- TIMELINE STATUS STEPPER -->
+    <?php
+    $statusSteps = ['placed' => 1, 'submitted' => 1, 'paid' => 2, 'finalised' => 2, 'shipped' => 3, 'completed' => 4];
+    $currentStep = $statusSteps[$order['status']] ?? 1;
+    $isCanceled = ($order['status'] === 'canceled');
+    ?>
+    <div class="card mb-3 no-print" style="padding:16px 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; position:relative;">
+            <div style="position:absolute; top:18px; left:20px; right:20px; height:3px; background:#e2e8f0; z-index:1;"></div>
+            <?php
+            $steps = [1 => 'ثبت فاکتور', 2 => 'پرداخت و تایید', 3 => 'ارسال مرسوله', 4 => 'تکمیل سفارش'];
+            foreach ($steps as $stepNum => $stepLabel):
+                $done = (!$isCanceled && $currentStep >= $stepNum);
+                $active = (!$isCanceled && $currentStep === $stepNum);
+            ?>
+                <div style="position:relative; z-index:2; text-align:center; background:#fff; padding:0 8px;">
+                    <div style="width:34px; height:34px; border-radius:50%; margin:0 auto 4px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.85rem; background:<?= $done ? '#10b981' : ($active ? '#2563eb' : '#f1f5f9') ?>; color:<?= ($done || $active) ? '#fff' : '#64748b' ?>; border:2px solid <?= $done ? '#10b981' : ($active ? '#2563eb' : '#cbd5e1') ?>;">
+                        <?= $done ? '✓' : en_to_fa_digits((string)$stepNum) ?>
+                    </div>
+                    <div style="font-size:0.75rem; font-weight:<?= $active ? '800' : 'bold' ?>; color:<?= $active ? '#2563eb' : ($done ? '#0f172a' : '#94a3b8') ?>;">
+                        <?= $stepLabel ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 
@@ -167,18 +193,19 @@ route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin'
             <!-- CUSTOMER RECEIPT UPLOAD FORM -->
             <?php if ($canUploadReceipt): ?>
                 <div style="margin-top:20px; border-top:1px solid #e5e7eb; padding-top:16px;">
-                    <h3 style="font-size:1rem; font-weight:800; margin-bottom:10px;">بارگذاری فیش واریزی کارت‌به‌کارت</h3>
-                    <form method="post" action="/orders/<?= $id ?>/payment/card-to-card" enctype="multipart/form-data" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; align-items:flex-end;">
+                    <h3 style="font-size:1rem; font-weight:800; margin-bottom:4px;">ثبت اطلاعات یا فیش پرداخت کارت‌به‌کارت</h3>
+                    <div style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">بارگذاری تصویر فیش، شماره پیگیری/توضیحات واریز یا هر دو مورد مجاز است.</div>
+                    <form method="post" action="/orders/<?= $id ?>/payment/card-to-card" enctype="multipart/form-data" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; align-items:flex-end;">
                         <?= csrf_field() ?>
                         <div class="form-group" style="margin:0;">
-                            <label>شماره پیگیری / شماره ارجاع فیش *</label>
-                            <input class="input" type="text" name="payment_reference" required placeholder="کد پیگیری تراکنش بانکی">
+                            <label style="font-size:0.8rem;">شماره پیگیری / توضیحات واریز:</label>
+                            <input class="input" type="text" name="receipt_description" placeholder="کد رهگیری یا شماره ارجاع">
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label>تصویر فیش واریزی (عکس یا PDF) *</label>
-                            <input class="input" type="file" name="receipt" accept="image/*,application/pdf" required>
+                            <label style="font-size:0.8rem;">تصویر فیش واریزی (عکس یا PDF):</label>
+                            <input class="input" type="file" name="receipt" accept="image/*,application/pdf">
                         </div>
-                        <button class="btn btn-primary" type="submit">ارسال فیش جهت بررسی فروشگاه</button>
+                        <button class="btn btn-primary" type="submit">ارسال اطلاعات پرداخت</button>
                     </form>
                 </div>
             <?php endif; ?>
@@ -193,68 +220,32 @@ route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin'
                     <h3 style="font-size:0.95rem; color:#1e40af; margin-bottom:4px;">مرسوله ارسال شده است — شرکت پست پیشتاز</h3>
                     <div>کد رهگیری پستی: <strong dir="ltr" style="font-family:monospace; font-size:1.2rem;"><?= e($order['tracking_code']) ?></strong></div>
                 </div>
-                <a class="btn btn-primary btn-sm" href="https://tracking.post.ir/?id=<?= urlencode($order['tracking_code']) ?>" target="_blank" rel="noopener noreferrer">
-                    رهگیری در سامانه پست ↗
-                </a>
+                <a class="btn btn-primary btn-sm" href="https://tracking.post.ir/?id=<?= urlencode($order['tracking_code']) ?>" target="_blank" rel="noopener noreferrer">رهگیری در سامانه پست ↗</a>
             </div>
         </div>
     <?php endif; ?>
 
     <!-- ORDER SUMMARY & ADDRESS -->
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:16px;">
-        <!-- Buyer Info -->
         <div class="card">
             <div class="card-header"><h2>مشخصات خریدار و تحویل‌گیرنده</h2></div>
             <div class="card-body">
                 <div class="detail-grid">
-                    <div class="detail-item">
-                        <div class="detail-label">نام خریدار</div>
-                        <div class="detail-value"><?= e($order['customer_name']) ?></div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">تلفن همراه</div>
-                        <div class="detail-value" dir="ltr"><?= format_phone($order['customer_phone']) ?></div>
-                    </div>
-                    <div class="detail-item" style="grid-column:1/-1;">
-                        <div class="detail-label">آدرس تحویل</div>
-                        <div class="detail-value">
-                            <?= e($addr['state'] ?? '') ?>، <?= e($addr['city'] ?? '') ?> — <?= e($addr['address'] ?? '') ?>
-                            <?php if (!empty($addr['postal_code'])): ?>
-                                <span style="font-size:0.75rem; color:#6b7280;">(کد پستی: <?= e($addr['postal_code']) ?>)</span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <?php if (!empty($order['description'])): ?>
-                        <div class="detail-item" style="grid-column:1/-1;">
-                            <div class="detail-label">توضیحات خریدار</div>
-                            <div class="detail-value"><?= nl2br(e($order['description'])) ?></div>
-                        </div>
-                    <?php endif; ?>
+                    <div class="detail-item"><div class="detail-label">نام خریدار</div><div class="detail-value"><?= e($order['customer_name']) ?></div></div>
+                    <div class="detail-item"><div class="detail-label">تلفن همراه</div><div class="detail-value" dir="ltr"><?= format_phone($order['customer_phone']) ?></div></div>
+                    <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">آدرس تحویل</div><div class="detail-value"><?= e($addr['state'] ?? '') ?>، <?= e($addr['city'] ?? '') ?> — <?= e($addr['address'] ?? '') ?><?php if (!empty($addr['postal_code'])): ?><span style="font-size:0.75rem; color:#6b7280;"> (کد پستی: <?= e($addr['postal_code']) ?>)</span><?php endif; ?></div></div>
+                    <?php if (!empty($order['description'])): ?><div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">توضیحات خریدار</div><div class="detail-value"><?= nl2br(e($order['description'])) ?></div></div><?php endif; ?>
                 </div>
             </div>
         </div>
-
-        <!-- Financial Summary -->
         <div class="card">
             <div class="card-header"><h2>خلاصه مالی صورتحساب</h2></div>
             <div class="card-body">
                 <table class="table">
-                    <tr>
-                        <td>جمع اقلام:</td>
-                        <td style="text-align:left;"><strong><?= format_irr((float)($order['subtotal'] ?: $order['estimated_total'])) ?></strong></td>
-                    </tr>
-                    <tr>
-                        <td>هزینه ارسال پیشتاز:</td>
-                        <td style="text-align:left;"><?= format_irr((float)$order['shipping_cost']) ?></td>
-                    </tr>
-                    <tr>
-                        <td>مالیات بر ارزش افزوده:</td>
-                        <td style="text-align:left;"><?= format_irr((float)$order['tax_amount']) ?></td>
-                    </tr>
-                    <tr style="background:#f8fafc; font-size:1.1rem; font-weight:800; color:#1e3a8a;">
-                        <td>مبلغ کل سفارش:</td>
-                        <td style="text-align:left;"><?= format_irr((float)($order['final_total'] ?? $order['estimated_total'])) ?></td>
-                    </tr>
+                    <tr><td>جمع اقلام:</td><td style="text-align:left;"><strong><?= format_irt((float)($order['subtotal'] ?: $order['estimated_total'])) ?></strong></td></tr>
+                    <tr><td>هزینه ارسال:</td><td style="text-align:left;"><?= format_irt((float)$order['shipping_cost']) ?></td></tr>
+                    <tr><td>مالیات بر ارزش افزوده:</td><td style="text-align:left;"><?= format_irt((float)$order['tax_amount']) ?></td></tr>
+                    <tr style="background:#f8fafc; font-size:1.1rem; font-weight:800; color:#1e3a8a;"><td>مبلغ کل سفارش:</td><td style="text-align:left;"><?= format_irt((float)($order['final_total'] ?? $order['estimated_total'])) ?></td></tr>
                 </table>
             </div>
         </div>
@@ -270,7 +261,6 @@ route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin'
                         <th>ردیف</th>
                         <th>عنوان کالا</th>
                         <th>کد کالا (SKU)</th>
-                        <th>واحد</th>
                         <th>تعداد</th>
                         <th>قیمت واحد</th>
                         <th>جمع خط</th>
@@ -280,12 +270,15 @@ route('GET', '/orders/(\d+)', ['customer', 'shop_owner', 'shop_manager', 'admin'
                     <?php foreach ($items as $idx => $it): ?>
                         <tr>
                             <td><?= en_to_fa_digits((string)($idx + 1)) ?></td>
-                            <td><strong><?= e($it['product_title']) ?></strong></td>
+                            <td>
+                                <a href="/s/<?= urlencode($order['shop_slug'] ?? 'central') ?>/p/<?= (int)$it['product_id'] ?>" target="_blank" style="color:#2563eb; font-weight:bold;">
+                                    <?= e($it['product_title']) ?> ↗
+                                </a>
+                            </td>
                             <td><code><?= e($it['product_sku'] ?: '—') ?></code></td>
-                            <td><?= e($it['unit'] ?: 'عدد') ?></td>
                             <td><?= en_to_fa_digits((string)$it['quantity']) ?></td>
-                            <td><?= format_irr((float)$it['unit_price']) ?></td>
-                            <td><?= format_irr((float)$it['line_total']) ?></td>
+                            <td><?= format_irt((float)$it['unit_price']) ?></td>
+                            <td><?= format_irt((float)$it['line_total']) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -125,3 +125,96 @@ function get_current_management_shop(array $user): array
     return [$shopId, $shop ?: ['id' => $shopId, 'name' => 'فروشگاه']];
 }
 
+function get_user_businesses(int $userId): array
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM shops WHERE owner_id = ? AND active = 1 ORDER BY id ASC");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+function set_active_business(int $businessId): void
+{
+    $_SESSION['active_shop_id'] = $businessId;
+    $_SESSION['active_business_id'] = $businessId;
+    unset($_SESSION['active_branch_id']);
+}
+
+function get_business_branches(int $businessId): array
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM branches WHERE business_id = ? AND active = 1 ORDER BY is_main DESC, name ASC");
+        $stmt->execute([$businessId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+function get_branch(int $branchId): ?array
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM branches WHERE id = ?");
+        $stmt->execute([$branchId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+function active_branch_id(): ?int
+{
+    if (isset($_SESSION['active_branch_id']) && (int)$_SESSION['active_branch_id'] > 0) {
+        return (int)$_SESSION['active_branch_id'];
+    }
+    return null;
+}
+
+function set_active_branch(?int $branchId): void
+{
+    if ($branchId && $branchId > 0) {
+        $_SESSION['active_branch_id'] = $branchId;
+    } else {
+        unset($_SESSION['active_branch_id']);
+    }
+}
+
+function get_user_assigned_branches(array $user, int $businessId): array
+{
+    global $pdo;
+    if (in_array($user['role'], ['superadmin', 'admin', 'business_owner', 'shop_owner'], true)) {
+        return get_business_branches($businessId);
+    }
+    try {
+        $stmt = $pdo->prepare("
+            SELECT b.* 
+            FROM branch_user_assignments bua
+            JOIN branches b ON b.id = bua.branch_id
+            WHERE bua.user_id = ? AND bua.business_id = ? AND b.active = 1
+            ORDER BY b.name ASC
+        ");
+        $stmt->execute([$user['id'], $businessId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+function get_business_shipping_groups(int $businessId): array
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM shipping_groups WHERE business_id = ? ORDER BY id ASC");
+        $stmt->execute([$businessId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+

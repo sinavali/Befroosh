@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 // Card-to-Card Receipt Upload by Customer
-route('POST', '/orders/(\d+)/payment/card-to-card', ['customer', 'shop_owner', 'shop_manager', 'admin', 'superadmin'], function ($id) use ($pdo) {
+route('POST', '/(?:app/)?orders/(\d+)/payment/card-to-card', ['customer', 'business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function ($id) use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
     $id = (int)$id;
@@ -20,53 +20,56 @@ route('POST', '/orders/(\d+)/payment/card-to-card', ['customer', 'shop_owner', '
         error_page(403, 'دسترسی غیرمجاز', 'شما مالک این سفارش نیستید.');
     }
 
-    $reference = trim($_POST['payment_reference'] ?? '');
-    if (!$reference) {
-        flash('error', 'شماره پیگیری پرداخت بانکی الزامی است.');
+    $reference = trim($_POST['receipt_description'] ?? $_POST['payment_reference'] ?? '');
+    $hasFile = !empty($_FILES['receipt']) && $_FILES['receipt']['error'] === UPLOAD_ERR_OK;
+
+    if (!$hasFile && $reference === '') {
+        flash('error', 'ثبت حداقل یکی از دو مورد (تصویر فیش یا شماره پیگیری و توضیحات) الزامی است.');
         redirect("/orders/$id");
     }
 
-    if (empty($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-        flash('error', 'بارگذاری فایل تصویر فیش الزامی است.');
-        redirect("/orders/$id");
-    }
+    $fileName = null;
+    if ($hasFile) {
+        $file = $_FILES['receipt'];
+        $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
-    $file = $_FILES['receipt'];
-    $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExts, true)) {
+            flash('error', 'فرمت فایل فیش باید یکی از فرمت‌های تصویری یا PDF باشد.');
+            redirect("/orders/$id");
+        }
 
-    if (!in_array($ext, $allowedExts, true)) {
-        flash('error', 'فرمت فایل فیش باید یکی از فرمت‌های تصویری یا PDF باشد.');
-        redirect("/orders/$id");
-    }
+        if ($file['size'] > 6 * 1024 * 1024) {
+            flash('error', 'حداکثر حجم مجاز برای تصویر فیش ۶ مگابایت است.');
+            redirect("/orders/$id");
+        }
 
-    if ($file['size'] > 6 * 1024 * 1024) {
-        flash('error', 'حداکثر حجم مجاز برای تصویر فیش ۶ مگابایت است.');
-        redirect("/orders/$id");
-    }
+        $fileName = 'receipt_' . $id . '_' . uniqid() . '.' . $ext;
+        $targetPath = RECEIPT_UPLOAD_PATH . '/' . $fileName;
 
-    $fileName = 'receipt_' . $id . '_' . uniqid() . '.' . $ext;
-    $targetPath = RECEIPT_UPLOAD_PATH . '/' . $fileName;
-
-    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
-        flash('error', 'خطا در ذخیره‌سازی فایل فیش واریزی.');
-        redirect("/orders/$id");
+        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+            flash('error', 'خطا در ذخیره‌سازی فایل فیش واریزی.');
+            redirect("/orders/$id");
+        }
     }
 
     $pdo->prepare("
         UPDATE orders 
-        SET payment_reference = ?, payment_receipt_path = ?, payment_status = 'pending_verification',
-            payment_reject_reason = NULL, seen_by_admin = 0, updated_at = datetime('now')
+        SET payment_reference = ?, payment_receipt_path = COALESCE(?, payment_receipt_path),
+            receipt_description = ?, receipt_image_path = COALESCE(?, receipt_image_path),
+            payment_status = 'pending_verification', receipt_status = 'pending',
+            payment_reject_reason = NULL, receipt_rejection_reason = NULL,
+            seen_by_admin = 0, updated_at = datetime('now')
         WHERE id = ?
-    ")->execute([$reference, $fileName, $id]);
+    ")->execute([$reference ?: 'ثبت‌شده توسط مشتری', $fileName, $reference, $fileName, $id]);
 
-    flash('success', 'فیش پرداخت با موفقیت ارسال شد و در انتظار تایید فروشگاه قرار گرفت.');
+    flash('success', 'اطلاعات پرداخت با موفقیت ثبت شد و در صف بررسی مدیران قرار گرفت.');
     redirect("/orders/$id");
 });
 
 // Verify payment by Shop Staff: approve or reject
-route('POST', '/orders/(\d+)/payment/verify', ['shop_owner', 'shop_manager', 'admin', 'superadmin'], function ($id) use ($pdo) {
-    $user = require_roles(['shop_owner', 'shop_manager', 'admin', 'superadmin']);
+route('POST', '/(?:app/)?orders/(\d+)/payment/verify', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function ($id) use ($pdo) {
+    $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     verify_csrf_or_die();
     $id = (int)$id;
 
@@ -79,8 +82,8 @@ route('POST', '/orders/(\d+)/payment/verify', ['shop_owner', 'shop_manager', 'ad
         redirect('/orders');
     }
 
-    if (in_array($user['role'], ['shop_owner', 'shop_manager'], true) && (int)$order['shop_id'] !== (int)($user['shop_id'] ?? 0)) {
-        error_page(403, 'دسترسی غیرمجاز', 'شما به این فروشگاه دسترسی ندارید.');
+    if (!can_manage_shop($user, (int)$order['shop_id'])) {
+        error_page(403, 'دسترسی غیرمجاز', 'شما به مدیریت این فروشگاه یا سفارش دسترسی ندارید.');
     }
 
     $action = $_POST['action'] ?? '';

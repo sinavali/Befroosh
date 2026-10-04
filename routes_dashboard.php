@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Role-Based Dashboard View for Customers and Admins/Staff
  */
 
-route('GET', '/dashboard(?:\.php)?', [], function () use ($pdo) {
+route('GET', '/(?:app/)?dashboard(?:\.php)?', [], function () use ($pdo) {
     $user = require_login();
 
     if ($user['role'] === 'customer') {
@@ -178,34 +178,51 @@ route('GET', '/dashboard(?:\.php)?', [], function () use ($pdo) {
         return;
     }
 
-    $isMerchant = in_array($user['role'], ['shop_owner', 'shop_manager'], true);
-    if ($isMerchant) {
-        $shop = get_current_management_shop($user);
-        $shopId = (int)$shop['id'];
-        $dashTitle = 'داشبورد فروشگاه ' . ($shop['name'] ?? '');
-        $dashSub = 'خلاصه وضعیت سفارشات، درآمد و مشتریان این فروشگاه';
+    $isStaffRole = in_array($user['role'], ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager'], true);
+    $extraKpiLabel = 'مشتری فعال';
+    $extraKpiVal = '۰';
 
-        $ordersToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE shop_id = {$shopId} AND date(created_at) = date('now')")->fetchColumn();
+    if ($isStaffRole) {
+        [$shopId, $shop] = get_current_management_shop($user);
+        $activeBranchId = active_branch_id();
+        $branch = $activeBranchId ? get_branch($activeBranchId) : null;
+        $branchWhere = ($branch ? " AND o.branch_id = {$activeBranchId}" : "");
+
+        if ($branch) {
+            $dashTitle = 'داشبورد شعبه ' . ($branch['name'] ?? '') . ' (' . ($shop['name'] ?? '') . ')';
+            $dashSub = 'آمار سفارشات، درآمد و فیش‌های واریزی این شعبه';
+        } else {
+            $dashTitle = 'داشبورد سراسری کسب‌وکار ' . ($shop['name'] ?? '');
+            $dashSub = 'دید کلی و تجمیعی تمامی شعب، انبارها و فیش‌های بانکی';
+        }
+
+        $ordersToday = (int) $pdo->query("SELECT COUNT(*) FROM orders o WHERE o.shop_id = {$shopId}{$branchWhere} AND date(o.created_at) = date('now')")->fetchColumn();
         $openTickets = (int) $pdo->query("SELECT COUNT(*) FROM tickets WHERE shop_id = {$shopId} AND status = 'open'")->fetchColumn();
-        $activeCustomers = (int) $pdo->query("SELECT COUNT(DISTINCT customer_id) FROM orders WHERE shop_id = {$shopId}")->fetchColumn();
-        $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(final_total, estimated_total)), 0) FROM orders WHERE shop_id = {$shopId} AND status IN ('finalised','completed')")->fetchColumn();
+        $pendingReceipts = (int) $pdo->query("SELECT COUNT(*) FROM orders o WHERE o.shop_id = {$shopId}{$branchWhere} AND o.payment_status = 'pending_verification'")->fetchColumn();
+        $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(o.final_total, o.estimated_total)), 0) FROM orders o WHERE o.shop_id = {$shopId}{$branchWhere} AND o.status IN ('finalised','completed','paid')")->fetchColumn();
+
+        $extraKpiLabel = 'فیش در صف تایید';
+        $extraKpiVal = en_to_fa_digits((string)$pendingReceipts);
 
         $recentOrders = $pdo->query("
             SELECT o.*, u.nickname AS customer_nickname
             FROM orders o
             JOIN users u ON u.id = o.customer_id
-            WHERE o.shop_id = {$shopId}
+            WHERE o.shop_id = {$shopId}{$branchWhere}
             ORDER BY o.id DESC
             LIMIT 6
         ")->fetchAll(PDO::FETCH_ASSOC);
     } else {
-        $dashTitle = 'داشبورد سامانه';
-        $dashSub = 'خلاصه وضعیت سراسری سفارشات، کاربران و درآمد پلتفرم';
+        $dashTitle = 'داشبورد مدیریت کل سامانه';
+        $dashSub = 'خلاصه وضعیت سراسری کسب‌وکارها، سفارشات، شعب و تیکت‌ها';
 
         $ordersToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE date(created_at) = date('now')")->fetchColumn();
         $openTickets = (int) $pdo->query("SELECT COUNT(*) FROM tickets WHERE status = 'open'")->fetchColumn();
-        $activeCustomers = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer' AND active = 1 AND deleted_at IS NULL")->fetchColumn();
-        $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(final_total, estimated_total)), 0) FROM orders WHERE status IN ('finalised','completed')")->fetchColumn();
+        $totalShops = (int) $pdo->query("SELECT COUNT(*) FROM shops WHERE active = 1")->fetchColumn();
+        $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(final_total, estimated_total)), 0) FROM orders WHERE status IN ('finalised','completed','paid')")->fetchColumn();
+
+        $extraKpiLabel = 'کسب‌وکارهای فعال';
+        $extraKpiVal = en_to_fa_digits((string)$totalShops);
 
         $recentOrders = $pdo->query("
             SELECT o.*, u.nickname AS customer_nickname
@@ -240,7 +257,7 @@ route('GET', '/dashboard(?:\.php)?', [], function () use ($pdo) {
         <div class="stat-card">
             <div class="stat-icon emerald"><?= icon('report', 18) ?></div>
             <div>
-                <div class="stat-value"><?= format_irr($revenue) ?></div>
+                <div class="stat-value"><?= format_irt($revenue) ?></div>
                 <div class="stat-label">درآمد نهایی/تکمیل‌شده</div>
             </div>
         </div>
@@ -248,8 +265,8 @@ route('GET', '/dashboard(?:\.php)?', [], function () use ($pdo) {
         <div class="stat-card">
             <div class="stat-icon purple"><?= icon('customers', 18) ?></div>
             <div>
-                <div class="stat-value"><?= en_to_fa_digits((string) $activeCustomers) ?></div>
-                <div class="stat-label">مشتری فعال</div>
+                <div class="stat-value"><?= $extraKpiVal ?></div>
+                <div class="stat-label"><?= e($extraKpiLabel) ?></div>
             </div>
         </div>
 
