@@ -15,6 +15,11 @@ function active_shop_id(): int
     return !empty($user['shop_id']) ? (int)$user['shop_id'] : 1;
 }
 
+function active_business_id(): int
+{
+    return active_shop_id();
+}
+
 function current_shop(): ?array
 {
     $shopId = active_shop_id();
@@ -116,13 +121,20 @@ function resolve_product(int $shopId, string $slugOrId): ?array
 
 function get_current_management_shop(array $user): array
 {
-    if (in_array($user['role'], ['shop_owner', 'shop_manager'], true)) {
-        $shopId = (int)($user['shop_id'] ?? 1);
+    if (in_array($user['role'], ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager'], true)) {
+        $shopId = (int)($_SESSION['active_business_id'] ?? $user['shop_id'] ?? 1);
     } else {
         $shopId = active_shop_id();
     }
     $shop = get_shop($shopId);
-    return [$shopId, $shop ?: ['id' => $shopId, 'name' => 'فروشگاه']];
+    $data = $shop ?: ['id' => $shopId, 'name' => 'فروشگاه'];
+    $res = [$shopId, $data];
+    foreach ($data as $k => $v) {
+        if (!is_int($k)) {
+            $res[$k] = $v;
+        }
+    }
+    return $res;
 }
 
 function get_user_businesses(int $userId): array
@@ -215,6 +227,18 @@ function get_business_shipping_groups(int $businessId): array
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Throwable $e) {
         return [];
+    }
+}
+
+function get_shipping_group(int $id): ?array
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM shipping_groups WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    } catch (Throwable $e) {
+        return null;
     }
 }
 

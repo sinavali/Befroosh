@@ -16,8 +16,8 @@ route('GET|POST', '/products/create', ['shop_owner', 'shop_manager', 'admin', 's
         verify_csrf_or_die();
 
         $title = trim($_POST['title'] ?? '');
-        $price = max(0, (float)fa_to_en_digits($_POST['price'] ?? '0'));
-        $costPrice = max(0, (float)fa_to_en_digits($_POST['cost_price'] ?? '0'));
+        $price = max(0, clean_price_input($_POST['price'] ?? '0'));
+        $costPrice = max(0, clean_price_input($_POST['cost_price'] ?? '0'));
         $stockQty = max(0, (float)fa_to_en_digits($_POST['stock_quantity'] ?? '0'));
         $minStockAlert = max(0, (float)fa_to_en_digits($_POST['min_stock_alert'] ?? '5'));
         $minOrderQty = max(1, (float)fa_to_en_digits($_POST['min_order_qty'] ?? '1'));
@@ -160,13 +160,13 @@ route('GET|POST', '/products/create', ['shop_owner', 'shop_manager', 'admin', 's
             <div class="card-body">
                 <div class="form-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
                     <div class="form-group">
-                        <label>قیمت فروش (ریال) *</label>
-                        <input class="input" type="number" name="price" value="<?= e($_POST['price'] ?? '0') ?>" required>
+                        <label>قیمت فروش (تومان) *</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="price" value="<?= e($_POST['price'] ?? '0') ?>" required>
                     </div>
 
                     <div class="form-group">
-                        <label>قیمت تمام‌شده / خرید (ریال)</label>
-                        <input class="input" type="number" name="cost_price" value="<?= e($_POST['cost_price'] ?? '0') ?>">
+                        <label>قیمت تمام‌شده / خرید (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="cost_price" value="<?= e($_POST['cost_price'] ?? '0') ?>">
                     </div>
 
                     <div class="form-group">

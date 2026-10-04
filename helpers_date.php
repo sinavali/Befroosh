@@ -216,3 +216,19 @@ function jalali_to_utc(?string $jdate, bool $endOfDay = false): ?string
         return null;
     }
 }
+
+function jdate_time(?string $utc): string
+{
+    return format_jalali($utc);
+}
+
+function jdate_date(?string $utc): string
+{
+    return format_jalali_date($utc);
+}
+
+function jdate_now(bool $fa = true): string
+{
+    return jalali_today($fa);
+}
+

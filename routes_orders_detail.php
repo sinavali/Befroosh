@@ -162,7 +162,7 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
                         </div>
                     <?php endif; ?>
 
-                    <?php if ($order['payment_receipt_path']): ?>
+                    <?php if (!empty($order['payment_receipt_path']) || !empty($order['receipt_image_path'])): ?>
                         <div style="margin-top:10px;">
                             <a class="btn btn-outline btn-sm" href="/orders/<?= $id ?>/receipt" target="_blank">
                                 <?= icon('eye', 13) ?> مشاهده تصویر فیش بارگذاری‌شده

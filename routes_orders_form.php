@@ -162,7 +162,7 @@ function render_order_create_form(
             const freeThreshold = parseFloat(shippingEl.getAttribute('data-free') || 0);
 
             function formatIrr(num) {
-                return new Intl.NumberFormat('fa-IR').format(Math.round(num)) + ' ریال';
+                return new Intl.NumberFormat('fa-IR').format(Math.round(num)) + ' تومان';
             }
 
             function recalc() {

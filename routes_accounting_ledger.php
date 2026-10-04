@@ -205,17 +205,16 @@ route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], fu
 });
 
 // Manual Accounting Entry
-route('GET|POST', '/accounting/manual', ['shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['shop_owner', 'admin', 'superadmin']);
-    $shop = get_current_management_shop($user);
-    $shopId = (int)$shop['id'];
+route('GET|POST', '/accounting/manual', ['business_owner', 'shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['business_owner', 'shop_owner', 'admin', 'superadmin']);
+    [$shopId, $shop] = get_current_management_shop($user);
     $error = '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         verify_csrf_or_die();
         $account = $_POST['account'] ?? '';
-        $debit = (float)fa_to_en_digits($_POST['debit'] ?? '0');
-        $credit = (float)fa_to_en_digits($_POST['credit'] ?? '0');
+        $debit = clean_price_input($_POST['debit'] ?? '0');
+        $credit = clean_price_input($_POST['credit'] ?? '0');
         $desc = trim($_POST['description'] ?? '');
 
         if (!$desc || (!$debit && !$credit) || !in_array($account, ['cash_bank', 'inventory_asset', 'sales_income', 'cogs', 'tax_payable', 'discounts', 'adjustment'], true)) {
@@ -265,12 +264,12 @@ route('GET|POST', '/accounting/manual', ['shop_owner', 'admin', 'superadmin'], f
 
                 <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                     <div class="form-group">
-                        <label>مبلغ بدهکار (ریال)</label>
-                        <input class="input" type="number" step="1" name="debit" placeholder="0">
+                        <label>مبلغ بدهکار (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="debit" placeholder="0">
                     </div>
                     <div class="form-group">
-                        <label>مبلغ بستانکار (ریال)</label>
-                        <input class="input" type="number" step="1" name="credit" placeholder="0">
+                        <label>مبلغ بستانکار (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="credit" placeholder="0">
                     </div>
                 </div>
 

@@ -13,8 +13,8 @@ require_once __DIR__ . '/routes_orders_print.php';
 require_once __DIR__ . '/routes_orders_track.php';
 require_once __DIR__ . '/routes_orders_report.php';
 
-// Order List View
-route('GET', '/orders(?:\.php)?', ['customer', 'shop_owner', 'shop_manager', 'admin', 'superadmin'], function () use ($pdo) {
+// Order List View (/orders and alias /profile/orders)
+route('GET', '/(?:profile/)?orders(?:\.php)?', ['customer', 'shop_owner', 'shop_manager', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_login();
     release_expired_reservations();
 
@@ -34,9 +34,15 @@ route('GET', '/orders(?:\.php)?', ['customer', 'shop_owner', 'shop_manager', 'ad
     if ($user['role'] === 'customer') {
         $where .= " AND o.customer_id = ?";
         $params[] = (int)$user['id'];
-    } elseif (in_array($user['role'], ['shop_owner', 'shop_manager'], true)) {
+    } elseif (in_array($user['role'], ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager'], true)) {
+        [$mgmtShopId] = get_current_management_shop($user);
         $where .= " AND o.shop_id = ?";
-        $params[] = (int)($user['shop_id'] ?? 1);
+        $params[] = $mgmtShopId;
+        $activeBranchId = active_branch_id();
+        if ($activeBranchId) {
+            $where .= " AND o.branch_id = ?";
+            $params[] = $activeBranchId;
+        }
     } elseif ($shopFilter > 0) {
         $where .= " AND o.shop_id = ?";
         $params[] = $shopFilter;

@@ -22,8 +22,8 @@ route('GET|POST', '/shops/create', ['superadmin'], function () use ($pdo) {
         $cardHolder = trim($_POST['card_holder'] ?? '') ?: null;
         $bankName = trim($_POST['bank_name'] ?? '') ?: null;
         $taxRate = max(0, (float)($_POST['tax_rate'] ?? 0)) / 100.0;
-        $defaultShipping = max(0, (float)fa_to_en_digits($_POST['default_shipping_cost'] ?? '0'));
-        $freeShippingThreshold = max(0, (float)fa_to_en_digits($_POST['free_shipping_threshold'] ?? '0'));
+        $defaultShipping = clean_price_input($_POST['default_shipping_cost'] ?? 0);
+        $freeShippingThreshold = clean_price_input($_POST['free_shipping_threshold'] ?? 0);
         $cardEnabled = isset($_POST['card_to_card_enabled']) ? 1 : 0;
         $active = isset($_POST['active']) ? 1 : 0;
 
@@ -132,12 +132,12 @@ route('GET|POST', '/shops/create', ['superadmin'], function () use ($pdo) {
                         <input class="input" type="number" step="0.1" name="tax_rate" value="<?= e($_POST['tax_rate'] ?? '10') ?>">
                     </div>
                     <div class="form-group">
-                        <label>هزینه پیش‌فرض ارسال (ریال)</label>
-                        <input class="input" type="number" name="default_shipping_cost" value="<?= e($_POST['default_shipping_cost'] ?? '250000') ?>">
+                        <label>هزینه پیش‌فرض ارسال (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="default_shipping_cost" value="<?= e(number_format((float)clean_price_input($_POST['default_shipping_cost'] ?? '25000'))) ?>">
                     </div>
                     <div class="form-group">
-                        <label>حداقل مبلغ خرید برای ارسال رایگان (ریال)</label>
-                        <input class="input" type="number" name="free_shipping_threshold" value="<?= e($_POST['free_shipping_threshold'] ?? '2500000') ?>">
+                        <label>حداقل مبلغ خرید برای ارسال رایگان (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="free_shipping_threshold" value="<?= e(number_format((float)clean_price_input($_POST['free_shipping_threshold'] ?? '250000'))) ?>">
                     </div>
                 </div>
                 <div class="form-group mt-2">
@@ -176,8 +176,8 @@ route('GET|POST', '/shops/(\d+)/edit', ['superadmin'], function ($id) use ($pdo)
         $cardHolder = trim($_POST['card_holder'] ?? '') ?: null;
         $bankName = trim($_POST['bank_name'] ?? '') ?: null;
         $taxRate = max(0, (float)($_POST['tax_rate'] ?? 0)) / 100.0;
-        $defaultShipping = max(0, (float)fa_to_en_digits($_POST['default_shipping_cost'] ?? '0'));
-        $freeShippingThreshold = max(0, (float)fa_to_en_digits($_POST['free_shipping_threshold'] ?? '0'));
+        $defaultShipping = clean_price_input($_POST['default_shipping_cost'] ?? 0);
+        $freeShippingThreshold = clean_price_input($_POST['free_shipping_threshold'] ?? 0);
         $cardEnabled = isset($_POST['card_to_card_enabled']) ? 1 : 0;
         $active = isset($_POST['active']) ? 1 : 0;
 
@@ -286,12 +286,12 @@ route('GET|POST', '/shops/(\d+)/edit', ['superadmin'], function ($id) use ($pdo)
                         <input class="input" type="number" step="0.1" name="tax_rate" value="<?= e((string)(($shop['tax_rate'] ?? 0) * 100)) ?>">
                     </div>
                     <div class="form-group">
-                        <label>هزینه پیش‌فرض ارسال (ریال)</label>
-                        <input class="input" type="number" name="default_shipping_cost" value="<?= e((string)$shop['default_shipping_cost']) ?>">
+                        <label>هزینه پیش‌فرض ارسال (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="default_shipping_cost" value="<?= e(number_format((float)($shop['default_shipping_cost'] ?? 0))) ?>">
                     </div>
                     <div class="form-group">
-                        <label>حداقل خرید برای ارسال رایگان (ریال)</label>
-                        <input class="input" type="number" name="free_shipping_threshold" value="<?= e((string)$shop['free_shipping_threshold']) ?>">
+                        <label>حداقل خرید برای ارسال رایگان (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="free_shipping_threshold" value="<?= e(number_format((float)($shop['free_shipping_threshold'] ?? 0))) ?>">
                     </div>
                 </div>
                 <div class="form-group mt-2">

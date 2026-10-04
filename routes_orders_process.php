@@ -97,12 +97,12 @@ route('POST', '/(?:app/)?orders/(\d+)/payment/verify', ['business_owner', 'shop_
 
         $pdo->beginTransaction();
         try {
-            // Update order status to paid
+            // Update order status to paid and approve receipt
             $pdo->prepare("
                 UPDATE orders 
-                SET status = 'paid', payment_status = 'paid', paid_at = ?, seen_by_customer = 0, updated_at = datetime('now')
+                SET status = 'paid', payment_status = 'paid', paid_at = ?, receipt_status = 'approved', receipt_verified_by = ?, receipt_verified_at = ?, seen_by_customer = 0, updated_at = datetime('now')
                 WHERE id = ?
-            ")->execute([$now, $id]);
+            ")->execute([$now, (int)$user['id'], $now, $id]);
 
             // Automated Double-Entry Ledger Entries
             $shopId = (int)$order['shop_id'];
@@ -149,9 +149,9 @@ route('POST', '/(?:app/)?orders/(\d+)/payment/verify', ['business_owner', 'shop_
         $reason = trim($_POST['reason'] ?? 'فیش واریزی معتبر نیست.');
         $pdo->prepare("
             UPDATE orders 
-            SET payment_status = 'rejected', payment_reject_reason = ?, seen_by_customer = 0, updated_at = datetime('now')
+            SET payment_status = 'rejected', receipt_status = 'rejected', receipt_rejection_reason = ?, payment_reject_reason = ?, receipt_verified_by = ?, receipt_verified_at = datetime('now'), seen_by_customer = 0, updated_at = datetime('now')
             WHERE id = ?
-        ")->execute([$reason, $id]);
+        ")->execute([$reason, $reason, (int)$user['id'], $id]);
 
         flash('warning', 'فیش پرداخت رد شد و به مشتری اطلاع‌رسانی گردید.');
     }
@@ -224,7 +224,7 @@ route('POST', '/orders/(\d+)/cancel', ['customer', 'shop_owner', 'shop_manager',
     if ($user['role'] === 'customer' && (int)$order['customer_id'] !== (int)$user['id']) {
         error_page(403, 'دسترسی غیرمجاز', 'شما دسترسی به این سفارش ندارید.');
     }
-    if (in_array($user['role'], ['shop_owner', 'shop_manager'], true) && (int)$order['shop_id'] !== (int)($user['shop_id'] ?? 0)) {
+    if ($user['role'] !== 'customer' && !can_manage_shop($user, (int)$order['shop_id'])) {
         error_page(403, 'دسترسی غیرمجاز', 'شما به این فروشگاه دسترسی ندارید.');
     }
 
@@ -273,22 +273,23 @@ route('GET', '/orders/(\d+)/receipt', ['customer', 'shop_owner', 'shop_manager',
     $user = require_login();
     $id = (int)$id;
 
-    $stmt = $pdo->prepare("SELECT shop_id, customer_id, payment_receipt_path FROM orders WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT shop_id, customer_id, payment_receipt_path, receipt_image_path FROM orders WHERE id = ?");
     $stmt->execute([$id]);
     $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$order || empty($order['payment_receipt_path'])) {
+    $receiptPath = $order['receipt_image_path'] ?? $order['payment_receipt_path'] ?? null;
+    if (!$order || empty($receiptPath)) {
         error_page(404, 'فایل یافت نشد', 'فیش پرداخت برای این سفارش ثبت نشده است.');
     }
 
     if ($user['role'] === 'customer' && (int)$order['customer_id'] !== (int)$user['id']) {
         error_page(403, 'دسترسی غیرمجاز', 'شما به این فایل دسترسی ندارید.');
     }
-    if (in_array($user['role'], ['shop_owner', 'shop_manager'], true) && (int)$order['shop_id'] !== (int)($user['shop_id'] ?? 0)) {
+    if ($user['role'] !== 'customer' && !can_manage_shop($user, (int)$order['shop_id'])) {
         error_page(403, 'دسترسی غیرمجاز', 'شما به این فایل دسترسی ندارید.');
     }
 
-    $filePath = RECEIPT_UPLOAD_PATH . '/' . basename($order['payment_receipt_path']);
+    $filePath = RECEIPT_UPLOAD_PATH . '/' . basename($receiptPath);
     if (!file_exists($filePath)) {
         error_page(404, 'فایل یافت نشد', 'فایل فیش از روی سرور حذف شده است.');
     }

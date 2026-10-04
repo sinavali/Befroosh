@@ -35,7 +35,7 @@ route('GET', '/reports(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 'supe
         SELECT 
             COUNT(DISTINCT o.id) AS total_orders,
             COUNT(DISTINCT CASE WHEN o.status IN ('finalised', 'completed') THEN o.id END) AS completed_orders,
-            COUNT(DISTINCT CASE WHEN o.status = 'cancelled' THEN o.id END) AS cancelled_orders,
+            COUNT(DISTINCT CASE WHEN o.status IN ('canceled', 'cancelled') THEN o.id END) AS cancelled_orders,
             COALESCE(SUM(CASE WHEN o.status IN ('finalised', 'completed') THEN COALESCE(o.final_total, o.estimated_total) ELSE 0 END), 0) AS total_revenue,
             COALESCE(SUM(CASE WHEN o.status IN ('finalised', 'completed') THEN o.subtotal ELSE 0 END), 0) AS taxable_sales,
             COALESCE(SUM(CASE WHEN o.status IN ('finalised', 'completed') THEN o.tax_amount ELSE 0 END), 0) AS total_vat,
@@ -237,7 +237,7 @@ route('GET', '/reports(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 'supe
                         <th>عنوان کالا</th>
                         <th>کد کالا (SKU)</th>
                         <th>تعداد فروخته‌شده</th>
-                        <th>مجموع فروش ریالی</th>
+                        <th>مجموع فروش (تومان)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -269,7 +269,7 @@ route('GET', '/reports(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 'supe
                     <tr>
                         <th>تاریخ روز</th>
                         <th>تعداد سفارشات قطعی</th>
-                        <th>درآمد روزانه (ریال)</th>
+                        <th>درآمد روزانه (تومان)</th>
                     </tr>
                 </thead>
                 <tbody>

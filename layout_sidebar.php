@@ -98,7 +98,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE customer_id = " . (int)$user['id'] . " AND seen_by_customer = 0")->fetchColumn();
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE customer_id = " . (int)$user['id'] . " AND seen_by_customer = 0")->fetchColumn();
             $cartCount = (int)$pdo->query("SELECT COUNT(*) FROM cart_items WHERE user_id = " . (int)$user['id'])->fetchColumn();
-        } elseif (in_array($role, ['shop_owner', 'shop_manager'], true)) {
+        } elseif (in_array($role, ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager'], true)) {
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE shop_id = {$shopId} AND seen_by_admin = 0")->fetchColumn();
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE shop_id = {$shopId} AND seen_by_admin = 0")->fetchColumn();
             $unseenMessages = (int)$pdo->query("SELECT COUNT(*) FROM shop_contact_messages WHERE shop_id = {$shopId} AND is_read = 0")->fetchColumn();

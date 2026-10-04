@@ -168,7 +168,7 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
                 subtotal += total;
                 rows += '<tr>' +
                     '<td style="font-weight:bold;">' + (it.title || 'کالا') + '</td>' +
-                    '<td>' + Number(it.price || 0).toLocaleString('fa-IR') + ' ریال</td>' +
+                    '<td>' + Number(it.price || 0).toLocaleString('fa-IR') + ' تومان</td>' +
                     '<td>' +
                         '<div style="display:inline-flex; align-items:center; gap:6px;">' +
                             '<button type="button" class="btn btn-outline btn-sm" onclick="window.updateMiniCartQty(' + idx + ', -1); location.reload();">-</button>' +
@@ -176,7 +176,7 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
                             '<button type="button" class="btn btn-outline btn-sm" onclick="window.updateMiniCartQty(' + idx + ', 1); location.reload();">+</button>' +
                         '</div>' +
                     '</td>' +
-                    '<td><strong>' + Number(total).toLocaleString('fa-IR') + ' ریال</strong></td>' +
+                    '<td><strong>' + Number(total).toLocaleString('fa-IR') + ' تومان</strong></td>' +
                     '<td><button type="button" class="btn btn-danger btn-sm" onclick="window.removeMiniCartItem(' + idx + '); location.reload();">حذف</button></td>' +
                 '</tr>';
             });
@@ -184,7 +184,7 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
                 '<div class="card-header"><h2>اقلام سبد خرید مهمان</h2></div>' +
                 '<div class="table-responsive"><table class="table"><thead><tr><th>عنوان کالا</th><th>قیمت واحد</th><th>تعداد</th><th>جمع</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
                 '<div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">' +
-                    '<div><strong>جمع کل اقلام: ' + Number(subtotal).toLocaleString('fa-IR') + ' ریال</strong></div>' +
+                    '<div><strong>جمع کل اقلام: ' + Number(subtotal).toLocaleString('fa-IR') + ' تومان</strong></div>' +
                     '<a class="btn btn-primary" href="/login?redirect=/cart">ورود به حساب کاربری جهت ثبت نهایی سفارش</a>' +
                 '</div>' +
             '</div>';

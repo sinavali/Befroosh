@@ -28,8 +28,8 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
         $economicCode = trim(fa_to_en_digits($_POST['economic_code'] ?? '')) ?: null;
         $reservationDays = max(1, (int)fa_to_en_digits($_POST['reservation_days'] ?? '4'));
         $taxRate = max(0, (float)($_POST['tax_rate'] ?? 0)) / 100.0;
-        $defaultShipping = max(0, (float)fa_to_en_digits($_POST['default_shipping_cost'] ?? '0'));
-        $freeShippingThreshold = max(0, (float)fa_to_en_digits($_POST['free_shipping_threshold'] ?? '0'));
+        $defaultShipping = max(0, clean_price_input($_POST['default_shipping_cost'] ?? '0'));
+        $freeShippingThreshold = max(0, clean_price_input($_POST['free_shipping_threshold'] ?? '0'));
         $cardEnabled = isset($_POST['card_to_card_enabled']) ? 1 : 0;
         $policiesHtml = trim($_POST['policies_html'] ?? '');
         $aboutHtml = trim($_POST['about_html'] ?? '');
@@ -42,10 +42,8 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
                     policies_html = ?, about_html = ?, updated_at = datetime('now')
                 WHERE id = ?
             ");
-            $stmt->execute([$phone, $email, $address, $nationalId, $economicCode, $cardEnabled, $reservationDays, $taxRate, $defaultShipping, $freeShippingThreshold, $policiesHtml, $aboutHtml, $shopId]);
-            set_flash('success', 'تنظیمات و متون قوانین و درباره‌ما با موفقیت ذخیره شدند.');
-            header('Location: /shop/settings');
-            exit;
+            flash('success', 'تنظیمات و متون قوانین و درباره‌ما با موفقیت ذخیره شدند.');
+            redirect('/shop/settings');
         } catch (Throwable $e) {
             $error = 'خطا در ذخیره تنظیمات: ' . $e->getMessage();
         }
@@ -89,12 +87,12 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
                     <input type="number" name="tax_rate" class="input" step="0.1" value="<?= (float)($shop['tax_rate'] * 100) ?>">
                 </div>
                 <div>
-                    <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">هزینه پیش‌فرض ارسال (ریال):</label>
-                    <input type="number" name="default_shipping_cost" class="input" value="<?= (float)$shop['default_shipping_cost'] ?>">
+                    <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">هزینه پیش‌فرض ارسال (تومان):</label>
+                    <input type="text" inputmode="numeric" name="default_shipping_cost" class="input price-input" value="<?= number_format((float)$shop['default_shipping_cost']) ?>">
                 </div>
                 <div>
-                    <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">آستانه ارسال رایگان (ریال):</label>
-                    <input type="number" name="free_shipping_threshold" class="input" value="<?= (float)$shop['free_shipping_threshold'] ?>">
+                    <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">آستانه ارسال رایگان (تومان):</label>
+                    <input type="text" inputmode="numeric" name="free_shipping_threshold" class="input price-input" value="<?= number_format((float)$shop['free_shipping_threshold']) ?>">
                 </div>
             </div>
 
@@ -106,38 +104,17 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
             <!-- RICH TEXT EDITOR: POLICIES -->
             <div style="margin-bottom:24px;">
                 <label style="display:block; font-size:0.9rem; font-weight:bold; margin-bottom:6px; color:#1e293b;">
-                    متن صفحه قوانین و رویه‌های ارسال و مرجوعی (Rich Text):
+                    متن صفحه قوانین و رویه‌های ارسال و مرجوعی (Quill Rich Text):
                 </label>
-                <div class="editor-toolbar" style="display:flex; gap:4px; background:#f1f5f9; padding:6px; border:1px solid #cbd5e1; border-radius:6px 6px 0 0; flex-wrap:wrap;">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('bold')"><strong>B</strong></button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('italic')"><em>I</em></button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('formatBlock', 'h3')">H3</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('formatBlock', 'h4')">H4</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('insertUnorderedList')">• لیست</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('insertOrderedList')">۱. لیست عددی</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatDoc('formatBlock', 'p')">پاراگراف</button>
-                </div>
-                <div id="policiesEditor" contenteditable="true" style="min-height:160px; max-height:350px; overflow-y:auto; border:1px solid #cbd5e1; border-top:none; border-radius:0 0 6px 6px; padding:12px; background:#fff; line-height:1.8;">
-                    <?= $shop['policies_html'] ?: '<p>قوانین ارسال و مرجوعی کالا در این قسمت نوشته می‌شود.</p>' ?>
-                </div>
-                <input type="hidden" name="policies_html" id="policiesHidden">
+                <textarea name="policies_html" data-rich-editor="true"><?= e($shop['policies_html'] ?: '<p>قوانین ارسال و مرجوعی کالا در این قسمت نوشته می‌شود.</p>') ?></textarea>
             </div>
 
             <!-- RICH TEXT EDITOR: ABOUT -->
             <div style="margin-bottom:24px;">
                 <label style="display:block; font-size:0.9rem; font-weight:bold; margin-bottom:6px; color:#1e293b;">
-                    متن صفحه درباره فروشگاه (Rich Text):
+                    متن صفحه درباره فروشگاه (Quill Rich Text):
                 </label>
-                <div class="editor-toolbar" style="display:flex; gap:4px; background:#f1f5f9; padding:6px; border:1px solid #cbd5e1; border-radius:6px 6px 0 0; flex-wrap:wrap;">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatAboutDoc('bold')"><strong>B</strong></button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatAboutDoc('italic')"><em>I</em></button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatAboutDoc('formatBlock', 'h3')">H3</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="formatAboutDoc('insertUnorderedList')">• لیست</button>
-                </div>
-                <div id="aboutEditor" contenteditable="true" style="min-height:140px; max-height:300px; overflow-y:auto; border:1px solid #cbd5e1; border-top:none; border-radius:0 0 6px 6px; padding:12px; background:#fff; line-height:1.8;">
-                    <?= $shop['about_html'] ?: '<p>داستان شکل‌گیری و تعهدات فروشگاه ما در این قسمت قرار می‌گیرد.</p>' ?>
-                </div>
-                <input type="hidden" name="about_html" id="aboutHidden">
+                <textarea name="about_html" data-rich-editor="true"><?= e($shop['about_html'] ?: '<p>داستان شکل‌گیری و تعهدات فروشگاه ما در این قسمت قرار می‌گیرد.</p>') ?></textarea>
             </div>
 
             <button type="submit" class="btn btn-primary" style="padding:10px 24px;">ذخیره تنظیمات و صفحات</button>
@@ -173,20 +150,6 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
         </table>
     </div>
 
-    <script>
-    function formatDoc(cmd, val) {
-        document.getElementById('policiesEditor').focus();
-        document.execCommand(cmd, false, val || null);
-    }
-    function formatAboutDoc(cmd, val) {
-        document.getElementById('aboutEditor').focus();
-        document.execCommand(cmd, false, val || null);
-    }
-    document.getElementById('shopSettingsForm').addEventListener('submit', function() {
-        document.getElementById('policiesHidden').value = document.getElementById('policiesEditor').innerHTML;
-        document.getElementById('aboutHidden').value = document.getElementById('aboutEditor').innerHTML;
-    });
-    </script>
     <?php
     layout_end();
 });

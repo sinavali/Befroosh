@@ -17,7 +17,7 @@ route('GET|POST', '/inventory/inward', ['admin', 'superadmin'], function () use 
         verify_csrf_or_die();
         $prodId = (int)($_POST['product_id'] ?? 0);
         $qty = (float)fa_to_en_digits($_POST['quantity'] ?? '0');
-        $unitCost = (float)fa_to_en_digits($_POST['unit_cost'] ?? '0');
+        $unitCost = clean_price_input($_POST['unit_cost'] ?? '0');
         $invoiceRef = trim($_POST['invoice_ref'] ?? '') ?: null;
         $notes = trim($_POST['notes'] ?? '') ?: null;
 
@@ -99,8 +99,8 @@ route('GET|POST', '/inventory/inward', ['admin', 'superadmin'], function () use 
                         <input class="input" type="number" step="any" min="0.01" name="quantity" required placeholder="مثلاً 50">
                     </div>
                     <div class="form-group">
-                        <label>قیمت خرید واحد (ریال)</label>
-                        <input class="input" type="number" step="1" name="unit_cost" id="unitCostInput" placeholder="قیمت خرید هر واحد">
+                        <label>قیمت خرید واحد (تومان)</label>
+                        <input class="input price-input" type="text" inputmode="numeric" name="unit_cost" id="unitCostInput" placeholder="قیمت خرید هر واحد">
                     </div>
                 </div>
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
 require_once __DIR__ . '/routes_auth.php';
+require_once __DIR__ . '/routes_auth_register.php';
 require_once __DIR__ . '/routes_auth_profile.php';
 require_once __DIR__ . '/routes_addresses.php';
 require_once __DIR__ . '/routes_admin.php';

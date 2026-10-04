@@ -97,7 +97,7 @@ $favoritesPageHandler = function () use ($pdo) {
                                     '<h3 style="font-size:0.92rem; font-weight:bold; color:#1e293b; margin:4px 0 8px; line-height:1.4;">' + p.title + '</h3>' +
                                 '</a>' +
                                 '<div>' +
-                                    '<div style="font-size:0.95rem; font-weight:800; color:#059669; margin-bottom:12px;">' + Number(p.price).toLocaleString("fa-IR") + ' ریال</div>' +
+                                    '<div style="font-size:0.95rem; font-weight:800; color:#059669; margin-bottom:12px;">' + Number(p.price).toLocaleString("fa-IR") + ' تومان</div>' +
                                     '<button type="button" class="btn btn-primary btn-sm" style="width:100%;" onclick="window.BefrooshStore.addToCart({ id: ' + p.id + ', shop_id: ' + p.shop_id + ', title: \'' + p.title.replace(/'/g, "\\'") + '\', price: ' + p.price + ', qty: 1 })">' +
                                         '<?= icon("cart", 13) ?> افزودن به سبد' +
                                     '</button>' +

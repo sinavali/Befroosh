@@ -71,6 +71,11 @@ function flash(string $type, string $message): void
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
+function set_flash(string $type, string $message): void
+{
+    flash($type, $message);
+}
+
 function get_flash(): ?array
 {
     if (isset($_SESSION['flash'])) {

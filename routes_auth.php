@@ -92,6 +92,9 @@ route('GET|POST', '/login(?:\.php)?', [], function () use ($pdo) {
 
         <button class="btn" type="submit">ورود</button>
     </form>
+    <div style="margin-top:20px; text-align:center; font-size:0.88rem; color:#64748b;">
+        حساب کاربری ندارید؟ <a href="/register" style="color:#2563eb; font-weight:bold; text-decoration:none;">ثبت‌نام در سامانه</a>
+    </div>
     <?php
     auth_layout_end();
 });

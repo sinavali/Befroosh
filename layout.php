@@ -180,6 +180,21 @@ function layout_end(): void
                     }
                 }
             });
+
+            // Universal 3-digit comma formatting for price inputs
+            function formatPriceInput(el) {
+                var raw = el.value.replace(/[^0-9۰-۹]/g, '');
+                if (!raw) return;
+                var en = raw.replace(/[۰-۹]/g, function(d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); });
+                var num = parseInt(en, 10);
+                if (isNaN(num)) return;
+                el.value = num.toLocaleString('en-US');
+            }
+            document.querySelectorAll('input.price-input, input[data-type="price"], input[name*="price"], input[name*="cost"], input[name*="threshold"]').forEach(function(el) {
+                if (el.type === 'number') { el.type = 'text'; el.inputMode = 'numeric'; }
+                if (el.value) formatPriceInput(el);
+                el.addEventListener('input', function() { formatPriceInput(this); });
+            });
         </script>
     </body>
     </html>

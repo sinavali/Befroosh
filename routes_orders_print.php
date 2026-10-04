@@ -210,10 +210,10 @@ function render_official_invoices(array $orders): void
                 <th>شرح کالا یا خدمات</th>
                 <th style="width:40px;">واحد</th>
                 <th style="width:40px;">تعداد</th>
-                <th style="width:75px;">مبلغ واحد (ریال)</th>
+                <th style="width:75px;">مبلغ واحد (تومان)</th>
                 <th style="width:65px;">تخفیف</th>
                 <th style="width:70px;">مالیات و عوارض</th>
-                <th style="width:85px;">مبلغ کل (ریال)</th>
+                <th style="width:85px;">مبلغ کل (تومان)</th>
             </tr>
         </thead>
         <tbody>
@@ -238,7 +238,7 @@ function render_official_invoices(array $orders): void
         <div class="words-box">
             <div>
                 <span class="label">مبلغ به حروف:</span>
-                <strong style="font-size:11.5px; color:#1e3a8a;"><?= e($totalInWords) ?> ریال</strong>
+                <strong style="font-size:11.5px; color:#1e3a8a;"><?= e($totalInWords) ?> تومان</strong>
             </div>
             <div style="font-size:10px; color:#64748b; margin-top:6px; line-height:1.5;">
                 شرایط پرداخت: کارت‌به‌کارت بانکی. تحویل کالا منوط به تایید فیش واریزی در حساب فروشگاه است.

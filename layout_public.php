@@ -97,7 +97,7 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
 
                     <?php if ($user && !empty($user['id'])): ?>
                         <?php if ($user['role'] === 'customer'): ?>
-                            <a href="/profile/orders" class="btn btn-outline btn-sm"><?= icon('orders', 14) ?> سفارش‌های من</a>
+                            <a href="/orders" class="btn btn-outline btn-sm"><?= icon('orders', 14) ?> سفارش‌های من</a>
                             <a href="/profile" class="btn btn-primary btn-sm"><?= icon('user', 14) ?> <?= e($user['nickname']) ?></a>
                         <?php else: ?>
                             <a href="/dashboard" class="btn btn-primary btn-sm"><?= icon('dashboard', 14) ?> پنل مدیریت</a>
@@ -153,7 +153,7 @@ function layout_public_end(?array $shop = null): void
             <div class="mini-cart-footer">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-weight:bold;">
                     <span>مبلغ کل کالاها:</span>
-                    <span id="miniCartTotal" style="color:#059669; font-size:1.05rem;">۰ ریال</span>
+                    <span id="miniCartTotal" style="color:#059669; font-size:1.05rem;">۰ تومان</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <a href="/cart" class="btn btn-primary" style="width:100%; justify-content:center;">تکمیل سفارش و پرداخت</a>
@@ -178,7 +178,7 @@ function layout_public_end(?array $shop = null): void
             if (!box) return;
             if (items.length === 0) {
                 box.innerHTML = '<div style="padding:30px 10px; text-align:center; color:#94a3b8;"><p>سبد خرید شما خالی است.</p></div>';
-                if (tot) tot.textContent = '۰ ریال';
+                if (tot) tot.textContent = '۰ تومان';
                 return;
             }
             var sum = 0;
@@ -189,7 +189,7 @@ function layout_public_end(?array $shop = null): void
                 html += '<div class="mini-cart-item">' +
                     '<div style="flex:1; min-width:0;">' +
                         '<div style="font-size:0.86rem; font-weight:bold; color:#1e293b; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (it.title || 'کالا') + '</div>' +
-                        '<div style="font-size:0.8rem; color:#059669; font-weight:700;">' + Number(it.price || 0).toLocaleString('fa-IR') + ' ریال</div>' +
+                        '<div style="font-size:0.8rem; color:#059669; font-weight:700;">' + Number(it.price || 0).toLocaleString('fa-IR') + ' تومان</div>' +
                         '<div style="display:flex; align-items:center; gap:8px; margin-top:6px;">' +
                             '<button type="button" class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="window.updateMiniCartQty(' + idx + ', -1)">-</button>' +
                             '<span style="font-size:0.85rem; font-weight:bold;">' + Number(it.qty || 1).toLocaleString('fa-IR') + '</span>' +
@@ -200,7 +200,7 @@ function layout_public_end(?array $shop = null): void
                 '</div>';
             });
             box.innerHTML = html;
-            if (tot) tot.textContent = Number(sum).toLocaleString('fa-IR') + ' ریال';
+            if (tot) tot.textContent = Number(sum).toLocaleString('fa-IR') + ' تومان';
         };
         window.updateMiniCartQty = function(idx, delta) {
             var items = window.BefrooshStore.getCart();

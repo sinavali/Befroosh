@@ -7,9 +7,6 @@ route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], fun
     $shop = get_current_management_shop($user);
     $shopId = (int)$shop['id'];
 
-    $where = "WHERE shop_id = ?";
-    $params = [$shopId];
-
     // Compute key financial metrics from ledger and orders
     $stmtTotals = $pdo->prepare("
         SELECT 
@@ -17,10 +14,10 @@ route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], fun
             COALESCE(SUM(debit), 0) AS total_debit,
             COALESCE(SUM(credit), 0) AS total_credit
         FROM accounting_ledger
-        $where
+        WHERE shop_id = ?
         GROUP BY account
     ");
-    $stmtTotals->execute($params);
+    $stmtTotals->execute([$shopId]);
     $acctRows = $stmtTotals->fetchAll(PDO::FETCH_ASSOC);
 
     $accounts = [];
@@ -45,11 +42,11 @@ route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], fun
         FROM accounting_ledger al
         LEFT JOIN orders o ON o.id = al.order_id
         LEFT JOIN users u ON u.id = al.created_by_id
-        $where
+        WHERE al.shop_id = ?
         ORDER BY al.id DESC
         LIMIT 12
     ");
-    $stmtRecent->execute($params);
+    $stmtRecent->execute([$shopId]);
     $recentEntries = $stmtRecent->fetchAll(PDO::FETCH_ASSOC);
 
     layout_start('حسابداری و تراز مالی', $user);
@@ -113,8 +110,8 @@ route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], fun
                     <tr>
                         <th>سرفصل حساب</th>
                         <th>ماهیت</th>
-                        <th>مجموع بدهکار (ریال)</th>
-                        <th>مجموع بستانکار (ریال)</th>
+                        <th>مجموع بدهکار (تومان)</th>
+                        <th>مجموع بستانکار (تومان)</th>
                         <th>مانده حساب</th>
                     </tr>
                 </thead>

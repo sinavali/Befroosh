@@ -16,8 +16,8 @@ route('GET', '/shop/([^/]+)/products', [], function ($slug) use ($pdo) {
     // Filters
     $q = trim($_GET['q'] ?? '');
     $catId = !empty($_GET['category']) ? (int)$_GET['category'] : 0;
-    $minPrice = !empty($_GET['min_price']) ? (float)fa_to_en_digits($_GET['min_price']) : 0;
-    $maxPrice = !empty($_GET['max_price']) ? (float)fa_to_en_digits($_GET['max_price']) : 0;
+    $minPrice = !empty($_GET['min_price']) ? clean_price_input($_GET['min_price']) : 0;
+    $maxPrice = !empty($_GET['max_price']) ? clean_price_input($_GET['max_price']) : 0;
     $inStockOnly = !empty($_GET['in_stock']) ? 1 : 0;
     $sort = $_GET['sort'] ?? 'newest';
     $page = max(1, (int)($_GET['page'] ?? 1));
@@ -99,13 +99,13 @@ route('GET', '/shop/([^/]+)/products', [], function ($slug) use ($pdo) {
             </div>
 
             <div>
-                <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">حداقل قیمت (ریال):</label>
-                <input type="number" name="min_price" class="input" placeholder="از..." value="<?= $minPrice > 0 ? (int)$minPrice : '' ?>" style="font-size:0.85rem;">
+                <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">حداقل قیمت (تومان):</label>
+                <input type="text" inputmode="numeric" name="min_price" class="input price-input" placeholder="از..." value="<?= $minPrice > 0 ? number_format((float)$minPrice) : '' ?>" style="font-size:0.85rem;">
             </div>
 
             <div>
-                <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">حداکثر قیمت (ریال):</label>
-                <input type="number" name="max_price" class="input" placeholder="تا..." value="<?= $maxPrice > 0 ? (int)$maxPrice : '' ?>" style="font-size:0.85rem;">
+                <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">حداکثر قیمت (تومان):</label>
+                <input type="text" inputmode="numeric" name="max_price" class="input price-input" placeholder="تا..." value="<?= $maxPrice > 0 ? number_format((float)$maxPrice) : '' ?>" style="font-size:0.85rem;">
             </div>
 
             <div>
