@@ -6,8 +6,11 @@ declare(strict_types=1);
  * Core string formatting, digit conversion, CSRF, flash, routing, and upload utilities
  */
 
-function e(?string $s): string
+function e(mixed $s): string
 {
+    if (is_array($s)) {
+        return htmlspecialchars((string)($s['message'] ?? json_encode($s, JSON_UNESCAPED_UNICODE)), ENT_QUOTES, 'UTF-8');
+    }
     return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 }
 
@@ -76,15 +79,23 @@ function set_flash(string $type, string $message): void
     flash($type, $message);
 }
 
-function get_flash(): ?array
+function get_flash(?string $type = null): string|array|null
 {
-    if (isset($_SESSION['flash'])) {
-        $f = $_SESSION['flash'];
-        unset($_SESSION['flash']);
-        return $f;
+    if (!isset($_SESSION['flash'])) {
+        return null;
     }
 
-    return null;
+    $f = $_SESSION['flash'];
+    if ($type !== null) {
+        if (($f['type'] ?? '') !== $type) {
+            return null;
+        }
+        unset($_SESSION['flash']);
+        return $f['message'] ?? '';
+    }
+
+    unset($_SESSION['flash']);
+    return $f;
 }
 
 function route(string $method, string $pattern, array $roles, callable $handler): void

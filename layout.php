@@ -120,11 +120,20 @@ function layout_start(string $title, ?array $user = null): void
             <div class="main-content">
                 <?php render_dashboard_topbar($title, $user, $shopId, $currentShop); ?>
                 <div class="content-area">
-                    <?php if ($flash = get_flash('success')): ?>
-                        <div class="card" style="background:#ecfdf5; border-color:#a7f3d0; color:#065f46; padding:12px 16px; font-weight:bold;"><?= e($flash) ?></div>
-                    <?php endif; ?>
-                    <?php if ($flash = get_flash('error')): ?>
-                        <div class="card" style="background:#fef2f2; border-color:#fecaca; color:#991b1b; padding:12px 16px; font-weight:bold;"><?= e($flash) ?></div>
+                    <?php if ($flash = get_flash()): ?>
+                        <?php
+                        $flashType = is_array($flash) ? ($flash['type'] ?? 'info') : 'info';
+                        $flashMsg = is_array($flash) ? ($flash['message'] ?? '') : (string)$flash;
+                        $flashStyle = match($flashType) {
+                            'success' => 'background:#ecfdf5; border-color:#a7f3d0; color:#065f46;',
+                            'error' => 'background:#fef2f2; border-color:#fecaca; color:#991b1b;',
+                            'warning' => 'background:#fffbeb; border-color:#fde68a; color:#92400e;',
+                            default => 'background:#eff6ff; border-color:#bfdbfe; color:#1e40af;'
+                        };
+                        ?>
+                        <div class="card mb-3" style="<?= $flashStyle ?> padding:12px 16px; font-weight:bold; border-radius:8px;">
+                            <?= e($flashMsg) ?>
+                        </div>
                     <?php endif; ?>
     <?php
 }
