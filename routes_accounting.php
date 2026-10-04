@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 // Accounting Dashboard & P&L Summary
-route('GET', '/accounting(?:\.php)?', ['admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['admin', 'superadmin']);
-    $shopId = active_shop_id();
-    $shop = current_shop();
+route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['shop_owner', 'admin', 'superadmin']);
+    $shop = get_current_management_shop($user);
+    $shopId = (int)$shop['id'];
 
     $where = "WHERE shop_id = ?";
     $params = [$shopId];

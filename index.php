@@ -17,6 +17,8 @@ require_once __DIR__ . '/routes_public.php';
 require_once __DIR__ . '/routes_public_products.php';
 require_once __DIR__ . '/routes_sync.php';
 require_once __DIR__ . '/routes_reports.php';
+require_once __DIR__ . '/routes_shop_reporting.php';
+require_once __DIR__ . '/routes_shop_messages.php';
 
 // Global request rate limiting to protect server against overload (120 req / 60s)
 throttle_request('global', 120, 60);

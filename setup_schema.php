@@ -12,6 +12,7 @@ function drop_all_platform_tables(PDO $pdo): void
 
     $tables = [
         'system_reports',
+        'shop_contact_messages',
         'rate_limits',
         'cart_items',
         'product_bookmarks',

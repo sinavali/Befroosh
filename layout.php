@@ -103,6 +103,8 @@ function layout_start(string $title, ?array $user = null): void
             .topbar { background: #fff; border-bottom: 1px solid var(--border); min-height: 56px; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
             .mobile-toggle { display: none; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #334155; }
             .content-area { padding: 20px; flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; }
+            .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 45; }
+            .sidebar-backdrop.open { display: block; }
             @media (max-width: 1024px) {
                 .sidebar { transform: translateX(100%); transition: transform 0.25s ease-in-out; }
                 .sidebar.open { transform: translateX(0); }
@@ -113,6 +115,7 @@ function layout_start(string $title, ?array $user = null): void
     </head>
     <body>
         <div class="app-container">
+            <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
             <?php render_dashboard_sidebar($user, $shopId, $currentShop); ?>
             <div class="main-content">
                 <?php render_dashboard_topbar($title, $user, $shopId, $currentShop); ?>
@@ -138,12 +141,45 @@ function layout_end(): void
             </div>
         </div>
         <script>
+            function closeSidebar() {
+                var s = document.querySelector('.sidebar');
+                var b = document.getElementById('sidebarBackdrop');
+                if (s) s.classList.remove('open');
+                if (b) b.classList.remove('open');
+            }
+            function openSidebar() {
+                var s = document.querySelector('.sidebar');
+                var b = document.getElementById('sidebarBackdrop');
+                if (s) s.classList.add('open');
+                if (b) b.classList.add('open');
+            }
+            window.closeSidebar = closeSidebar;
+            window.openSidebar = openSidebar;
             var toggle = document.getElementById('sidebarToggle');
             if (toggle) {
-                toggle.addEventListener('click', function() {
-                    document.querySelector('.sidebar').classList.toggle('open');
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var s = document.querySelector('.sidebar');
+                    if (s && s.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
             }
+            var backdrop = document.getElementById('sidebarBackdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', closeSidebar);
+            }
+            document.addEventListener('click', function(e) {
+                var s = document.querySelector('.sidebar');
+                var t = document.getElementById('sidebarToggle');
+                if (s && s.classList.contains('open')) {
+                    if (!s.contains(e.target) && (!t || !t.contains(e.target))) {
+                        closeSidebar();
+                    }
+                }
+            });
         </script>
     </body>
     </html>

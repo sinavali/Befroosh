@@ -99,6 +99,16 @@ route('GET', '/shop/([^/]+)/products', [], function ($slug) use ($pdo) {
             </div>
 
             <div>
+                <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">حداقل قیمت (ریال):</label>
+                <input type="number" name="min_price" class="input" placeholder="از..." value="<?= $minPrice > 0 ? (int)$minPrice : '' ?>" style="font-size:0.85rem;">
+            </div>
+
+            <div>
+                <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">حداکثر قیمت (ریال):</label>
+                <input type="number" name="max_price" class="input" placeholder="تا..." value="<?= $maxPrice > 0 ? (int)$maxPrice : '' ?>" style="font-size:0.85rem;">
+            </div>
+
+            <div>
                 <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:4px; color:#475569;">فیلتر موجودی:</label>
                 <label style="display:flex; align-items:center; gap:8px; height:38px; cursor:pointer; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 12px; font-size:0.85rem; font-weight:bold;">
                     <input type="checkbox" name="in_stock" value="1" <?= $inStockOnly ? 'checked' : '' ?>>
@@ -108,7 +118,7 @@ route('GET', '/shop/([^/]+)/products', [], function ($slug) use ($pdo) {
 
             <div style="display:flex; gap:8px;">
                 <button type="submit" class="btn btn-primary" style="flex:1;">اعمال فیلتر</button>
-                <?php if ($q || $catId || $inStockOnly || $sort !== 'newest'): ?>
+                <?php if ($q || $catId || $minPrice > 0 || $maxPrice > 0 || $inStockOnly || $sort !== 'newest'): ?>
                     <a href="/shop/<?= e($shop['slug']) ?>/products" class="btn btn-outline" title="پاکسازی فیلترها">✕</a>
                 <?php endif; ?>
             </div>
@@ -231,9 +241,9 @@ route('GET', '/s/([^/]+)/p/([^/]+)', [], function ($shopSlug, $prodSlug) use ($p
                     <?php if (!empty($prod['barcode'])): ?><div>بارکد کالا: <code><?= e($prod['barcode']) ?></code></div><?php endif; ?>
                 </div>
 
-                <p style="color:#334155; line-height:1.9; font-size:0.92rem; margin-bottom:24px;">
-                    <?= nl2br(e($prod['description'] ?: 'توضیحات تکمیلی برای این محصول ثبت نشده است.')) ?>
-                </p>
+                <div style="color:#334155; line-height:1.9; font-size:0.92rem; margin-bottom:24px;">
+                    <?= !empty($prod['description']) ? safe_html($prod['description']) : 'توضیحات تکمیلی برای این محصول ثبت نشده است.' ?>
+                </div>
 
                 <?php if ($isAvailable): ?>
                     <button type="button" class="btn btn-primary" style="padding:12px 24px; font-size:1rem; width:100%;" onclick="window.BefrooshStore.addToCart({ id: <?= $prodId ?>, shop_id: <?= $shopId ?>, title: '<?= addslashes(e($prod['title'])) ?>', price: <?= (float)$prod['price'] ?>, qty: 1 })">

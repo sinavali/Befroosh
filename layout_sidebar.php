@@ -16,10 +16,10 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
     $navItems = [];
 
     if ($role === 'customer') {
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد', 'icon' => 'dashboard'];
+        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد من', 'icon' => 'dashboard'];
         $navItems[] = ['url' => '/shops', 'label' => 'ویترین فروشگاه‌ها', 'icon' => 'store'];
         $navItems[] = ['url' => '/cart', 'label' => 'سبد خرید', 'icon' => 'cart'];
-        $navItems[] = ['url' => '/bookmarks', 'label' => 'کالاهای نشان‌شده', 'icon' => 'heart'];
+        $navItems[] = ['url' => '/favorites', 'label' => 'کالاهای نشان‌شده', 'icon' => 'heart'];
         $navItems[] = ['url' => '/orders', 'label' => 'سفارشات من', 'icon' => 'orders'];
         $navItems[] = ['url' => '/orders/track', 'label' => 'پیگیری مرسوله', 'icon' => 'search'];
         $navItems[] = ['url' => '/tickets', 'label' => 'پشتیبانی و تیکت‌ها', 'icon' => 'tickets'];
@@ -32,7 +32,8 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         $navItems[] = ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'];
         $navItems[] = ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products'];
         $navItems[] = ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'];
-        $navItems[] = ['url' => '/orders/report', 'label' => 'گزارش‌های فروش', 'icon' => 'report'];
+        $navItems[] = ['url' => '/reports', 'label' => 'گزارش‌های جامع و مالیاتی', 'icon' => 'report'];
+        $navItems[] = ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send'];
         $navItems[] = ['url' => '/shop/settings', 'label' => 'تنظیمات و سیاست‌ها', 'icon' => 'settings'];
         $navItems[] = ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'];
         $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'];
@@ -43,6 +44,8 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         $navItems[] = ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'];
         $navItems[] = ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'];
         $navItems[] = ['url' => '/inventory', 'label' => 'انبارداری و شمارش', 'icon' => 'products'];
+        $navItems[] = ['url' => '/reports', 'label' => 'گزارش‌های فروش و کالا', 'icon' => 'report'];
+        $navItems[] = ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send'];
         $navItems[] = ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'];
         $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'];
         $navItems[] = ['url' => '/shop/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
@@ -53,7 +56,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         $navItems[] = ['url' => '/products', 'label' => 'کاتالوگ محصولات', 'icon' => 'products'];
         $navItems[] = ['url' => '/inventory', 'label' => 'انبارداری کل', 'icon' => 'products'];
         $navItems[] = ['url' => '/accounting', 'label' => 'دفاتر حسابداری کل', 'icon' => 'report'];
-        $navItems[] = ['url' => '/orders/report', 'label' => 'گزارش‌های تجمیعی', 'icon' => 'report'];
+        $navItems[] = ['url' => '/reports', 'label' => 'مرکز گزارشات و مالیات', 'icon' => 'report'];
         $navItems[] = ['url' => '/admins', 'label' => 'مدیران و شعب', 'icon' => 'shield'];
         $navItems[] = ['url' => '/customers', 'label' => 'مشتریان سامانه', 'icon' => 'customers'];
         $navItems[] = ['url' => '/reports/system', 'label' => 'گزارشات و بازرسی', 'icon' => 'report'];
@@ -61,13 +64,27 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
     }
 
     $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-    $isActive = function (string $url) use ($currentPath): bool {
-        return $currentPath === $url || ($url !== '/' && str_starts_with($currentPath, rtrim($url, '/') . '/'));
-    };
+    $bestMatchUrl = '';
+    $maxLen = 0;
+    foreach ($navItems as $item) {
+        $u = $item['url'];
+        if ($currentPath === $u) {
+            $bestMatchUrl = $u;
+            break;
+        }
+        if ($currentPath === '/orders/track' && $u === '/orders') {
+            continue;
+        }
+        if ($u !== '/' && str_starts_with($currentPath, rtrim($u, '/') . '/') && strlen($u) > $maxLen) {
+            $maxLen = strlen($u);
+            $bestMatchUrl = $u;
+        }
+    }
 
     // Calculate unread notification counts
     $unseenOrders = 0;
     $unseenTickets = 0;
+    $unseenMessages = 0;
     $cartCount = 0;
     try {
         if ($role === 'customer') {
@@ -77,6 +94,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         } elseif (in_array($role, ['shop_owner', 'shop_manager'], true)) {
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE shop_id = {$shopId} AND seen_by_admin = 0")->fetchColumn();
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE shop_id = {$shopId} AND seen_by_admin = 0")->fetchColumn();
+            $unseenMessages = (int)$pdo->query("SELECT COUNT(*) FROM shop_contact_messages WHERE shop_id = {$shopId} AND is_read = 0")->fetchColumn();
         } else {
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE seen_by_admin = 0")->fetchColumn();
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE seen_by_admin = 0")->fetchColumn();
@@ -86,10 +104,11 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
     <aside class="sidebar">
         <div class="sidebar-header" style="padding:18px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
             <div style="width:36px; height:36px; background:#2563eb; color:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900;">بف</div>
-            <div>
-                <div style="font-weight:800; font-size:1rem; color:#fff;">سامانه بفروش</div>
-                <div style="font-size:0.75rem; color:#94a3b8;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:800; font-size:1rem; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">سامانه بفروش</div>
+                <div style="font-size:0.75rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
             </div>
+            <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:4px;" title="بستن منو">✕</button>
         </div>
 
         <nav class="sidebar-nav" style="padding:14px 10px; flex:1; overflow-y:auto;">
@@ -98,8 +117,10 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                 if ($item['url'] === '/orders') $badgeVal = $unseenOrders;
                 if ($item['url'] === '/tickets') $badgeVal = $unseenTickets;
                 if ($item['url'] === '/cart') $badgeVal = $cartCount;
+                if ($item['url'] === '/shop/messages') $badgeVal = $unseenMessages;
+                $active = ($item['url'] === $bestMatchUrl);
             ?>
-                <a href="<?= e($item['url']) ?>" class="nav-link <?= $isActive($item['url']) ? 'active' : '' ?>">
+                <a href="<?= e($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
                     <?= icon($item['icon'], 16) ?>
                     <span><?= e($item['label']) ?></span>
                     <?php if ($badgeVal > 0): ?>

@@ -42,13 +42,13 @@ route('GET', '/dashboard(?:\.php)?', [], function () use ($pdo) {
         $stmt->execute([$user['id']]);
         $recentOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        layout_start('داشبورد مشتری', $user);
+        layout_public_start('داشبورد من', null, $user);
         ?>
-        <div class="page-header">
+        <div class="page-header" style="margin-bottom:20px;">
             <div class="page-title-wrap">
                 <div class="page-icon"><?= icon('dashboard', 18) ?></div>
                 <div>
-                    <h1>داشبورد</h1>
+                    <h1 style="font-size:1.35rem; font-weight:800; color:#0f172a;">داشبورد من</h1>
                     <div class="page-sub">خلاصه سفارشات و درخواست‌های شما</div>
                 </div>
             </div>
@@ -174,31 +174,56 @@ route('GET', '/dashboard(?:\.php)?', [], function () use ($pdo) {
             </div>
         </div>
         <?php
-        layout_end();
+        layout_public_end(null);
         return;
     }
 
-    $ordersToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE date(created_at) = date('now')")->fetchColumn();
-    $openTickets = (int) $pdo->query("SELECT COUNT(*) FROM tickets WHERE status = 'open'")->fetchColumn();
-    $activeCustomers = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer' AND active = 1 AND deleted_at IS NULL")->fetchColumn();
-    $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(final_total, estimated_total)), 0) FROM orders WHERE status IN ('finalised','completed')")->fetchColumn();
+    $isMerchant = in_array($user['role'], ['shop_owner', 'shop_manager'], true);
+    if ($isMerchant) {
+        $shop = get_current_management_shop($user);
+        $shopId = (int)$shop['id'];
+        $dashTitle = 'داشبورد فروشگاه ' . ($shop['name'] ?? '');
+        $dashSub = 'خلاصه وضعیت سفارشات، درآمد و مشتریان این فروشگاه';
 
-    $recentOrders = $pdo->query("
-        SELECT o.*, u.nickname AS customer_nickname
-        FROM orders o
-        JOIN users u ON u.id = o.customer_id
-        ORDER BY o.id DESC
-        LIMIT 6
-    ")->fetchAll(PDO::FETCH_ASSOC);
+        $ordersToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE shop_id = {$shopId} AND date(created_at) = date('now')")->fetchColumn();
+        $openTickets = (int) $pdo->query("SELECT COUNT(*) FROM tickets WHERE shop_id = {$shopId} AND status = 'open'")->fetchColumn();
+        $activeCustomers = (int) $pdo->query("SELECT COUNT(DISTINCT customer_id) FROM orders WHERE shop_id = {$shopId}")->fetchColumn();
+        $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(final_total, estimated_total)), 0) FROM orders WHERE shop_id = {$shopId} AND status IN ('finalised','completed')")->fetchColumn();
 
-    layout_start('داشبورد', $user);
+        $recentOrders = $pdo->query("
+            SELECT o.*, u.nickname AS customer_nickname
+            FROM orders o
+            JOIN users u ON u.id = o.customer_id
+            WHERE o.shop_id = {$shopId}
+            ORDER BY o.id DESC
+            LIMIT 6
+        ")->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $dashTitle = 'داشبورد سامانه';
+        $dashSub = 'خلاصه وضعیت سراسری سفارشات، کاربران و درآمد پلتفرم';
+
+        $ordersToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE date(created_at) = date('now')")->fetchColumn();
+        $openTickets = (int) $pdo->query("SELECT COUNT(*) FROM tickets WHERE status = 'open'")->fetchColumn();
+        $activeCustomers = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer' AND active = 1 AND deleted_at IS NULL")->fetchColumn();
+        $revenue = (float) $pdo->query("SELECT COALESCE(SUM(COALESCE(final_total, estimated_total)), 0) FROM orders WHERE status IN ('finalised','completed')")->fetchColumn();
+
+        $recentOrders = $pdo->query("
+            SELECT o.*, u.nickname AS customer_nickname
+            FROM orders o
+            JOIN users u ON u.id = o.customer_id
+            ORDER BY o.id DESC
+            LIMIT 6
+        ")->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    layout_start($dashTitle, $user);
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
             <div class="page-icon"><?= icon('dashboard', 18) ?></div>
             <div>
-                <h1>داشبورد</h1>
-                <div class="page-sub">خلاصه وضعیت سفارشات، مشتریان و تیکت‌ها</div>
+                <h1><?= e($dashTitle) ?></h1>
+                <div class="page-sub"><?= e($dashSub) ?></div>
             </div>
         </div>
     </div>

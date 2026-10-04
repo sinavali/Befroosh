@@ -44,6 +44,15 @@ route('GET', '/products(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 'sup
         $params[] = (int)$active;
     }
 
+    $stockFilter = $_GET['stock'] ?? '';
+    if ($stockFilter === 'in_stock') {
+        $where .= " AND p.stock_quantity > 0";
+    } elseif ($stockFilter === 'low_stock') {
+        $where .= " AND p.stock_quantity > 0 AND p.stock_quantity <= COALESCE(p.min_stock_alert, 3)";
+    } elseif ($stockFilter === 'out_of_stock') {
+        $where .= " AND p.stock_quantity <= 0";
+    }
+
     if ($catId > 0) {
         $where .= " AND p.category_id = ?";
         $params[] = $catId;
@@ -106,11 +115,18 @@ route('GET', '/products(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 'sup
                     <option value="0" <?= $active === '0' ? 'selected' : '' ?>>غیرفعال</option>
                 </select>
 
+                <select class="select" name="stock">
+                    <option value="">همه سطوح موجودی</option>
+                    <option value="in_stock" <?= $stockFilter === 'in_stock' ? 'selected' : '' ?>>موجود در انبار</option>
+                    <option value="low_stock" <?= $stockFilter === 'low_stock' ? 'selected' : '' ?>>هشدار کسری (زیر حد)</option>
+                    <option value="out_of_stock" <?= $stockFilter === 'out_of_stock' ? 'selected' : '' ?>>ناموجود (صفر)</option>
+                </select>
+
                 <button class="btn btn-outline"><?= icon('search', 14) ?> فیلتر</button>
                 <button type="button" class="btn btn-outline" onclick="BefrooshScanner.openCamera(function(code){ document.querySelector('[data-barcode-input]').value = code; document.forms[0].submit(); })">
                     اسکن بارکد با دوربین
                 </button>
-                <?php if ($search !== '' || $active !== '' || $catId > 0): ?>
+                <?php if ($search !== '' || $active !== '' || $catId > 0 || $stockFilter !== ''): ?>
                     <a class="btn btn-ghost" href="/products">حذف فیلترها</a>
                 <?php endif; ?>
             </form>

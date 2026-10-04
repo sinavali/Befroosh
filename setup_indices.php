@@ -30,5 +30,23 @@ function install_platform_indices(PDO $pdo): void
         CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON product_bookmarks(user_id);
         CREATE INDEX IF NOT EXISTS idx_shop_cards_shop ON shop_bank_cards(shop_id, active);
         CREATE INDEX IF NOT EXISTS idx_reports_status ON system_reports(status, severity);
+
+        CREATE TABLE IF NOT EXISTS shop_contact_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shop_id INTEGER NOT NULL REFERENCES shops(id),
+            name TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            message TEXT NOT NULL,
+            is_read INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_contact_messages_shop ON shop_contact_messages(shop_id, is_read);
     ");
+
+    try {
+        $cols = array_column($pdo->query("PRAGMA table_info(users)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+        if (!in_array('email', $cols, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN email TEXT NULL");
+        }
+    } catch (Throwable $e) {}
 }

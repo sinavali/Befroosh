@@ -229,6 +229,8 @@ route('GET|POST', '/shop/([^/]+)/contact', [], function ($slug) use ($pdo) {
         $phone = trim($_POST['phone'] ?? '');
         $msg = trim($_POST['message'] ?? '');
         if ($name && $msg) {
+            $ins = $pdo->prepare("INSERT INTO shop_contact_messages (shop_id, name, phone, message, is_read, created_at) VALUES (?, ?, ?, ?, 0, datetime('now'))");
+            $ins->execute([(int)$shop['id'], $name, $phone, $msg]);
             $sent = true;
         }
     }

@@ -155,8 +155,8 @@ route('GET|POST', '/products/(\d+)/edit', ['shop_owner', 'shop_manager', 'admin'
                 </div>
 
                 <div class="form-group mt-2">
-                    <label>توضیحات و مشخصات کالا</label>
-                    <textarea class="textarea" name="description" rows="4"><?= e($prod['description'] ?? '') ?></textarea>
+                    <label>توضیحات و مشخصات کالا (ویرایشگر متن پیشرفته)</label>
+                    <textarea class="textarea" name="description" rows="4" data-rich-editor="true"><?= e($prod['description'] ?? '') ?></textarea>
                 </div>
             </div>
         </div>

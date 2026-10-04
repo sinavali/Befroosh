@@ -7,9 +7,10 @@ declare(strict_types=1);
  */
 
 // Full General Ledger / دفتر روزنامه کل
-route('GET', '/accounting/ledger', ['admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['admin', 'superadmin']);
-    $shopId = active_shop_id();
+route('GET', '/accounting/ledger', ['shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['shop_owner', 'admin', 'superadmin']);
+    $shop = get_current_management_shop($user);
+    $shopId = (int)$shop['id'];
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = 30;
     $accountFilter = trim($_GET['account'] ?? '');
@@ -123,10 +124,10 @@ route('GET', '/accounting/ledger', ['admin', 'superadmin'], function () use ($pd
 });
 
 // Quarterly Tax / VAT Report
-route('GET', '/accounting/tax-report', ['admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['admin', 'superadmin']);
-    $shopId = active_shop_id();
-    $shop = current_shop();
+route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['shop_owner', 'admin', 'superadmin']);
+    $shop = get_current_management_shop($user);
+    $shopId = (int)$shop['id'];
 
     $stmt = $pdo->prepare("
         SELECT 
@@ -204,9 +205,10 @@ route('GET', '/accounting/tax-report', ['admin', 'superadmin'], function () use 
 });
 
 // Manual Accounting Entry
-route('GET|POST', '/accounting/manual', ['admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['admin', 'superadmin']);
-    $shopId = active_shop_id();
+route('GET|POST', '/accounting/manual', ['shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['shop_owner', 'admin', 'superadmin']);
+    $shop = get_current_management_shop($user);
+    $shopId = (int)$shop['id'];
     $error = '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

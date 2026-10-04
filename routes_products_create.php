@@ -149,8 +149,8 @@ route('GET|POST', '/products/create', ['shop_owner', 'shop_manager', 'admin', 's
                 </div>
 
                 <div class="form-group mt-2">
-                    <label>توضیحات و مشخصات کالا</label>
-                    <textarea class="textarea" name="description" rows="4"><?= e($_POST['description'] ?? '') ?></textarea>
+                    <label>توضیحات و مشخصات کالا (ویرایشگر متن پیشرفته)</label>
+                    <textarea class="textarea" name="description" rows="4" data-rich-editor="true"><?= e($_POST['description'] ?? '') ?></textarea>
                 </div>
             </div>
         </div>

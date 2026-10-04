@@ -4,6 +4,7 @@ declare(strict_types=1);
 /**
  * layout_public.php
  * Public Storefront Website Layout (ZERO SIDEBAR) for Shops & Products
+ * Includes Slide-over Mini-Cart Drawer and Customer Navigation
  */
 
 require_once __DIR__ . '/layout_head.php';
@@ -35,9 +36,9 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
             .store-search-input:focus { background: #fff; border-color: #2563eb; }
             .store-search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
             .store-actions { display: flex; align-items: center; gap: 10px; }
-            .store-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; font-size: 0.86rem; font-weight: bold; color: #334155; position: relative; }
+            .store-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; font-size: 0.86rem; font-weight: bold; color: #334155; position: relative; cursor: pointer; }
             .store-action-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
-            .store-badge { position: absolute; -top: 6px; -right: 6px; background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 900; border-radius: 99px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+            .store-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 900; border-radius: 99px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
             .store-menubar { background: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #e2e8f0; }
             .store-menu-list { max-width: 1280px; margin: 0 auto; padding: 0 20px; display: flex; gap: 8px; list-style: none; overflow-x: auto; }
             .store-menu-item a { display: block; padding: 10px 14px; font-size: 0.88rem; font-weight: bold; color: #475569; border-bottom: 2px solid transparent; white-space: nowrap; }
@@ -51,6 +52,15 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
             .store-footer-col ul li { margin-bottom: 8px; }
             .store-footer-col ul li a:hover { color: #fff; }
             .store-footer-bottom { max-width: 1280px; margin: 0 auto; border-top: 1px solid #1e293b; padding-top: 20px; text-align: center; font-size: 0.8rem; color: #64748b; }
+            /* Mini-cart drawer */
+            .mini-cart-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; opacity: 0; visibility: hidden; transition: all 0.25s ease-in-out; }
+            .mini-cart-backdrop.open { opacity: 1; visibility: visible; }
+            .mini-cart-drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 100%; max-width: 380px; background: #fff; z-index: 9999; box-shadow: -4px 0 25px rgba(0,0,0,0.15); transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
+            .mini-cart-drawer.open { transform: translateX(0); }
+            .mini-cart-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+            .mini-cart-items { flex: 1; overflow-y: auto; padding: 16px 20px; }
+            .mini-cart-item { display: flex; gap: 12px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; align-items: center; }
+            .mini-cart-footer { padding: 16px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
         </style>
     </head>
     <body>
@@ -74,21 +84,24 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
                 </form>
 
                 <div class="store-actions">
-                    <a href="/bookmarks" class="store-action-btn" title="علاقه‌مندی‌ها">
+                    <a href="/favorites" class="store-action-btn" title="علاقه‌مندی‌ها">
                         <?= icon('heart', 16) ?>
                         <span style="display:none;" id="store-fav-badge" class="store-badge">۰</span>
                     </a>
 
-                    <a href="/cart" class="store-action-btn" title="سبد خرید">
+                    <button type="button" class="store-action-btn" id="miniCartBtn" onclick="window.openMiniCart()" title="سبد خرید">
                         <?= icon('cart', 16) ?>
                         <span style="display:none;" id="store-cart-badge" class="store-badge">۰</span>
                         <span>سبد خرید</span>
-                    </a>
+                    </button>
 
                     <?php if ($user && !empty($user['id'])): ?>
-                        <a href="/dashboard" class="btn btn-primary btn-sm">
-                            <?= icon('user', 14) ?> <?= e($user['nickname']) ?>
-                        </a>
+                        <?php if ($user['role'] === 'customer'): ?>
+                            <a href="/my-orders" class="btn btn-outline btn-sm"><?= icon('orders', 14) ?> سفارش‌های من</a>
+                            <a href="/profile" class="btn btn-primary btn-sm"><?= icon('user', 14) ?> <?= e($user['nickname']) ?></a>
+                        <?php else: ?>
+                            <a href="/dashboard" class="btn btn-primary btn-sm"><?= icon('dashboard', 14) ?> پنل مدیریت</a>
+                        <?php endif; ?>
                     <?php else: ?>
                         <a href="/login" class="btn btn-primary btn-sm">ورود / ثبت‌نام</a>
                     <?php endif; ?>
@@ -117,6 +130,84 @@ function layout_public_end(?array $shop = null): void
     $shopSlug = $shop['slug'] ?? 'central';
     ?>
         </main>
+
+        <!-- MINI-CART DRAWER -->
+        <div id="miniCartBackdrop" class="mini-cart-backdrop" onclick="window.closeMiniCart()"></div>
+        <div id="miniCartDrawer" class="mini-cart-drawer">
+            <div class="mini-cart-header">
+                <h3 style="margin:0; font-size:1rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                    <?= icon('cart', 18) ?> سبد خرید شما
+                </h3>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="window.closeMiniCart()" style="font-size:1.1rem; padding:4px 8px;">✕</button>
+            </div>
+            <div id="miniCartItems" class="mini-cart-items">
+                <!-- Injected via JavaScript -->
+            </div>
+            <div class="mini-cart-footer">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-weight:bold;">
+                    <span>مبلغ کل کالاها:</span>
+                    <span id="miniCartTotal" style="color:#059669; font-size:1.05rem;">۰ ریال</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a href="/cart" class="btn btn-primary" style="width:100%; justify-content:center;">تکمیل سفارش و پرداخت</a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        window.openMiniCart = function() {
+            window.renderMiniCart();
+            document.getElementById('miniCartBackdrop').classList.add('open');
+            document.getElementById('miniCartDrawer').classList.add('open');
+        };
+        window.closeMiniCart = function() {
+            document.getElementById('miniCartBackdrop').classList.remove('open');
+            document.getElementById('miniCartDrawer').classList.remove('open');
+        };
+        window.renderMiniCart = function() {
+            var items = window.BefrooshStore ? window.BefrooshStore.getCart() : [];
+            var box = document.getElementById('miniCartItems');
+            var tot = document.getElementById('miniCartTotal');
+            if (!box) return;
+            if (items.length === 0) {
+                box.innerHTML = '<div style="padding:30px 10px; text-align:center; color:#94a3b8;"><p>سبد خرید شما خالی است.</p></div>';
+                if (tot) tot.textContent = '۰ ریال';
+                return;
+            }
+            var sum = 0;
+            var html = '';
+            items.forEach(function(it, idx) {
+                var line = (it.price || 0) * (it.qty || 1);
+                sum += line;
+                html += '<div class="mini-cart-item">' +
+                    '<div style="flex:1; min-width:0;">' +
+                        '<div style="font-size:0.86rem; font-weight:bold; color:#1e293b; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (it.title || 'کالا') + '</div>' +
+                        '<div style="font-size:0.8rem; color:#059669; font-weight:700;">' + Number(it.price || 0).toLocaleString('fa-IR') + ' ریال</div>' +
+                        '<div style="display:flex; align-items:center; gap:8px; margin-top:6px;">' +
+                            '<button type="button" class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="window.updateMiniCartQty(' + idx + ', -1)">-</button>' +
+                            '<span style="font-size:0.85rem; font-weight:bold;">' + Number(it.qty || 1).toLocaleString('fa-IR') + '</span>' +
+                            '<button type="button" class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="window.updateMiniCartQty(' + idx + ', 1)">+</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn btn-ghost btn-sm" style="color:#ef4444; padding:4px;" onclick="window.removeMiniCartItem(' + idx + ')">✕</button>' +
+                '</div>';
+            });
+            box.innerHTML = html;
+            if (tot) tot.textContent = Number(sum).toLocaleString('fa-IR') + ' ریال';
+        };
+        window.updateMiniCartQty = function(idx, delta) {
+            var items = window.BefrooshStore.getCart();
+            if (!items[idx]) return;
+            items[idx].qty = (items[idx].qty || 1) + delta;
+            if (items[idx].qty <= 0) { items.splice(idx, 1); }
+            window.BefrooshStore.setCart(items);
+        };
+        window.removeMiniCartItem = function(idx) {
+            var items = window.BefrooshStore.getCart();
+            items.splice(idx, 1);
+            window.BefrooshStore.setCart(items);
+        };
+        </script>
 
         <footer class="store-footer">
             <div class="store-footer-grid">

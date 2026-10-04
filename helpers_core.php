@@ -11,6 +11,14 @@ function e(?string $s): string
     return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 }
 
+function safe_html(?string $html): string
+{
+    if ($html === null || $html === '') {
+        return '';
+    }
+    return strip_tags($html, '<p><br><b><strong><i><em><u><s><ul><ol><li><h1><h2><h3><h4><h5><h6><blockquote><a><span><div>');
+}
+
 function csrf_token(): string
 {
     if (empty($_SESSION['csrf_token'])) {
