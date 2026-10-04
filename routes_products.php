@@ -7,18 +7,6 @@ declare(strict_types=1);
  * Supports barcode scanning, purchase caps (max_per_order, max_per_month), and categories
  */
 
-// Helper to determine active shop for current user
-function get_current_management_shop(array $user): array
-{
-    if (in_array($user['role'], ['shop_owner', 'shop_manager'], true)) {
-        $shopId = (int)($user['shop_id'] ?? 1);
-    } else {
-        $shopId = active_shop_id();
-    }
-    $shop = get_shop($shopId);
-    return [$shopId, $shop ?: ['id' => $shopId, 'name' => 'فروشگاه']];
-}
-
 // -------------------------------------------------------------
 // 1. PRODUCTS LIST
 // -------------------------------------------------------------
