@@ -102,6 +102,9 @@ function install_schema_extensions(PDO $pdo): void
     if (!in_array('subscription_plan_id', $shopCols, true)) {
         $pdo->exec("ALTER TABLE shops ADD COLUMN subscription_plan_id INTEGER DEFAULT 1");
     }
+    if (!in_array('subscription_expires_at', $shopCols, true)) {
+        $pdo->exec("ALTER TABLE shops ADD COLUMN subscription_expires_at TEXT NULL");
+    }
     if (!in_array('zarinpal_merchant_id', $shopCols, true)) {
         $pdo->exec("ALTER TABLE shops ADD COLUMN zarinpal_merchant_id TEXT NULL");
     }

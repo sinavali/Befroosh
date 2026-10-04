@@ -11,16 +11,19 @@ define('PRODUCT_UPLOAD_PATH', STORAGE_PATH . '/products');
 define('RECEIPT_UPLOAD_PATH', STORAGE_PATH . '/receipts');
 define('LOCK_FILE', STORAGE_PATH . '/installed.lock');
 
-if (file_exists(LOCK_FILE) && !isset($_GET['fresh']) && !isset($_GET['unlock_token'])) {
+$isCli = (PHP_SAPI === 'cli');
+$fresh = isset($_GET['fresh']) || ($isCli && in_array('--fresh', $argv ?? [], true));
+
+if (!$isCli && file_exists(LOCK_FILE) && !isset($_GET['fresh']) && !isset($_GET['unlock_token'])) {
     http_response_code(403);
     echo '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>سیستم راه‌اندازی شده است</title><style>body{font-family:Tahoma,sans-serif;background:#f3f4f6;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}.card{background:#fff;padding:2rem;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);max-width:480px;text-align:center;color:#1f2937;}h1{color:#059669;font-size:1.4rem;margin-bottom:1rem;}p{line-height:1.6;color:#4b5563;margin-bottom:1.5rem;}.btn{display:inline-block;background:#2563eb;color:#fff;padding:0.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:bold;margin:4px;}</style></head><body><div class="card"><h1>سیستم قبلاً راه‌اندازی شده است</h1><p>پایگاه داده و جداول سیستم در دسترس هستند. برای نصب مجدد می‌توانید از کلید زیر یا حذف فایل قفل استفاده نمایید.</p><a href="/" class="btn">ورود به سامانه</a><a href="setup.php?fresh=1" class="btn" style="background:#dc2626;" onclick="return confirm(\'آیا از بازنشانی کامل دیتابیس مطمئن هستید؟\')">بازنشانی و نصب مجدد</a></div></body></html>';
     exit;
 }
 
 require_once __DIR__ . '/setup_schema.php';
+require_once __DIR__ . '/setup_indices.php';
 require_once __DIR__ . '/setup_seed.php';
 
-$fresh = isset($_GET['fresh']);
 $seededNow = false;
 $error = '';
 $stats = [];
@@ -46,6 +49,7 @@ try {
     }
 
     install_platform_schema($pdo);
+    install_platform_indices($pdo);
 
     $hasUsers = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn() > 0;
     if ($fresh || !$hasUsers) {
@@ -57,14 +61,28 @@ try {
 
     $stats = [
         'shops' => (int) $pdo->query("SELECT COUNT(*) FROM shops")->fetchColumn(),
+        'branches' => (int) $pdo->query("SELECT COUNT(*) FROM branches")->fetchColumn(),
         'users' => (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn(),
         'products' => (int) $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn(),
         'orders' => (int) $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn(),
         'categories' => (int) $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn(),
+        'plans' => (int) $pdo->query("SELECT COUNT(*) FROM subscription_plans")->fetchColumn(),
         'tickets' => (int) $pdo->query("SELECT COUNT(*) FROM tickets")->fetchColumn(),
     ];
 } catch (Throwable $ex) {
     $error = 'خطا در عملیات راه‌اندازی دیتابیس: ' . $ex->getMessage();
+}
+
+if ($isCli) {
+    if (!empty($error)) {
+        fwrite(STDERR, "SETUP ERROR: " . $error . PHP_EOL);
+        exit(1);
+    }
+    echo "Platform installed and seeded successfully!" . PHP_EOL;
+    foreach ($stats as $k => $v) {
+        echo " - " . str_pad($k, 14) . ": " . $v . PHP_EOL;
+    }
+    exit(0);
 }
 
 function e_setup(?string $s): string {

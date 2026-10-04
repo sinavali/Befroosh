@@ -11,27 +11,12 @@ function drop_all_platform_tables(PDO $pdo): void
     $pdo->exec('PRAGMA foreign_keys = OFF');
 
     $tables = [
-        'system_reports',
-        'shop_contact_messages',
-        'rate_limits',
-        'cart_items',
-        'product_bookmarks',
-        'accounting_ledger',
-        'inventory_transactions',
-        'ticket_attachments',
-        'ticket_order_relations',
-        'ticket_messages',
-        'tickets',
-        'order_items',
-        'orders',
-        'addresses',
-        'products',
-        'categories',
-        'shop_bank_cards',
-        'users',
-        'shops',
-        'login_attempts',
-        'app_meta',
+        'system_reports', 'shop_contact_messages', 'rate_limits', 'cart_items',
+        'product_bookmarks', 'accounting_ledger', 'inventory_transactions',
+        'ticket_attachments', 'ticket_order_relations', 'ticket_messages', 'tickets',
+        'order_items', 'orders', 'addresses', 'products', 'categories',
+        'shop_bank_cards', 'branch_user_assignments', 'branches', 'shipping_groups',
+        'subscription_plans', 'users', 'shops', 'login_attempts', 'app_meta'
     ];
 
     foreach ($tables as $table) {
@@ -83,6 +68,8 @@ function install_platform_schema(PDO $pdo): void
             active INTEGER DEFAULT 1,
             description TEXT NULL,
             logo_path TEXT NULL,
+            subscription_plan_id INTEGER DEFAULT 1,
+            subscription_expires_at TEXT NULL,
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now'))
         );
@@ -118,7 +105,7 @@ function install_platform_schema(PDO $pdo): void
             nickname TEXT NOT NULL,
             first_name TEXT NULL,
             last_name TEXT NULL,
-            role TEXT NOT NULL CHECK(role IN ('superadmin','admin','shop_owner','shop_manager','customer')),
+            role TEXT NOT NULL CHECK(role IN ('superadmin','admin','shop_owner','shop_manager','business_owner','branch_manager','manager','customer')),
             shop_id INTEGER NULL REFERENCES shops(id),
             phone TEXT UNIQUE NULL,
             national_code TEXT NULL,
@@ -174,7 +161,7 @@ function install_platform_schema(PDO $pdo): void
             uuid TEXT UNIQUE NOT NULL,
             shop_id INTEGER NULL REFERENCES shops(id),
             customer_id INTEGER NOT NULL REFERENCES users(id),
-            created_by_type TEXT NOT NULL CHECK(created_by_type IN ('customer','shop_owner','shop_manager','admin','superadmin')),
+            created_by_type TEXT NOT NULL CHECK(created_by_type IN ('customer','shop_owner','shop_manager','business_owner','branch_manager','manager','admin','superadmin')),
             created_by_id INTEGER NULL REFERENCES users(id),
             status TEXT NOT NULL CHECK(status IN ('submitted','paid','shipped','completed','canceled','placed','finalised')),
             subtotal REAL DEFAULT 0,
@@ -300,7 +287,7 @@ function install_platform_schema(PDO $pdo): void
             subject TEXT NOT NULL,
             body TEXT NOT NULL,
             status TEXT NOT NULL CHECK(status IN ('open','closed')) DEFAULT 'open',
-            created_by_type TEXT NOT NULL CHECK(created_by_type IN ('customer','admin','superadmin','shop_owner','shop_manager')),
+            created_by_type TEXT NOT NULL CHECK(created_by_type IN ('customer','admin','superadmin','shop_owner','shop_manager','business_owner','branch_manager','manager')),
             created_by_id INTEGER NOT NULL REFERENCES users(id),
             seen_by_customer INTEGER DEFAULT 1,
             seen_by_admin INTEGER DEFAULT 0,
@@ -311,7 +298,7 @@ function install_platform_schema(PDO $pdo): void
         CREATE TABLE IF NOT EXISTS ticket_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ticket_id INTEGER NOT NULL REFERENCES tickets(id),
-            sender_type TEXT NOT NULL CHECK(sender_type IN ('customer','admin','superadmin','shop_owner','shop_manager')),
+            sender_type TEXT NOT NULL CHECK(sender_type IN ('customer','admin','superadmin','shop_owner','shop_manager','business_owner','branch_manager','manager')),
             sender_id INTEGER NOT NULL REFERENCES users(id),
             message TEXT NOT NULL,
             created_at TEXT DEFAULT (datetime('now'))
