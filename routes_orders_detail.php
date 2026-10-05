@@ -29,10 +29,11 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
     }
 
     // Tenant / Ownership checks
+    $isPlatformAdmin = in_array($user['role'], ['superadmin', 'admin'], true);
     $isCustomerOwner = ($user['role'] === 'customer' && (int)$order['customer_id'] === (int)$user['id']);
     $isShopStaff = can_manage_shop($user, (int)$order['shop_id']);
 
-    if (!$isCustomerOwner && !$isShopStaff) {
+    if (!$isCustomerOwner && !$isShopStaff && !$isPlatformAdmin) {
         error_page(403, 'دسترسی غیرمجاز', 'شما به این سفارش دسترسی ندارید.');
     }
 
@@ -74,6 +75,9 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
             <?= payment_badge($order['payment_status']) ?>
             <a class="btn btn-outline btn-sm" href="/orders/<?= $id ?>/print" target="_blank"><?= icon('print', 13) ?> چاپ فاکتور رسمی</a>
             <a class="btn btn-outline btn-sm" href="/orders/<?= $id ?>/shipping-label" target="_blank">برچسب پستی</a>
+            <?php if ($isShopStaff || $isPlatformAdmin): ?>
+                <a class="btn btn-outline btn-sm" href="/orders/<?= $id ?>/edit"><?= icon('edit', 13) ?> ویرایش</a>
+            <?php endif; ?>
         </div>
     </div>
 

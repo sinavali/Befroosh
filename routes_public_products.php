@@ -241,10 +241,6 @@ route('GET', '/s/([^/]+)/p/([^/]+)', [], function ($shopSlug, $prodSlug) use ($p
                     <?php if (!empty($prod['barcode'])): ?><div>بارکد کالا: <code><?= e($prod['barcode']) ?></code></div><?php endif; ?>
                 </div>
 
-                <div style="color:#334155; line-height:1.9; font-size:0.92rem; margin-bottom:24px;">
-                    <?= !empty($prod['description']) ? safe_html($prod['description']) : 'توضیحات تکمیلی برای این محصول ثبت نشده است.' ?>
-                </div>
-
                 <?php if ($isAvailable): ?>
                     <button type="button" class="btn btn-primary" style="padding:12px 24px; font-size:1rem; width:100%;" onclick="window.BefrooshStore.addToCart({ id: <?= $prodId ?>, shop_id: <?= $shopId ?>, title: '<?= addslashes(e($prod['title'])) ?>', price: <?= (float)$prod['price'] ?>, qty: 1 })">
                         <?= icon('cart', 18) ?> افزودن به سبد خرید
@@ -253,6 +249,13 @@ route('GET', '/s/([^/]+)/p/([^/]+)', [], function ($shopSlug, $prodSlug) use ($p
                     <button class="btn btn-outline" disabled style="width:100%; opacity:0.6;">این کالا در حال حاضر ناموجود است</button>
                 <?php endif; ?>
             </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding:28px; max-width:1000px; margin:24px auto 0 auto;">
+        <h3 style="font-size:1.1rem; font-weight:bold; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">توضیحات محصول</h3>
+        <div style="color:#334155; line-height:1.9; font-size:0.92rem;">
+            <?= !empty($prod['description']) ? safe_html($prod['description']) : 'توضیحات تکمیلی برای این محصول ثبت نشده است.' ?>
         </div>
     </div>
     <?php

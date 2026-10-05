@@ -174,12 +174,12 @@ route('GET', '/orders/report(?:\.php)?', ['shop_owner', 'shop_manager', 'admin',
 
                     <div class="form-group">
                         <label>از تاریخ (شمسی)</label>
-                        <input class="input jalali-date" type="text" name="from" value="<?= e($fromInput) ?>" placeholder="۱۴۰۳/۰۱/۰۱">
+                        <input class="input jdate" type="text" name="from" value="<?= e($fromInput) ?>" placeholder="۱۴۰۳/۰۱/۰۱">
                     </div>
 
                     <div class="form-group">
                         <label>تا تاریخ (شمسی)</label>
-                        <input class="input jalali-date" type="text" name="to" value="<?= e($toInput) ?>" placeholder="۱۴۰۳/۱۲/۲۹">
+                        <input class="input jdate" type="text" name="to" value="<?= e($toInput) ?>" placeholder="۱۴۰۳/۱۲/۲۹">
                     </div>
 
                     <?php if (in_array($user['role'], ['superadmin', 'admin'], true)): ?>

@@ -30,40 +30,31 @@ route('GET', '/categories(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 's
         </div>
     </div>
 
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>شناسه</th>
-                        <th>نام دسته‌بندی</th>
-                        <th>ترتیب نمایش</th>
-                        <th>وضعیت</th>
-                        <th>عملیات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php if (empty($categories)): ?>
-                    <tr><td colspan="5"><?= empty_state('دسته‌بندی ثبت نشده است') ?></td></tr>
-                <?php else: ?>
-                    <?php foreach ($categories as $cat): ?>
-                        <tr>
-                            <td>#<?= en_to_fa_digits((string)$cat['id']) ?></td>
-                            <td><strong><?= e($cat['name']) ?></strong></td>
-                            <td><?= en_to_fa_digits((string)$cat['sort_order']) ?></td>
-                            <td><?= $cat['active'] ? '<span class="badge badge-emerald">فعال</span>' : '<span class="badge badge-gray">غیرفعال</span>' ?></td>
-                            <td>
-                                <form method="post" action="/categories/<?= (int)$cat['id'] ?>/delete" class="inline-form" data-confirm="این دسته‌بندی حذف شود؟">
-                                    <?= csrf_field() ?>
-                                    <button class="btn btn-danger btn-sm"><?= icon('trash', 13) ?> حذف</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:16px;">
+        <?php if (empty($categories)): ?>
+            <div style="grid-column: 1 / -1;"><?= empty_state('دسته‌بندی ثبت نشده است') ?></div>
+        <?php else: ?>
+            <?php foreach ($categories as $cat): ?>
+                <div class="card" style="padding:16px; border-radius:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h3 style="margin:0; font-size:1.1rem; color:#0f172a; font-weight:bold;"><?= e($cat['name']) ?></h3>
+                            <?= $cat['active'] ? '<span class="badge badge-emerald">فعال</span>' : '<span class="badge badge-gray">غیرفعال</span>' ?>
+                        </div>
+                        <div style="font-size:0.85rem; color:#64748b; margin-bottom:16px;">
+                            ترتیب نمایش: <?= en_to_fa_digits((string)$cat['sort_order']) ?>
+                        </div>
+                    </div>
+                    <div style="border-top:1px solid #e2e8f0; padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.8rem; color:#94a3b8;">شناسه: #<?= en_to_fa_digits((string)$cat['id']) ?></span>
+                        <form method="post" action="/categories/<?= (int)$cat['id'] ?>/delete" class="inline-form" data-confirm="این دسته‌بندی حذف شود؟">
+                            <?= csrf_field() ?>
+                            <button class="btn btn-danger btn-sm"><?= icon('trash', 13) ?> حذف</button>
+                        </form>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 
     <!-- NEW CATEGORY MODAL -->

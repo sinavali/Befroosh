@@ -94,6 +94,12 @@ function layout_start(string $title, ?array $user = null): void
             .nav-link { display: flex; align-items: center; gap: 10px; color: #94a3b8; padding: 9px 12px; border-radius: 8px; margin-bottom: 3px; font-size: 0.88rem; font-weight: 500; transition: 0.15s; position: relative; }
             .nav-link:hover { background: rgba(255,255,255,0.06); color: #fff; }
             .nav-link.active { background: #2563eb; color: #fff; font-weight: 700; }
+            @media print {
+                .sidebar, .action-cluster, .btn, .no-print { display: none !important; }
+                .main-content { margin-right: 0 !important; padding: 0 !important; box-shadow: none !important; }
+                body { background: #fff; color: #000; font-size: 11pt; }
+                .card { border: none; box-shadow: none; padding: 0; }
+            }
             .nav-badge { margin-right: auto; background: #ef4444; color: #fff; border-radius: 99px; font-size: 0.68rem; padding: 2px 7px; font-weight: 800; }
             .sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
             .user-box { display: flex; align-items: center; gap: 10px; }

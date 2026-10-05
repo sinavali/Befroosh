@@ -83,9 +83,19 @@ route('GET', '/(?:profile|account)/addresses(?:\.php)?', ['customer'], function 
     layout_end();
 });
 
-route('GET|POST', '/(?:profile|account)/addresses/create', ['customer'], function () use ($pdo) {
-    $user = require_roles(['customer']);
+route('GET|POST', '/(?:profile|account)/addresses/create', ['customer', 'superadmin', 'admin', 'shop_owner', 'shop_manager', 'branch_manager'], function () use ($pdo) {
+    $user = require_roles(['customer', 'superadmin', 'admin', 'shop_owner', 'shop_manager', 'branch_manager']);
     $error = '';
+    
+    $targetUserId = (int)$user['id'];
+    $returnUrl = '/profile/addresses';
+    if ($user['role'] !== 'customer' && !empty($_GET['customer_id'])) {
+        $targetUserId = (int)$_GET['customer_id'];
+        $returnUrl = '/orders/create?customer_id=' . $targetUserId;
+    } elseif ($user['role'] !== 'customer' && !empty($_POST['customer_id'])) {
+        $targetUserId = (int)$_POST['customer_id'];
+        $returnUrl = '/orders/create?customer_id=' . $targetUserId;
+    }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         verify_csrf_or_die();
@@ -103,16 +113,16 @@ route('GET|POST', '/(?:profile|account)/addresses/create', ['customer'], functio
             $error = 'استان، شهر و آدرس کامل الزامی هستند.';
         } else {
             if ($default) {
-                $pdo->prepare("UPDATE addresses SET is_default = 0 WHERE user_id = ?")->execute([$user['id']]);
+                $pdo->prepare("UPDATE addresses SET is_default = 0 WHERE user_id = ?")->execute([$targetUserId]);
             }
 
             $pdo->prepare("
                 INSERT INTO addresses (user_id, recipient_name, recipient_phone, state, city, address, postal_code, description, is_default, created_at, updated_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-            ")->execute([$user['id'], $recName ?: $user['nickname'], $recPhone ?: $user['phone'], $state, $city, $address, $postal, $desc, $default]);
+            ")->execute([$targetUserId, $recName ?: ($user['role']==='customer'?$user['nickname']:''), $recPhone ?: ($user['role']==='customer'?$user['phone']:''), $state, $city, $address, $postal, $desc, $default]);
 
             flash('success', 'آدرس جدید با موفقیت ذخیره شد.');
-            redirect('/profile/addresses');
+            redirect($returnUrl);
         }
     }
 
@@ -134,6 +144,9 @@ route('GET|POST', '/(?:profile|account)/addresses/create', ['customer'], functio
 
     <form method="post">
         <?= csrf_field() ?>
+        <?php if ($targetUserId !== (int)$user['id']): ?>
+            <input type="hidden" name="customer_id" value="<?= $targetUserId ?>">
+        <?php endif; ?>
         <div class="card">
             <div class="card-body">
                 <div class="form-grid">

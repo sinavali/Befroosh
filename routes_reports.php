@@ -76,37 +76,47 @@ route('GET', '/reports/system(?:\.php)?', ['admin', 'superadmin'], function () u
     <!-- FILTER BAR -->
     <div class="card mb-3">
         <div class="card-body">
-            <form method="get" class="filter-bar">
-                <input class="input" type="text" name="search" placeholder="جستجو در عنوان یا متن گزارش..." value="<?= e($search) ?>" style="min-width:240px;">
-
-                <select class="select" name="status">
-                    <option value="">همه وضعیت‌ها</option>
-                    <option value="open" <?= $status === 'open' ? 'selected' : '' ?>>باز</option>
-                    <option value="in_progress" <?= $status === 'in_progress' ? 'selected' : '' ?>>در حال بررسی</option>
-                    <option value="resolved" <?= $status === 'resolved' ? 'selected' : '' ?>>حل شده</option>
-                    <option value="closed" <?= $status === 'closed' ? 'selected' : '' ?>>بسته شده</option>
-                </select>
-
-                <select class="select" name="severity">
-                    <option value="">همه اولویت‌ها</option>
-                    <option value="low" <?= $severity === 'low' ? 'selected' : '' ?>>عادی / کم</option>
-                    <option value="normal" <?= $severity === 'normal' ? 'selected' : '' ?>>متوسط</option>
-                    <option value="high" <?= $severity === 'high' ? 'selected' : '' ?>>مهم</option>
-                    <option value="critical" <?= $severity === 'critical' ? 'selected' : '' ?>>بحرانی</option>
-                </select>
-
-                <select class="select" name="category">
-                    <option value="">همه دسته‌بندی‌ها</option>
-                    <option value="general" <?= $category === 'general' ? 'selected' : '' ?>>عمومی</option>
-                    <option value="financial" <?= $category === 'financial' ? 'selected' : '' ?>>مالی / پرداخت</option>
-                    <option value="compliance" <?= $category === 'compliance' ? 'selected' : '' ?>>تخلف / قوانین</option>
-                    <option value="technical" <?= $category === 'technical' ? 'selected' : '' ?>>فنی / سیستم</option>
-                </select>
-
-                <button class="btn btn-outline"><?= icon('search', 14) ?> فیلتر</button>
-                <?php if ($search || $status || $category || $severity): ?>
-                    <a class="btn btn-ghost" href="/reports/system">حذف فیلترها</a>
-                <?php endif; ?>
+            <form method="get" class="filter-bar" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; align-items:end;">
+                <div class="form-group mb-0">
+                    <label>جستجو:</label>
+                    <input class="input" type="text" name="search" placeholder="جستجو در عنوان یا متن..." value="<?= e($search) ?>" style="width:100%;">
+                </div>
+                <div class="form-group mb-0">
+                    <label>وضعیت:</label>
+                    <select class="select" name="status" style="width:100%;">
+                        <option value="">همه وضعیت‌ها</option>
+                        <option value="open" <?= $status === 'open' ? 'selected' : '' ?>>باز</option>
+                        <option value="in_progress" <?= $status === 'in_progress' ? 'selected' : '' ?>>در حال بررسی</option>
+                        <option value="resolved" <?= $status === 'resolved' ? 'selected' : '' ?>>حل شده</option>
+                        <option value="closed" <?= $status === 'closed' ? 'selected' : '' ?>>بسته شده</option>
+                    </select>
+                </div>
+                <div class="form-group mb-0">
+                    <label>اولویت:</label>
+                    <select class="select" name="severity" style="width:100%;">
+                        <option value="">همه اولویت‌ها</option>
+                        <option value="low" <?= $severity === 'low' ? 'selected' : '' ?>>عادی / کم</option>
+                        <option value="normal" <?= $severity === 'normal' ? 'selected' : '' ?>>متوسط</option>
+                        <option value="high" <?= $severity === 'high' ? 'selected' : '' ?>>مهم</option>
+                        <option value="critical" <?= $severity === 'critical' ? 'selected' : '' ?>>بحرانی</option>
+                    </select>
+                </div>
+                <div class="form-group mb-0">
+                    <label>دسته‌بندی:</label>
+                    <select class="select" name="category" style="width:100%;">
+                        <option value="">همه دسته‌بندی‌ها</option>
+                        <option value="general" <?= $category === 'general' ? 'selected' : '' ?>>عمومی</option>
+                        <option value="financial" <?= $category === 'financial' ? 'selected' : '' ?>>مالی / پرداخت</option>
+                        <option value="compliance" <?= $category === 'compliance' ? 'selected' : '' ?>>تخلف / قوانین</option>
+                        <option value="technical" <?= $category === 'technical' ? 'selected' : '' ?>>فنی / سیستم</option>
+                    </select>
+                </div>
+                <div class="form-group mb-0" style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" style="flex:1;"><?= icon('search', 14) ?> فیلتر</button>
+                    <?php if ($search || $status || $category || $severity): ?>
+                        <a class="btn btn-ghost" href="/reports/system">پاک‌کردن</a>
+                    <?php endif; ?>
+                </div>
             </form>
         </div>
     </div>

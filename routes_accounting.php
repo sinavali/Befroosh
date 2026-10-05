@@ -25,7 +25,7 @@ route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], fun
         $accounts[$ar['account']] = [
             'debit' => (float)$ar['total_debit'],
             'credit' => (float)$ar['total_credit'],
-            'net' => (float)$ar['debit'] - (float)$ar['credit'],
+            'net' => (float)$ar['total_debit'] - (float)$ar['total_credit'],
         ];
     }
 
@@ -60,6 +60,7 @@ route('GET', '/accounting(?:\.php)?', ['shop_owner', 'admin', 'superadmin'], fun
             </div>
         </div>
         <div class="action-cluster">
+            <button type="button" class="btn btn-outline" onclick="window.print()"><?= icon('document', 14) ?> چاپ گزارش</button>
             <a class="btn btn-outline" href="/accounting/ledger"><?= icon('orders', 14) ?> دفتر روزنامه کل</a>
             <a class="btn btn-outline" href="/accounting/tax-report"><?= icon('report', 14) ?> گزارش مالیات بر ارزش افزوده</a>
             <a class="btn btn-primary" href="/accounting/manual"><?= icon('plus', 14) ?> ثبت سند دستی</a>

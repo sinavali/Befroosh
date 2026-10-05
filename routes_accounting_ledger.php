@@ -51,7 +51,10 @@ route('GET', '/accounting/ledger', ['shop_owner', 'admin', 'superadmin'], functi
                 <div class="page-sub">کلیه تراکنش‌های مالی و ثبتی سیستم به همراه سند مرجع</div>
             </div>
         </div>
-        <a class="btn btn-outline" href="/accounting">بازگشت به داشبورد مالی</a>
+        <div class="action-cluster">
+            <button type="button" class="btn btn-outline" onclick="window.print()"><?= icon('document', 14) ?> چاپ گزارش</button>
+            <a class="btn btn-outline" href="/accounting">بازگشت به داشبورد مالی</a>
+        </div>
     </div>
 
     <div class="card mb-3">
@@ -129,6 +132,9 @@ route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], fu
     $shop = get_current_management_shop($user);
     $shopId = (int)$shop['id'];
 
+    $page = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 50;
+
     $stmt = $pdo->prepare("
         SELECT 
             COUNT(DISTINCT o.id) AS total_orders,
@@ -140,6 +146,20 @@ route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], fu
     $stmt->execute([$shopId]);
     $taxSummary = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    $totalOrders = (int)$taxSummary['total_orders'];
+    $pag = paginate($totalOrders, $perPage, $page);
+
+    $invStmt = $pdo->prepare("
+        SELECT o.id, o.uuid, o.created_at, o.subtotal, o.tax_amount, o.total_price, u.nickname AS customer_name, u.national_code
+        FROM orders o
+        LEFT JOIN users u ON u.id = o.customer_id
+        WHERE o.shop_id = ? AND o.status IN ('finalised', 'completed')
+        ORDER BY o.id ASC
+        LIMIT {$pag['perPage']} OFFSET {$pag['offset']}
+    ");
+    $invStmt->execute([$shopId]);
+    $invoices = $invStmt->fetchAll(PDO::FETCH_ASSOC);
+
     layout_start('گزارش مالیات بر ارزش افزوده', $user);
     ?>
     <div class="page-header">
@@ -150,7 +170,10 @@ route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], fu
                 <div class="page-sub">فروشگاه: <strong><?= e($shop['name'] ?? '—') ?></strong> | آماده‌سازی اظهارنامه مالیات بر ارزش افزوده سامانه مودیان</div>
             </div>
         </div>
-        <a class="btn btn-outline" href="/accounting">بازگشت</a>
+        <div class="action-cluster">
+            <button type="button" class="btn btn-outline" onclick="window.print()"><?= icon('document', 14) ?> چاپ گزارش</button>
+            <a class="btn btn-outline" href="/accounting">بازگشت</a>
+        </div>
     </div>
 
     <div class="stats-grid mb-3">
@@ -177,7 +200,7 @@ route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], fu
         </div>
     </div>
 
-    <div class="card">
+    <div class="card mb-3">
         <div class="card-header"><h2>مشخصات اظهارنامه فروشگاه</h2></div>
         <div class="card-body">
             <div class="detail-grid">
@@ -199,6 +222,41 @@ route('GET', '/accounting/tax-report', ['shop_owner', 'admin', 'superadmin'], fu
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>فهرست فاکتورهای فروش قطعی (مشمول مالیات)</h2></div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>شماره فاکتور</th>
+                        <th>تاریخ صدور</th>
+                        <th>خریدار / کدملی</th>
+                        <th>مبلغ خالص (تومان)</th>
+                        <th>ارزش افزوده (تومان)</th>
+                        <th>مبلغ کل (تومان)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!$invoices): ?>
+                        <tr><td colspan="6"><?= empty_state('فاکتوری ثبت نشده است') ?></td></tr>
+                    <?php else: ?>
+                        <?php foreach ($invoices as $inv): ?>
+                            <tr>
+                                <td><a href="/orders/<?= (int)$inv['id'] ?>" style="color:var(--primary); font-weight:bold;">#<?= e($inv['uuid']) ?></a></td>
+                                <td><?= format_jalali($inv['created_at']) ?></td>
+                                <td><?= e($inv['customer_name'] ?? '—') ?> <br><small style="color:#64748b;"><?= e($inv['national_code'] ?? '') ?></small></td>
+                                <td><?= format_irr((float)$inv['subtotal']) ?></td>
+                                <td><?= format_irr((float)$inv['tax_amount']) ?></td>
+                                <td><strong style="color:#0f172a;"><?= format_irr((float)$inv['total_price']) ?></strong></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?= render_pagination($page, $pag['totalPages'], '/accounting/tax-report') ?>
     </div>
     <?php
     layout_end();

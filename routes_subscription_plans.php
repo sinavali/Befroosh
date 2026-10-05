@@ -64,6 +64,9 @@ route('GET', '/app/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($
                             <code><?= e($p['code']) ?></code>
                         </span>
                     </div>
+                    <?php if (isset($p['active']) && !$p['active']): ?>
+                        <div style="margin-bottom:8px;"><span class="badge badge-rose" style="font-size:0.7rem;">غیرفعال برای فروش</span></div>
+                    <?php endif; ?>
 
                     <div style="font-size:1.3rem; font-weight:900; color:#2563eb; margin-bottom:12px;">
                         <?= (float)$p['price_monthly'] > 0 ? format_irt((float)$p['price_monthly']) . ' <small style="font-size:0.75rem; color:#64748b;">ماهانه</small>' : 'رایگان' ?>
@@ -106,6 +109,12 @@ route('GET', '/app/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($
                                 <label style="font-size:0.75rem;">حداکثر کالاها:</label>
                                 <input type="number" name="max_products" class="input" style="padding:4px 8px; font-size:0.82rem;" value="<?= (int)$p['max_products'] ?>" required>
                             </div>
+                            <div class="form-group" style="margin-bottom:10px;">
+                                <label style="font-size:0.75rem; display:flex; align-items:center; gap:8px;">
+                                    <input type="checkbox" name="active" value="1" <?= (!isset($p['active']) || $p['active']) ? 'checked' : '' ?>>
+                                    فعال و قابل فروش
+                                </label>
+                            </div>
                             <button class="btn btn-primary btn-sm" style="width:100%;">ذخیره تغییرات پلن</button>
                         </form>
                     </details>
@@ -146,6 +155,7 @@ route('GET', '/app/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($
                                         <input type="hidden" name="shop_id" value="<?= (int)$sh['id'] ?>">
                                         <select name="plan_id" class="select" style="padding:4px 8px; font-size:0.8rem;">
                                             <?php foreach ($plans as $pl): ?>
+                                                <?php if (isset($pl['active']) && !$pl['active'] && $sh['plan_name'] !== $pl['name']) continue; ?>
                                                 <option value="<?= (int)$pl['id'] ?>" <?= ($sh['plan_name'] === $pl['name']) ? 'selected' : '' ?>>
                                                     <?= e($pl['name']) ?>
                                                 </option>
@@ -176,14 +186,15 @@ route('POST', '/app/plans/update', ['superadmin'], function () use ($pdo) {
     $maxBranches = max(1, (int)($_POST['max_branches'] ?? 1));
     $maxManagers = max(1, (int)($_POST['max_managers'] ?? 1));
     $maxProducts = max(1, (int)($_POST['max_products'] ?? 10));
+    $active = !empty($_POST['active']) ? 1 : 0;
 
     if ($planId > 0 && $name !== '') {
         $stmt = $pdo->prepare("
             UPDATE subscription_plans
-            SET name = ?, price_monthly = ?, max_branches = ?, max_managers = ?, max_products = ?
+            SET name = ?, price_monthly = ?, max_branches = ?, max_managers = ?, max_products = ?, active = ?
             WHERE id = ?
         ");
-        $stmt->execute([$name, $priceMonthly, $maxBranches, $maxManagers, $maxProducts, $planId]);
+        $stmt->execute([$name, $priceMonthly, $maxBranches, $maxManagers, $maxProducts, $active, $planId]);
         flash('success', 'مشخصات پلن با موفقیت به‌روزرسانی شد.');
     }
     safe_redirect_back('/app/plans');

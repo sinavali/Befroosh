@@ -50,11 +50,74 @@ route('GET|POST', '/(?:orders/create|checkout)(?:\.php)?', ['customer', 'shop_ow
     }
 
     // Determine customer ID
-    $customerId = (int)$user['id'];
-    if ($isAdminOrOwner && !empty($_GET['customer_id'])) {
-        $customerId = (int)$_GET['customer_id'];
-    } elseif ($isAdminOrOwner && !empty($_POST['customer_id'])) {
-        $customerId = (int)$_POST['customer_id'];
+    $customerId = 0;
+    if ($isAdminOrOwner) {
+        if (!empty($_GET['customer_id'])) {
+            $customerId = (int)$_GET['customer_id'];
+        } elseif (!empty($_POST['customer_id'])) {
+            $customerId = (int)$_POST['customer_id'];
+        }
+        
+        if (!$customerId) {
+            $search = trim($_GET['c_search'] ?? '');
+            $cWhere = "WHERE role = 'customer' AND deleted_at IS NULL";
+            $cParams = [];
+            if ($search) {
+                $cWhere .= " AND (nickname LIKE ? OR phone LIKE ? OR national_code LIKE ?)";
+                $cParams = ["%$search%", "%$search%", "%$search%"];
+            }
+            $cStmt = $pdo->prepare("SELECT id, nickname, phone, national_code FROM users $cWhere ORDER BY id DESC LIMIT 50");
+            $cStmt->execute($cParams);
+            $foundCustomers = $cStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            layout_start('انتخاب مشتری برای ثبت سفارش', $user);
+            ?>
+            <div class="page-header">
+                <div class="page-title-wrap">
+                    <div class="page-icon"><?= icon('users', 18) ?></div>
+                    <div>
+                        <h1>انتخاب مشتری سفارش</h1>
+                        <div class="page-sub">لطفاً مشتری مورد نظر را برای ثبت سفارش در فروشگاه <?= e($shop['name']) ?> انتخاب کنید.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form method="get" class="filter-bar">
+                        <input type="hidden" name="shop_id" value="<?= $shopId ?>">
+                        <input type="text" name="c_search" class="input" placeholder="جستجو نام، موبایل، کدملی..." value="<?= e($search) ?>" style="min-width:250px;">
+                        <button class="btn btn-primary"><?= icon('search', 14) ?> جستجو</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>شناسه</th><th>نام مشتری</th><th>موبایل</th><th>عملیات</th></tr></thead>
+                        <tbody>
+                            <?php foreach ($foundCustomers as $fc): ?>
+                                <tr>
+                                    <td><?= $fc['id'] ?></td>
+                                    <td><strong><?= e($fc['nickname']) ?></strong></td>
+                                    <td><?= e($fc['phone']) ?></td>
+                                    <td><a class="btn btn-outline btn-sm" href="/orders/create?shop_id=<?= $shopId ?>&customer_id=<?= $fc['id'] ?>">انتخاب مشتری</a></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($foundCustomers)): ?>
+                                <tr><td colspan="4"><?= empty_state('مشتری یافت نشد') ?></td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php
+            layout_end();
+            return;
+        }
+    } else {
+        $customerId = (int)$user['id'];
     }
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL");

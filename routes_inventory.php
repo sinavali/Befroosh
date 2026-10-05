@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 // Inventory list & overview
-route('GET', '/inventory(?:\.php)?', ['admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['admin', 'superadmin']);
+route('GET', '/inventory(?:\.php)?', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     $shopId = active_shop_id();
     $shop = current_shop();
 
