@@ -74,7 +74,7 @@ function can_manage_shop(?array $user, int $shopId): bool
     if ($user['role'] === 'superadmin') {
         return true;
     }
-    if (in_array($user['role'], ['shop_owner', 'shop_manager', 'admin'], true)) {
+    if (in_array($user['role'], ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin'], true)) {
         return (int)($user['shop_id'] ?? 0) === $shopId;
     }
     return false;

@@ -7,8 +7,8 @@ declare(strict_types=1);
  * Accessible via /profile/addresses and backwards-compatible /account/addresses
  */
 
-route('GET', '/(?:profile|account)/addresses(?:\.php)?', ['customer'], function () use ($pdo) {
-    $user = require_roles(['customer']);
+route('GET', '/(?:profile|account)/addresses(?:\.php)?', [], function () use ($pdo) {
+    $user = require_login();
 
     $stmt = $pdo->prepare("SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC");
     $stmt->execute([$user['id']]);
@@ -83,8 +83,8 @@ route('GET', '/(?:profile|account)/addresses(?:\.php)?', ['customer'], function 
     layout_end();
 });
 
-route('GET|POST', '/(?:profile|account)/addresses/create', ['customer', 'superadmin', 'admin', 'shop_owner', 'shop_manager', 'branch_manager'], function () use ($pdo) {
-    $user = require_roles(['customer', 'superadmin', 'admin', 'shop_owner', 'shop_manager', 'branch_manager']);
+route('GET|POST', '/(?:profile|account)/addresses/create', [], function () use ($pdo) {
+    $user = require_login();
     $error = '';
     
     $targetUserId = (int)$user['id'];
@@ -195,8 +195,8 @@ route('GET|POST', '/(?:profile|account)/addresses/create', ['customer', 'superad
     layout_end();
 });
 
-route('GET|POST', '/(?:profile|account)/addresses/(\d+)/edit', ['customer'], function ($id) use ($pdo) {
-    $user = require_roles(['customer']);
+route('GET|POST', '/(?:profile|account)/addresses/(\d+)/edit', [], function ($id) use ($pdo) {
+    $user = require_login();
 
     $stmt = $pdo->prepare("SELECT * FROM addresses WHERE id = ? AND user_id = ?");
     $stmt->execute([$id, $user['id']]);
@@ -304,8 +304,8 @@ route('GET|POST', '/(?:profile|account)/addresses/(\d+)/edit', ['customer'], fun
     layout_end();
 });
 
-route('POST', '/(?:profile|account)/addresses/(\d+)/delete', ['customer'], function ($id) use ($pdo) {
-    $user = require_roles(['customer']);
+route('POST', '/(?:profile|account)/addresses/(\d+)/delete', [], function ($id) use ($pdo) {
+    $user = require_login();
     verify_csrf_or_die();
 
     $stmt = $pdo->prepare("SELECT * FROM addresses WHERE id = ? AND user_id = ?");
@@ -330,8 +330,8 @@ route('POST', '/(?:profile|account)/addresses/(\d+)/delete', ['customer'], funct
     redirect('/profile/addresses');
 });
 
-route('POST', '/(?:profile|account)/addresses/(\d+)/default', ['customer'], function ($id) use ($pdo) {
-    $user = require_roles(['customer']);
+route('POST', '/(?:profile|account)/addresses/(\d+)/default', [], function ($id) use ($pdo) {
+    $user = require_login();
     verify_csrf_or_die();
 
     $pdo->prepare("UPDATE addresses SET is_default = 0 WHERE user_id = ?")->execute([$user['id']]);

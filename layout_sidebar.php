@@ -17,74 +17,118 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
     $navItems = [];
 
     if ($role === 'customer') {
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد من', 'icon' => 'dashboard'];
-        $navItems[] = ['url' => '/shops', 'label' => 'ویترین فروشگاه‌ها', 'icon' => 'store'];
-        $navItems[] = ['url' => '/cart', 'label' => 'سبد خرید', 'icon' => 'cart'];
-        $navItems[] = ['url' => '/favorites', 'label' => 'کالاهای نشان‌شده', 'icon' => 'heart'];
-        $navItems[] = ['url' => '/orders', 'label' => 'سفارشات من', 'icon' => 'orders'];
-        $navItems[] = ['url' => '/orders/track', 'label' => 'پیگیری مرسوله', 'icon' => 'search'];
-        $navItems[] = ['url' => '/tickets', 'label' => 'پشتیبانی و تیکت‌ها', 'icon' => 'tickets'];
-        $navItems[] = ['url' => '/profile/addresses', 'label' => 'آدرس‌های من', 'icon' => 'location'];
-        $navItems[] = ['url' => '/profile', 'label' => 'پروفایل کاربری', 'icon' => 'user'];
+        $navItems = [
+            'خرید و سفارشات' => [
+                ['url' => '/dashboard', 'label' => 'داشبورد من', 'icon' => 'dashboard'],
+                ['url' => '/shops', 'label' => 'ویترین فروشگاه‌ها', 'icon' => 'store'],
+                ['url' => '/cart', 'label' => 'سبد خرید', 'icon' => 'cart'],
+                ['url' => '/orders', 'label' => 'سفارشات من', 'icon' => 'orders'],
+                ['url' => '/orders/track', 'label' => 'پیگیری مرسوله', 'icon' => 'search']
+            ],
+            'حساب کاربری' => [
+                ['url' => '/favorites', 'label' => 'کالاهای نشان‌شده', 'icon' => 'heart'],
+                ['url' => '/tickets', 'label' => 'پشتیبانی و تیکت‌ها', 'icon' => 'tickets'],
+                ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
+                ['url' => '/profile', 'label' => 'پروفایل کاربری', 'icon' => 'user']
+            ]
+        ];
     } elseif (in_array($role, ['business_owner', 'shop_owner'], true)) {
         $shopSlug = $currentShop['slug'] ?? 'central';
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد کسب‌وکار', 'icon' => 'dashboard'];
-        $navItems[] = ['url' => '/app/branches', 'label' => 'مدیریت شعب', 'icon' => 'store'];
-        $navItems[] = ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders'];
-        $navItems[] = ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'];
-        $navItems[] = ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'];
-        $navItems[] = ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products'];
-        $navItems[] = ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'];
-        $navItems[] = ['url' => '/reports', 'label' => 'گزارش‌های جامع و مالیاتی', 'icon' => 'report'];
-        $navItems[] = ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send'];
-        $navItems[] = ['url' => '/shop/settings', 'label' => 'تنظیمات کسب‌وکار', 'icon' => 'settings'];
-        $navItems[] = ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'];
-        $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'];
-        $navItems[] = ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
+        $navItems = [
+            'مدیریت و شعب' => [
+                ['url' => '/dashboard', 'label' => 'داشبورد کسب‌وکار', 'icon' => 'dashboard'],
+                ['url' => '/app/branches', 'label' => 'مدیریت شعب', 'icon' => 'store'],
+                ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders']
+            ],
+            'عملیات و فروش' => [
+                ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'],
+                ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'],
+                ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products']
+            ],
+            'مالی و گزارشات' => [
+                ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'],
+                ['url' => '/reports', 'label' => 'گزارش‌های جامع و مالیاتی', 'icon' => 'report']
+            ],
+            'مشتریان و پشتیبانی' => [
+                ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'],
+                ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'],
+                ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send']
+            ],
+            'تنظیمات و حساب' => [
+                ['url' => '/shop/settings', 'label' => 'تنظیمات کسب‌وکار', 'icon' => 'settings'],
+                ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
+                ['url' => '/profile', 'label' => 'پروفایل من', 'icon' => 'user'],
+                ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store']
+            ]
+        ];
     } elseif (in_array($role, ['branch_manager', 'shop_manager', 'manager'], true)) {
         $shopSlug = $currentShop['slug'] ?? 'central';
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد شعبه', 'icon' => 'dashboard'];
-        $navItems[] = ['url' => '/app/branches', 'label' => 'شعب من', 'icon' => 'store'];
-        $navItems[] = ['url' => '/orders', 'label' => 'سفارشات شعبه', 'icon' => 'orders'];
-        $navItems[] = ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'];
-        $navItems[] = ['url' => '/inventory', 'label' => 'انبارداری و شمارش', 'icon' => 'products'];
-        $navItems[] = ['url' => '/reports', 'label' => 'گزارش‌های فروش و کالا', 'icon' => 'report'];
-        $navItems[] = ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send'];
-        $navItems[] = ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'];
-        $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'];
-        $navItems[] = ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store'];
+        $navItems = [
+            'عملیات روزمره' => [
+                ['url' => '/dashboard', 'label' => 'داشبورد شعبه', 'icon' => 'dashboard'],
+                ['url' => '/orders', 'label' => 'سفارشات شعبه', 'icon' => 'orders'],
+                ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'],
+                ['url' => '/inventory', 'label' => 'انبارداری و شمارش', 'icon' => 'products'],
+                ['url' => '/reports', 'label' => 'گزارش‌های فروش و کالا', 'icon' => 'report']
+            ],
+            'ارتباطات' => [
+                ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'],
+                ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'],
+                ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send']
+            ],
+            'حساب کاربری' => [
+                ['url' => '/app/branches', 'label' => 'شعب من', 'icon' => 'store'],
+                ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
+                ['url' => '/profile', 'label' => 'پروفایل من', 'icon' => 'user'],
+                ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store']
+            ]
+        ];
     } else { // admin or superadmin
-        $navItems[] = ['url' => '/dashboard', 'label' => 'داشبورد سامانه', 'icon' => 'dashboard'];
-        $navItems[] = ['url' => '/shops/manage', 'label' => 'مدیریت کسب‌وکارها', 'icon' => 'store'];
-        $navItems[] = ['url' => '/app/branches', 'label' => 'مدیریت شعب سراسری', 'icon' => 'store'];
-        $navItems[] = ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders'];
-        $navItems[] = ['url' => '/app/plans', 'label' => 'پلن‌های اشتراک', 'icon' => 'shield'];
-        $navItems[] = ['url' => '/orders', 'label' => 'سفارشات سراسری', 'icon' => 'orders'];
-        $navItems[] = ['url' => '/products', 'label' => 'کاتالوگ محصولات', 'icon' => 'products'];
-        $navItems[] = ['url' => '/inventory', 'label' => 'انبارداری کل', 'icon' => 'products'];
-        $navItems[] = ['url' => '/accounting', 'label' => 'دفاتر حسابداری کل', 'icon' => 'report'];
-        $navItems[] = ['url' => '/reports', 'label' => 'مرکز گزارشات و مالیات', 'icon' => 'report'];
-        $navItems[] = ['url' => '/admins', 'label' => 'مدیران و دسترسی‌ها', 'icon' => 'shield'];
-        $navItems[] = ['url' => '/customers', 'label' => 'مشتریان سامانه', 'icon' => 'customers'];
-        $navItems[] = ['url' => '/reports/system', 'label' => 'گزارشات و بازرسی', 'icon' => 'report'];
-        $navItems[] = ['url' => '/tickets', 'label' => 'تیکت‌های پشتیبانی', 'icon' => 'tickets'];
+        $navItems = [
+            'سامانه کلان' => [
+                ['url' => '/dashboard', 'label' => 'داشبورد سامانه', 'icon' => 'dashboard'],
+                ['url' => '/shops/manage', 'label' => 'مدیریت کسب‌وکارها', 'icon' => 'store'],
+                ['url' => '/app/branches', 'label' => 'مدیریت شعب سراسری', 'icon' => 'store'],
+                ['url' => '/app/plans', 'label' => 'پلن‌های اشتراک', 'icon' => 'shield']
+            ],
+            'عملیات سراسری' => [
+                ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders'],
+                ['url' => '/orders', 'label' => 'سفارشات سراسری', 'icon' => 'orders'],
+                ['url' => '/products', 'label' => 'کاتالوگ محصولات', 'icon' => 'products'],
+                ['url' => '/inventory', 'label' => 'انبارداری کل', 'icon' => 'products']
+            ],
+            'حسابداری و بازرسی' => [
+                ['url' => '/accounting', 'label' => 'دفاتر حسابداری کل', 'icon' => 'report'],
+                ['url' => '/reports', 'label' => 'مرکز گزارشات و مالیات', 'icon' => 'report'],
+                ['url' => '/reports/system', 'label' => 'گزارشات و بازرسی', 'icon' => 'report']
+            ],
+            'کاربران و پشتیبانی' => [
+                ['url' => '/admins', 'label' => 'مدیران و دسترسی‌ها', 'icon' => 'shield'],
+                ['url' => '/customers', 'label' => 'مشتریان سامانه', 'icon' => 'customers'],
+                ['url' => '/tickets', 'label' => 'تیکت‌های پشتیبانی', 'icon' => 'tickets'],
+                ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
+                ['url' => '/profile', 'label' => 'پروفایل من', 'icon' => 'user']
+            ]
+        ];
     }
 
     $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $bestMatchUrl = '';
     $maxLen = 0;
-    foreach ($navItems as $item) {
-        $u = $item['url'];
-        if ($currentPath === $u) {
-            $bestMatchUrl = $u;
-            break;
-        }
-        if ($currentPath === '/orders/track' && $u === '/orders') {
-            continue;
-        }
-        if ($u !== '/' && str_starts_with($currentPath, rtrim($u, '/') . '/') && strlen($u) > $maxLen) {
-            $maxLen = strlen($u);
-            $bestMatchUrl = $u;
+    foreach ($navItems as $groupName => $items) {
+        foreach ($items as $item) {
+            $u = $item['url'];
+            if ($currentPath === $u) {
+                $bestMatchUrl = $u;
+                break 2;
+            }
+            if ($currentPath === '/orders/track' && $u === '/orders') {
+                continue;
+            }
+            if ($u !== '/' && str_starts_with($currentPath, rtrim($u, '/') . '/') && strlen($u) > $maxLen) {
+                $maxLen = strlen($u);
+                $bestMatchUrl = $u;
+            }
         }
     }
 
@@ -167,21 +211,24 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         </div>
 
         <nav class="sidebar-nav" style="padding:14px 10px; flex:1; overflow-y:auto;">
-            <?php foreach ($navItems as $item): 
-                $badgeVal = 0;
-                if ($item['url'] === '/orders') $badgeVal = $unseenOrders;
-                if ($item['url'] === '/tickets') $badgeVal = $unseenTickets;
-                if ($item['url'] === '/cart') $badgeVal = $cartCount;
-                if ($item['url'] === '/shop/messages') $badgeVal = $unseenMessages;
-                $active = ($item['url'] === $bestMatchUrl);
-            ?>
-                <a href="<?= e($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
-                    <?= icon($item['icon'], 16) ?>
-                    <span><?= e($item['label']) ?></span>
-                    <?php if ($badgeVal > 0): ?>
-                        <span class="nav-badge"><?= $badgeVal ?></span>
-                    <?php endif; ?>
-                </a>
+            <?php foreach ($navItems as $groupName => $items): ?>
+                <div style="font-size:0.75rem; color:#64748b; font-weight:bold; margin:16px 12px 6px 0; text-transform:uppercase; letter-spacing:0.5px;"><?= e($groupName) ?></div>
+                <?php foreach ($items as $item): 
+                    $badgeVal = 0;
+                    if ($item['url'] === '/orders') $badgeVal = $unseenOrders;
+                    if ($item['url'] === '/tickets') $badgeVal = $unseenTickets;
+                    if ($item['url'] === '/cart') $badgeVal = $cartCount;
+                    if ($item['url'] === '/shop/messages') $badgeVal = $unseenMessages;
+                    $active = ($item['url'] === $bestMatchUrl);
+                ?>
+                    <a href="<?= e($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
+                        <?= icon($item['icon'], 16) ?>
+                        <span><?= e($item['label']) ?></span>
+                        <?php if ($badgeVal > 0): ?>
+                            <span class="nav-badge"><?= $badgeVal ?></span>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
             <?php endforeach; ?>
         </nav>
 
