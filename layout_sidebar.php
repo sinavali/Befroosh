@@ -211,26 +211,75 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         </div>
 
         <nav class="sidebar-nav" style="padding:14px 10px; flex:1; overflow-y:auto;">
-            <?php foreach ($navItems as $groupName => $items): ?>
-                <div style="font-size:0.75rem; color:#64748b; font-weight:bold; margin:16px 12px 6px 0; text-transform:uppercase; letter-spacing:0.5px;"><?= e($groupName) ?></div>
-                <?php foreach ($items as $item): 
-                    $badgeVal = 0;
-                    if ($item['url'] === '/orders') $badgeVal = $unseenOrders;
-                    if ($item['url'] === '/tickets') $badgeVal = $unseenTickets;
-                    if ($item['url'] === '/cart') $badgeVal = $cartCount;
-                    if ($item['url'] === '/shop/messages') $badgeVal = $unseenMessages;
-                    $active = ($item['url'] === $bestMatchUrl);
-                ?>
-                    <a href="<?= e($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
-                        <?= icon($item['icon'], 16) ?>
-                        <span><?= e($item['label']) ?></span>
-                        <?php if ($badgeVal > 0): ?>
-                            <span class="nav-badge"><?= $badgeVal ?></span>
-                        <?php endif; ?>
-                    </a>
-                <?php endforeach; ?>
+            <?php 
+            $groupIndex = 0;
+            foreach ($navItems as $groupName => $items): 
+                $groupIndex++;
+                $hasActive = false;
+                foreach ($items as $it) {
+                    if ($it['url'] === $bestMatchUrl) {
+                        $hasActive = true;
+                        break;
+                    }
+                }
+            ?>
+                <div class="nav-group" data-active="<?= $hasActive ? 'true' : 'false' ?>">
+                    <div class="nav-group-header" onclick="toggleNavGroup(this)" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; color:#64748b; font-weight:bold; margin:10px 12px 6px 0; padding:6px 0; text-transform:uppercase; letter-spacing:0.5px; transition:color 0.2s;">
+                        <span><?= e($groupName) ?></span>
+                        <span class="nav-group-icon" style="transition:transform 0.2s; transform: <?= $hasActive ? 'rotate(180deg)' : 'rotate(0)' ?>;">▼</span>
+                    </div>
+                    <div class="nav-group-items" style="display: <?= $hasActive ? 'block' : 'none' ?>; overflow:hidden;">
+                        <?php foreach ($items as $item): 
+                            $badgeVal = 0;
+                            if ($item['url'] === '/orders') $badgeVal = $unseenOrders;
+                            if ($item['url'] === '/tickets') $badgeVal = $unseenTickets;
+                            if ($item['url'] === '/cart') $badgeVal = $cartCount;
+                            if ($item['url'] === '/shop/messages') $badgeVal = $unseenMessages;
+                            $active = ($item['url'] === $bestMatchUrl);
+                        ?>
+                            <a href="<?= e($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
+                                <?= icon($item['icon'], 16) ?>
+                                <span><?= e($item['label']) ?></span>
+                                <?php if ($badgeVal > 0): ?>
+                                    <span class="nav-badge"><?= $badgeVal ?></span>
+                                <?php endif; ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             <?php endforeach; ?>
         </nav>
+        
+        <script>
+            function toggleNavGroup(headerEl) {
+                const groupEl = headerEl.closest('.nav-group');
+                const itemsEl = groupEl.querySelector('.nav-group-items');
+                const iconEl = groupEl.querySelector('.nav-group-icon');
+                const isOpen = itemsEl.style.display === 'block';
+                
+                // If opening, close others that are NOT the active group
+                if (!isOpen) {
+                    document.querySelectorAll('.nav-group').forEach(otherGroup => {
+                        if (otherGroup !== groupEl && otherGroup.getAttribute('data-active') !== 'true') {
+                            otherGroup.querySelector('.nav-group-items').style.display = 'none';
+                            otherGroup.querySelector('.nav-group-icon').style.transform = 'rotate(0)';
+                        }
+                    });
+                }
+                
+                // Toggle current group
+                if (isOpen) {
+                    // Only allow closing if it's NOT the active group
+                    if (groupEl.getAttribute('data-active') !== 'true') {
+                        itemsEl.style.display = 'none';
+                        iconEl.style.transform = 'rotate(0)';
+                    }
+                } else {
+                    itemsEl.style.display = 'block';
+                    iconEl.style.transform = 'rotate(180deg)';
+                }
+            }
+        </script>
 
         <div class="sidebar-footer">
             <div class="user-box">
