@@ -119,7 +119,7 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
                 ?>
                 <div class="stepper-item <?= $done ? 'done' : ($active ? 'active' : '') ?>">
                     <div class="stepper-circle">
-                        <?= $done ? '✓' : en_to_fa_digits((string)$stepNum) ?>
+                        <?= en_to_fa_digits((string)$stepNum) ?>
                     </div>
                     <div class="stepper-label">
                         <?= e($stepLabel) ?>
@@ -133,7 +133,7 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
     <?php if ($order['status'] === 'submitted' && !empty($order['reservation_expires_at'])): ?>
         <div class="reservation-banner">
             <div>
-                <strong style="color:#92400e;">⏳ رزرو اختصاصی کالا در انبار</strong>
+                <strong style="color:#92400e;">رزرو اختصاصی کالا در انبار</strong>
                 <div style="font-size:0.84rem; color:#78350f; margin-top:2px;">
                     اقلام سفارش تا تاریخ <strong><?= format_jalali($order['reservation_expires_at']) ?></strong> برای شما محفوظ است. لطفاً نسبت به بارگذاری فیش واریزی اقدام نمایید.
                 </div>
@@ -250,7 +250,6 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
         <div class="barcode-tracking-box no-print">
             <div>
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                    <span style="font-size:1.2rem;">📦</span>
                     <strong style="color:#1e40af; font-size:0.95rem;">مرسوله به شرکت پست پیشتاز تحویل داده شد</strong>
                     <span class="badge badge-blue">۲۴ رقمی معتبر</span>
                 </div>
@@ -263,10 +262,10 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('<?= e($order['tracking_code']) ?>'); window.BefrooshStore.showToast('کد ۲۴ رقمی رهگیری کپی شد.');">
-                    📋 کپی بارکد
+                    کپی بارکد
                 </button>
                 <a class="btn btn-cobalt btn-sm" href="https://tracking.post.ir/?id=<?= urlencode($order['tracking_code']) ?>" target="_blank" rel="noopener noreferrer">
-                    استعلام در سامانه پست ↗
+                    استعلام در سامانه پست
                 </a>
             </div>
         </div>

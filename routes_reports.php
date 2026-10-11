@@ -210,7 +210,7 @@ route('GET', '/reports/system(?:\.php)?', ['admin', 'superadmin'], function () u
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h3>ثبت گزارش بازرسی / رخداد جدید</h3>
-                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close>✕</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close aria-label="بستن" style="font-size:1.2rem; line-height:1;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-2">

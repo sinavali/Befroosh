@@ -125,8 +125,8 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
                     <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; text-align:center; position:relative;">
                         <!-- Step 1: Submitted -->
                         <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isSubmitted ? '#10b981' : '#e2e8f0' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                ✓
+                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isSubmitted ? 'var(--primary)' : '#e2e8f0' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
+                                ۱
                             </div>
                             <strong style="font-size:0.85rem; color:#1e293b;">ثبت سفارش</strong>
                             <span style="font-size:0.7rem; color:#64748b;"><?= format_jalali($order['created_at']) ?></span>
@@ -134,8 +134,8 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
 
                         <!-- Step 2: Paid -->
                         <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isPaid ? '#10b981' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                <?= $isPaid ? '✓' : '۲' ?>
+                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isPaid ? 'var(--primary)' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
+                                ۲
                             </div>
                             <strong style="font-size:0.85rem; color:<?= $isPaid ? '#1e293b' : '#94a3b8' ?>;">تایید پرداخت</strong>
                             <span style="font-size:0.7rem; color:#64748b;"><?= $order['paid_at'] ? format_jalali($order['paid_at']) : 'در انتظار تایید فیش' ?></span>
@@ -143,8 +143,8 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
 
                         <!-- Step 3: Shipped -->
                         <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isShipped ? '#10b981' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                <?= $isShipped ? '✓' : '۳' ?>
+                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isShipped ? 'var(--primary)' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
+                                ۳
                             </div>
                             <strong style="font-size:0.85rem; color:<?= $isShipped ? '#1e293b' : '#94a3b8' ?>;">تحویل به پست</strong>
                             <span style="font-size:0.7rem; color:#64748b;"><?= $order['shipped_at'] ? format_jalali($order['shipped_at']) : 'در حال آماده‌سازی' ?></span>
@@ -152,8 +152,8 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
 
                         <!-- Step 4: Completed -->
                         <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isCompleted ? '#10b981' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                <?= $isCompleted ? '✓' : '۴' ?>
+                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isCompleted ? 'var(--primary)' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
+                                ۴
                             </div>
                             <strong style="font-size:0.85rem; color:<?= $isCompleted ? '#1e293b' : '#94a3b8' ?>;">تحویل نهایی</strong>
                             <span style="font-size:0.7rem; color:#64748b;"><?= $order['completed_at'] ? format_jalali($order['completed_at']) : 'تکمیل مرسوله' ?></span>

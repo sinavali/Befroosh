@@ -122,7 +122,7 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                         <h3 style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0;"><?= e($p['name']) ?></h3>
                         <span class="badge <?= $isUltimate ? 'badge-purple' : ($isPro ? 'badge-blue' : ($isPlus ? 'badge-amber' : 'badge-gray')) ?>" style="font-weight:700;">
-                            <?= $isUltimate ? '👑 ' : '' ?><code><?= e($p['code']) ?></code>
+                            <code><?= e($p['code']) ?></code>
                         </span>
                     </div>
 
@@ -150,19 +150,19 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
                         <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                             <span>دامنه اختصاصی:</span>
                             <span style="color:<?= $p['allow_custom_domain'] ? '#059669' : '#94a3b8' ?>; font-weight:600;">
-                                <?= $p['allow_custom_domain'] ? '✓ فعال' : '✕ غیرفعال' ?>
+                                <?= $p['allow_custom_domain'] ? 'فعال' : 'غیرفعال' ?>
                             </span>
                         </li>
                         <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                             <span>پیامک خودکار به خریدار:</span>
                             <span style="color:<?= $p['allow_sms_alerts'] ? '#059669' : '#94a3b8' ?>; font-weight:600;">
-                                <?= $p['allow_sms_alerts'] ? '✓ فعال' : '✕ غیرفعال' ?>
+                                <?= $p['allow_sms_alerts'] ? 'فعال' : 'غیرفعال' ?>
                             </span>
                         </li>
                         <li style="display:flex; justify-content:space-between; padding-top:2px;">
                             <span>ارجاع تیکت به سوپرادمین:</span>
                             <span style="color:<?= !empty($p['has_ticket_escalation']) ? '#7c3aed' : '#94a3b8' ?>; font-weight:700;">
-                                <?= !empty($p['has_ticket_escalation']) ? '👑 VIP آنی' : '✕ غیرفعال' ?>
+                                <?= !empty($p['has_ticket_escalation']) ? 'VIP آنی' : 'غیرفعال' ?>
                             </span>
                         </li>
                     </ul>
@@ -215,7 +215,7 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
         <div class="card-header" style="background:#faf5ff; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3e8ff;">
             <div>
                 <h2 style="font-size:1.15rem; margin:0; color:#6b21a8; display:flex; align-items:center; gap:8px;">
-                    <span>👑</span> صف ارجاع تیکت‌های با اولویت آنی (High-Priority Escalation Queue)
+                    صف ارجاع تیکت‌های با اولویت آنی (High-Priority Escalation Queue)
                 </h2>
                 <div style="font-size:0.8rem; color:#7e22ce; margin-top:2px;">
                     تیکت‌های ارجاع‌داده‌شده مستقیم از سوی مشتریان سازمانی پلن Ultimate و موارد نیازمند اقدام فوری سوپرادمین
@@ -252,7 +252,7 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
                                 </td>
                                 <td>
                                     <span class="badge badge-purple" style="font-size:0.75rem; font-weight:700;">
-                                        👑 VIP Escalated
+                                        VIP Escalated
                                     </span>
                                 </td>
                                 <td>
@@ -334,7 +334,7 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
                                 <div class="quota-meter-wrap">
                                     <div class="quota-meter-label">
                                         <span><?= en_to_fa_digits((string)$sh['branch_count']) ?> از <?= $bUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['max_branches']) ?></span>
-                                        <span><?= $bUnlimited ? '✓' : en_to_fa_digits((string)$sh['branch_pct']) . '٪' ?></span>
+                                        <span><?= $bUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['branch_pct']) . '٪' ?></span>
                                     </div>
                                     <div class="quota-meter-bar">
                                         <div class="quota-meter-fill" style="width:<?= $bUnlimited ? 100 : $sh['branch_pct'] ?>%; background:<?= $bUnlimited ? '#7c3aed' : ($sh['branch_pct'] > 85 ? '#dc2626' : ($sh['branch_pct'] > 60 ? '#f59e0b' : '#2563eb')) ?>;"></div>
@@ -347,7 +347,7 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
                                 <div class="quota-meter-wrap">
                                     <div class="quota-meter-label">
                                         <span><?= en_to_fa_digits((string)$sh['manager_count']) ?> از <?= $mUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['max_managers']) ?></span>
-                                        <span><?= $mUnlimited ? '✓' : en_to_fa_digits((string)$sh['manager_pct']) . '٪' ?></span>
+                                        <span><?= $mUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['manager_pct']) . '٪' ?></span>
                                     </div>
                                     <div class="quota-meter-bar">
                                         <div class="quota-meter-fill" style="width:<?= $mUnlimited ? 100 : $sh['manager_pct'] ?>%; background:<?= $mUnlimited ? '#7c3aed' : ($sh['manager_pct'] > 85 ? '#dc2626' : ($sh['manager_pct'] > 60 ? '#f59e0b' : '#059669')) ?>;"></div>
@@ -360,7 +360,7 @@ route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function
                                 <div class="quota-meter-wrap">
                                     <div class="quota-meter-label">
                                         <span><?= en_to_fa_digits((string)$sh['prod_count']) ?> از <?= $pUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['max_products']) ?></span>
-                                        <span><?= $pUnlimited ? '✓' : en_to_fa_digits((string)$sh['prod_pct']) . '٪' ?></span>
+                                        <span><?= $pUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['prod_pct']) . '٪' ?></span>
                                     </div>
                                     <div class="quota-meter-bar">
                                         <div class="quota-meter-fill" style="width:<?= $pUnlimited ? 100 : $sh['prod_pct'] ?>%; background:<?= $pUnlimited ? '#7c3aed' : ($sh['prod_pct'] > 85 ? '#dc2626' : ($sh['prod_pct'] > 60 ? '#f59e0b' : '#2563eb')) ?>;"></div>
@@ -468,10 +468,10 @@ route('GET', '/(?:admin|app)/plans/my-plan(?:\.php)?', ['business_owner', 'shop_
                 <h2 style="font-size:1.6rem; font-weight:900; color:#2563eb; margin:4px 0 0 0;"><?= e($sub['name']) ?></h2>
             </div>
             <?php if ($sub['code'] === 'ultimate'): ?>
-                <span class="badge badge-purple" style="font-size:0.9rem; padding:8px 14px;">👑 پلن نامحدود سازمانی (Ultimate)</span>
+                <span class="badge badge-purple" style="font-size:0.9rem; padding:8px 14px;">پلن نامحدود سازمانی (Ultimate)</span>
             <?php else: ?>
                 <a href="/tickets/create?subject=درخواست ارتقای پلن اشتراک" class="btn btn-primary">
-                    <?= icon('plus', 14) ?> ارتقای پلن اشتراک
+                    ارتقای پلن اشتراک
                 </a>
             <?php endif; ?>
         </div>
@@ -493,7 +493,7 @@ route('GET', '/(?:admin|app)/plans/my-plan(?:\.php)?', ['business_owner', 'shop_
 
         <?php if ($sub['code'] === 'ultimate'): ?>
             <div style="margin-top:20px; padding:14px 18px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:10px; color:#6b21a8; font-size:0.88rem; line-height:1.8;">
-                ✨ با توجه به فعال بودن پلن Ultimate، تیکت‌های پشتیبانی شما با اولویت آنی بررسی شده و امکان ارجاع مستقیم به سوپرادمین سامانه وجود دارد.
+                با توجه به فعال بودن پلن Ultimate، تیکت‌های پشتیبانی شما با اولویت آنی بررسی شده و امکان ارجاع مستقیم به سوپرادمین سامانه وجود دارد.
             </div>
         <?php endif; ?>
     </div>

@@ -154,35 +154,42 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
         <!-- KPI METRICS GRID -->
         <div class="stats-grid mb-3">
             <div class="stat-card">
-                <div class="stat-icon emerald"><?= icon('report', 20) ?></div>
-                <div>
-                    <div class="stat-value tabular-nums"><?= format_irt($kpis['today_gmv']) ?></div>
-                    <div class="stat-label">فروش خالص امروز (GMV)</div>
-                </div>
+                <div class="stat-label">فروش خالص امروز (GMV)</div>
+                <div class="stat-value tabular-nums"><?= format_irt($kpis['today_gmv']) ?></div>
+                <div class="stat-subtext" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">تراکنش‌های قطعی دفاتر</div>
             </div>
 
             <a href="/orders?payment_status=pending_verification" class="stat-card" style="text-decoration:none;">
-                <div class="stat-icon amber">⏳</div>
-                <div>
-                    <div class="stat-value tabular-nums" style="color:var(--amber);"><?= en_to_fa_digits((string)$kpis['pending_slips']) ?></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div class="stat-label">فیش‌های در انتظار بررسی</div>
+                    <?php if ($kpis['pending_slips'] > 0): ?>
+                        <span class="badge badge-amber" style="font-size:0.7rem; font-weight:600;">اقدام فوری</span>
+                    <?php endif; ?>
                 </div>
+                <div class="stat-value tabular-nums" style="color:var(--amber);"><?= en_to_fa_digits((string)$kpis['pending_slips']) ?></div>
+                <div class="stat-subtext" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">واریز کارت‌به‌کارت نیازمند تطبیق</div>
             </a>
 
             <a href="/inventory?low_stock=1" class="stat-card" style="text-decoration:none;">
-                <div class="stat-icon rose">⚠️</div>
-                <div>
-                    <div class="stat-value tabular-nums" style="color:var(--crimson);"><?= en_to_fa_digits((string)$kpis['low_stock']) ?></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div class="stat-label">کالاهای با موجودی بحرانی</div>
+                    <?php if ($kpis['low_stock'] > 0): ?>
+                        <span class="badge badge-rose" style="font-size:0.7rem; font-weight:600;">کسری انبار</span>
+                    <?php endif; ?>
                 </div>
+                <div class="stat-value tabular-nums" style="color:var(--crimson);"><?= en_to_fa_digits((string)$kpis['low_stock']) ?></div>
+                <div class="stat-subtext" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">موجودی کمتر از حد آستانه</div>
             </a>
 
             <a href="/orders?status=submitted" class="stat-card" style="text-decoration:none;">
-                <div class="stat-icon blue">⏱️</div>
-                <div>
-                    <div class="stat-value tabular-nums" style="color:var(--primary);"><?= en_to_fa_digits((string)$kpis['expiring_reservations']) ?></div>
-                    <div class="stat-label">رزروهای در آستانه انقضا (۲۴h)</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="stat-label">رزروهای در آستانه انقضا</div>
+                    <?php if ($kpis['expiring_reservations'] > 0): ?>
+                        <span class="badge badge-blue" style="font-size:0.7rem; font-weight:600;">مهلت ۲۴h</span>
+                    <?php endif; ?>
                 </div>
+                <div class="stat-value tabular-nums" style="color:var(--primary);"><?= en_to_fa_digits((string)$kpis['expiring_reservations']) ?></div>
+                <div class="stat-subtext" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">سفارش‌های در صف لغو خودکار</div>
             </a>
         </div>
     <?php endif; ?>
@@ -317,11 +324,11 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                                             ];
                                             ?>
                                             <button type="button" class="btn btn-sm btn-outline" style="color:var(--primary); font-weight:700;" data-slip='<?= json_encode($slipPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>' onclick="window.inspectSlip(JSON.parse(this.dataset.slip))">
-                                                🔍 بررسی فیش
+                                                بررسی فیش
                                             </button>
                                         <?php endif; ?>
                                         <a class="btn btn-outline btn-sm" href="/orders/<?= (int)$o['id'] ?>">مشاهده</a>
-                                        <a class="btn btn-ghost btn-sm" href="/orders/<?= (int)$o['id'] ?>/print" target="_blank" title="چاپ فاکتور"><?= icon('print', 13) ?></a>
+                                        <a class="btn btn-ghost btn-sm" href="/orders/<?= (int)$o['id'] ?>/print" target="_blank" title="چاپ فاکتور">چاپ</a>
                                     </div>
                                 </td>
                             </tr>
@@ -341,10 +348,9 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
             <div class="modal-sheet">
                 <div class="card-header" style="background:#f8fafc;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:1.1rem;">🧾</span>
-                        <h2>بررسی و راستی‌آزمایی فیش کارت‌به‌کارت (<span id="inspectOrderUuid" class="font-mono"></span>)</h2>
+                        <h2 style="margin:0; font-size:1.05rem;">بررسی و راستی‌آزمایی فیش کارت‌به‌کارت (<span id="inspectOrderUuid" class="font-mono"></span>)</h2>
                     </div>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="window.closeSlipModal()" style="font-size:1.1rem;">✕</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="window.closeSlipModal()" aria-label="بستن" style="font-size:1.2rem; line-height:1;">&times;</button>
                 </div>
                 <div class="split-inspect-grid">
                     <!-- Left Pane: Slip Image with Zoom & Optical Checks -->
@@ -353,10 +359,9 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                             <img id="inspectReceiptImg" src="" alt="رسید واریز" style="max-width:100%; max-height:320px; object-fit:contain; border-radius:8px; display:none; box-shadow:var(--shadow-whisper); transition:transform 0.25s ease; cursor:zoom-in;" onclick="window.toggleSlipZoom()">
                         </div>
                         <div id="inspectPdfBox" style="display:none; text-align:center; padding:20px;">
-                            <div style="font-size:2.5rem; margin-bottom:8px;">📄</div>
                             <div style="font-weight:700; color:var(--ink); margin-bottom:4px;">سند فیش در قالب فایل PDF بارگذاری شده است</div>
                             <a id="inspectPdfLink" href="#" target="_blank" class="btn btn-primary btn-sm" style="margin-top:8px;">
-                                ↗ باز کردن و مشاهده فایل PDF رسید
+                                مشاهده فایل PDF رسید
                             </a>
                         </div>
                         <div id="inspectReceiptEmpty" style="color:var(--muted); font-size:0.85rem; text-align:center;">
@@ -364,17 +369,17 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                         </div>
                         <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
                             <button type="button" class="btn btn-outline btn-sm" id="zoomToggleBtn" onclick="window.toggleSlipZoom()" style="display:none;">
-                                🔍 بزرگ‌نمایی تصویر
+                                بزرگ‌نمایی تصویر
                             </button>
                             <a id="inspectReceiptLink" href="#" target="_blank" class="btn btn-outline btn-sm" style="display:none;">
-                                ↗ اندازه کامل
+                                اندازه کامل
                             </a>
                         </div>
                         <!-- Optical check indicator chips -->
                         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; justify-content:center;">
-                            <span class="badge badge-emerald">✓ تطبیق مبلغ فاکتور</span>
-                            <span class="badge badge-blue">✓ تطبیق کد رهگیری</span>
-                            <span class="badge badge-purple">✓ حساب مقصد فروشگاه</span>
+                            <span class="badge badge-emerald">تطبیق مبلغ فاکتور</span>
+                            <span class="badge badge-blue">تطبیق کد رهگیری</span>
+                            <span class="badge badge-purple">حساب مقصد فروشگاه</span>
                         </div>
                     </div>
 
@@ -401,8 +406,8 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                                 </div>
                             </div>
 
-                            <div style="padding:10px 12px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px; font-size:0.78rem; color:#065f46; line-height:1.6; margin-bottom:14px;">
-                                💡 <strong>اتوماسیون مالی:</strong> با تأیید فیش، فاکتور در وضعیت «پرداخت‌شده» قرار گرفته و اسناد دوبل بدهکار نقد/بانک و بستانکار درآمد فروش به صورت خودکار صادر می‌شوند.
+                            <div style="padding:10px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:0.78rem; color:#166534; line-height:1.6; margin-bottom:14px;">
+                                <strong>اتوماسیون مالی:</strong> با تأیید فیش، فاکتور در وضعیت «پرداخت‌شده» قرار گرفته و اسناد دوبل بدهکار نقد/بانک و بستانکار درآمد فروش به صورت خودکار صادر می‌شوند.
                             </div>
                         </div>
 
@@ -428,7 +433,7 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                                 </div>
 
                                 <button type="submit" class="btn btn-success btn-lg" style="width:100%; gap:8px;">
-                                    ✓ تأیید فیش و صدور اسناد دوبل حسابداری
+                                    تأیید فیش و صدور اسناد دوبل حسابداری
                                 </button>
                             </form>
 
@@ -437,7 +442,7 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                                 <input type="hidden" name="action" value="reject">
                                 <input type="hidden" name="reason" id="rejectReasonInput" value="">
                                 <button type="button" class="btn btn-outline btn-sm" style="width:100%; color:var(--crimson); border-color:#fca5a5;" onclick="window.promptReject()">
-                                    ✕ رد فیش با ثبت دلیل به مشتری
+                                    رد فیش با ثبت دلیل به مشتری
                                 </button>
                             </form>
                         </div>
@@ -458,12 +463,12 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                 imgEl.style.transformOrigin = 'top center';
                 imgEl.style.maxHeight = 'none';
                 imgEl.style.cursor = 'zoom-out';
-                if (btn) btn.textContent = '🔍 بازگشت به اندازه عادی';
+                if (btn) btn.textContent = 'بازگشت به اندازه عادی';
             } else {
                 imgEl.style.transform = 'none';
                 imgEl.style.maxHeight = '320px';
                 imgEl.style.cursor = 'zoom-in';
-                if (btn) btn.textContent = '🔍 بزرگ‌نمایی تصویر';
+                if (btn) btn.textContent = 'بزرگ‌نمایی تصویر';
             }
         };
 

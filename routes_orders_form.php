@@ -52,7 +52,7 @@ function render_order_create_form(
 
         <?php if ($error): ?>
             <div style="background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:14px 18px; border-radius:var(--radius); margin-bottom:20px; font-weight:700;">
-                ⚠️ <?= e($error) ?>
+                <?= e($error) ?>
             </div>
         <?php endif; ?>
 
@@ -60,7 +60,6 @@ function render_order_create_form(
         <div class="reservation-banner">
             <div>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:1.15rem;">⏳</span>
                     <strong style="color:#92400e; font-size:0.95rem;">رزرو اختصاصی کالا به مدت <?= en_to_fa_digits((string)$reservationHours) ?> ساعت (<?= en_to_fa_digits((string)$reservationDays) ?> روز)</strong>
                 </div>
                 <div style="font-size:0.84rem; color:#78350f; margin-top:4px;">
@@ -193,7 +192,7 @@ function render_order_create_form(
                                             <div class="bank-card-holder" id="cardHolderDisplay"><?= e($primaryCard['card_holder']) ?></div>
                                         </div>
                                         <button type="button" class="btn btn-sm btn-outline" id="copyCardBtn" onclick="window.copyCardNumber()" style="background:rgba(255,255,255,0.15); color:#fff; border-color:rgba(255,255,255,0.3); font-size:0.78rem;">
-                                            📋 کپی شماره کارت
+                                            کپی شماره کارت
                                         </button>
                                     </div>
                                 </div>
@@ -247,7 +246,6 @@ function render_order_create_form(
                             <div>
                                 <label style="display:block; font-size:0.84rem; font-weight:700; color:var(--slate); margin-bottom:8px;">تصویر فیش یا رسید انتقال (عکس یا PDF):</label>
                                 <div class="receipt-dropzone" id="receiptDropzone" onclick="document.getElementById('receiptFileInput').click()">
-                                    <div style="font-size:2rem; margin-bottom:8px; color:var(--muted);">📎</div>
                                     <div style="font-weight:700; color:var(--ink); font-size:0.9rem; margin-bottom:4px;">تصویر فیش را اینجا رها کنید یا کلیک نمایید</div>
                                     <div style="font-size:0.78rem; color:var(--muted);">فرمت‌های مجاز: JPG, PNG, WEBP, PDF (حداکثر ۶ مگابایت)</div>
                                     <input type="file" name="receipt" id="receiptFileInput" accept="image/*,application/pdf" style="display:none;" onchange="window.previewReceipt(this)">
@@ -414,7 +412,7 @@ function render_order_create_form(
                     const btn = document.getElementById('copyCardBtn');
                     if (btn) {
                         const original = btn.textContent;
-                        btn.textContent = 'کپی شد ✓';
+                        btn.textContent = 'کپی شد';
                         setTimeout(() => btn.textContent = original, 2000);
                     }
                     if (window.BefrooshStore) {
@@ -431,7 +429,7 @@ function render_order_create_form(
                     const btn = document.getElementById('copyShabaBtn');
                     if (btn) {
                         const original = btn.textContent;
-                        btn.textContent = 'کپی شد ✓';
+                        btn.textContent = 'کپی شد';
                         setTimeout(() => btn.textContent = original, 2000);
                     }
                     if (window.BefrooshStore) {
@@ -482,7 +480,7 @@ function render_order_create_form(
                             pdfNote.style.cssText = 'margin-top:10px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:0.82rem; color:#1e40af;';
                             preview.parentNode.appendChild(pdfNote);
                         }
-                        pdfNote.textContent = '📄 فایل رسید انتخابی: ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+                        pdfNote.textContent = 'فایل رسید انتخابی: ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
                         pdfNote.style.display = 'block';
                     } else {
                         const pdfNote = document.getElementById('pdfNotice');

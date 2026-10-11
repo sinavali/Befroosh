@@ -17,6 +17,7 @@
    - **Recessed / Secondary Surfaces**: `#FBFBFD` (sidebar navigation, table headers) and `#F2F2F7` (input backings, segmented control tracks).
    - **Modals & Dialogs**: Pure White `#FFFFFF` with crisp hairline outline `#D1D1D6` and subtle ambient backdrop overlay (`rgba(0, 0, 0, 0.28)` with `backdrop-filter: blur(12px)`).
    - **Zero AI-Slop**: No dark glowing backgrounds, no neon gradients, no blurry colored glassmorphism, no fake floating badges.
+   - **Zero Emojis & Minimal Icons**: Emojis are completely banned across all components, layers, and badges. Icons are strictly avoided in favor of typography, font weights, and semantic text chips (following Swiss/Apple typography principles seen in Linear, Stripe, and macOS System Settings).
 
 2. **Hairline Precision & Subtle Elevation**:
    - Strictly `1px` borders using `#E5E5EA` (cards/dividers) and `#D1D1D6` (interactive controls/inputs).

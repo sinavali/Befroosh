@@ -92,9 +92,9 @@ route('GET', '/(?:merchant/)?accounting/ledger', ['business_owner', 'shop_owner'
         </div>
         <div>
             <?php if ($isBalanced): ?>
-                <span class="badge badge-emerald" style="padding:8px 14px; font-weight:700;">✓ تراز دفاتر کاملاً متوازن است (مجموع بدهکار = مجموع بستانکار)</span>
+                <span class="badge badge-emerald" style="padding:8px 14px; font-weight:700;">تراز دفاتر کاملاً متوازن است (مجموع بدهکار = مجموع بستانکار)</span>
             <?php else: ?>
-                <span class="badge badge-rose" style="padding:8px 14px; font-weight:700;">✕ هشدار عدم توازن دفاتر (اختلاف: <?= format_irr($diffBal) ?>)</span>
+                <span class="badge badge-rose" style="padding:8px 14px; font-weight:700;">هشدار عدم توازن دفاتر (اختلاف: <?= format_irr($diffBal) ?>)</span>
             <?php endif; ?>
         </div>
     </div>

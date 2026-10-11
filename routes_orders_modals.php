@@ -16,7 +16,7 @@ function render_order_modals(int $orderId): void {
                 <input type="hidden" name="action" value="reject">
                 <div class="modal-header">
                     <h3>رد فیش پرداخت</h3>
-                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close>✕</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close aria-label="بستن" style="font-size:1.2rem; line-height:1;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -39,7 +39,7 @@ function render_order_modals(int $orderId): void {
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h3>ارسال مرسوله و درج کد رهگیری پست</h3>
-                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close>✕</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close aria-label="بستن" style="font-size:1.2rem; line-height:1;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-2">
@@ -66,7 +66,7 @@ function render_order_modals(int $orderId): void {
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h3>لغو سفارش</h3>
-                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close>✕</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close aria-label="بستن" style="font-size:1.2rem; line-height:1;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
