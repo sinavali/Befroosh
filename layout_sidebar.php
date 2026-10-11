@@ -168,21 +168,21 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
     }
     ?>
     <aside class="sidebar">
-        <div class="sidebar-header" style="padding:16px 14px; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div class="sidebar-header" style="padding:16px 14px; border-bottom:1px solid var(--border);">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:<?= (!empty($userBusinesses) && count($userBusinesses) > 1) || !empty($assignedBranches) ? '12px' : '0' ?>;">
-                <div style="width:36px; height:36px; background:#2563eb; color:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900;">بف</div>
+                <div style="width:34px; height:34px; background:var(--primary); color:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.95rem;">بف</div>
                 <div style="flex:1; min-width:0;">
-                    <div style="font-weight:800; font-size:1rem; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">سامانه بفروش</div>
-                    <div style="font-size:0.75rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
+                    <div style="font-weight:700; font-size:0.95rem; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">سامانه بفروش</div>
+                    <div style="font-size:0.74rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
                 </div>
-                <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:4px;" title="بستن منو">✕</button>
+                <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:var(--muted); font-size:1.1rem; cursor:pointer; padding:4px;" title="بستن منو">✕</button>
             </div>
 
             <?php if (!empty($userBusinesses) && count($userBusinesses) > 1): ?>
                 <form method="post" action="/app/switch-business" style="margin-bottom:8px;">
                     <?= csrf_field() ?>
-                    <label style="display:block; font-size:0.68rem; color:#94a3b8; margin-bottom:2px;">🏢 کسب‌وکار انتخابی:</label>
-                    <select name="business_id" onchange="this.form.submit()" style="width:100%; font-size:0.78rem; padding:5px 7px; background:#1e293b; color:#e2e8f0; border:1px solid #334155; border-radius:6px; cursor:pointer;">
+                    <label style="display:block; font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:2px;">🏢 کسب‌وکار انتخابی:</label>
+                    <select name="business_id" onchange="this.form.submit()" style="width:100%; font-size:0.8rem; padding:6px 8px; background:#fff; color:var(--ink); border:1px solid var(--border-subtle); border-radius:6px; cursor:pointer;">
                         <?php foreach ($userBusinesses as $biz): ?>
                             <option value="<?= (int)$biz['id'] ?>" <?= (int)$biz['id'] === $shopId ? 'selected' : '' ?>>
                                 <?= e($biz['name']) ?>
@@ -195,8 +195,8 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
             <?php if (!empty($assignedBranches)): ?>
                 <form method="post" action="/app/switch-branch" style="margin:0;">
                     <?= csrf_field() ?>
-                    <label style="display:block; font-size:0.68rem; color:#94a3b8; margin-bottom:2px;">📍 فیلتر شعبه:</label>
-                    <select name="branch_id" onchange="this.form.submit()" style="width:100%; font-size:0.78rem; padding:5px 7px; background:#1e293b; color:#e2e8f0; border:1px solid #334155; border-radius:6px; cursor:pointer;">
+                    <label style="display:block; font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:2px;">📍 فیلتر شعبه:</label>
+                    <select name="branch_id" onchange="this.form.submit()" style="width:100%; font-size:0.8rem; padding:6px 8px; background:#fff; color:var(--ink); border:1px solid var(--border-subtle); border-radius:6px; cursor:pointer;">
                         <?php if (in_array($role, ['superadmin', 'admin', 'business_owner', 'shop_owner'], true)): ?>
                             <option value="0" <?= $activeBranchId === null ? 'selected' : '' ?>>🏢 کل کسب‌وکار (سراسری)</option>
                         <?php endif; ?>
@@ -224,7 +224,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                 }
             ?>
                 <div class="nav-group" data-active="<?= $hasActive ? 'true' : 'false' ?>">
-                    <div class="nav-group-header" onclick="toggleNavGroup(this)" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; color:#64748b; font-weight:bold; margin:10px 12px 6px 0; padding:6px 0; text-transform:uppercase; letter-spacing:0.5px; transition:color 0.2s;">
+                    <div class="nav-group-header" onclick="toggleNavGroup(this)" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.72rem; color:var(--muted); font-weight:700; margin:10px 12px 6px 0; padding:4px 0; text-transform:uppercase; letter-spacing:0.5px; transition:color 0.2s;">
                         <span><?= e($groupName) ?></span>
                         <span class="nav-group-icon" style="transition:transform 0.2s; transform: <?= $hasActive ? 'rotate(180deg)' : 'rotate(0)' ?>;">▼</span>
                     </div>
@@ -283,7 +283,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
 
         <div class="sidebar-footer">
             <div class="user-box">
-                <div style="width:34px; height:34px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                <div style="width:34px; height:34px; border-radius:50%; background:var(--surface-well); color:var(--ink); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.88rem;">
                     <?= e(mb_substr($user['nickname'] ?? 'ک', 0, 1)) ?>
                 </div>
                 <div style="flex:1; min-width:0;">
@@ -292,7 +292,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                 </div>
                 <form method="post" action="/logout" style="margin:0;">
                     <?= csrf_field() ?>
-                    <button class="btn btn-ghost" style="padding:4px; color:#ef4444;" title="خروج"><?= icon('logout', 16) ?></button>
+                    <button class="btn btn-ghost" style="padding:4px; color:var(--crimson);" title="خروج"><?= icon('logout', 16) ?></button>
                 </form>
             </div>
         </div>
