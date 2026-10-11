@@ -13,22 +13,24 @@ A comprehensive design specification for **Befroosh** — an enterprise-grade, m
 
 ---
 
-## 2. Color Palette & Semantic Roles
+## 2. Color Palette & Apple Light Mode Roles
 
-### Neutral Foundation
-- **Canvas White (`#FFFFFF`)**: Pure background for product imagery, documents, and cards.
-- **Surface Muted (`#F8FAFC`)**: Secondary container background, sidebars, table headers, and page canvases.
-- **Surface Well (`#F1F5F9`)**: Recessed input backgrounds, code wrappers, and filter chip backings.
-- **Hairline Border (`#E2E8F0` / `#CBD5E1`)**: `1px` crisp structural dividers and card perimeter outlines.
-- **Obsidian Ink (`#0F172A`)**: Primary typography, heavy headlines, and high-contrast primary buttons.
-- **Slate Subtext (`#475569` / `#64748B`)**: Secondary metadata, descriptions, table labels, and timestamps.
-- **Muted Placeholder (`#94A3B8`)**: Input placeholders, disabled icons, and subtle dividers.
+### Neutral Foundation (Apple Human Interface Guidelines)
+- **Canvas Gray (`#F5F5F7`)**: Apple System Gray 6 workspace canvas for operational views and dashboards.
+- **Surface White (`#FFFFFF`)**: Pure crisp background for cards, tables, data containers, and modal dialogs.
+- **Surface Muted (`#FBFBFD`)**: Subtle off-white for sidebar navigation, table headers, and group panels.
+- **Surface Well (`#F2F2F7`)**: Apple System Gray 5 for recessed input fields, search backings, and segmented controls.
+- **Hairline Border (`#E5E5EA` / `#D1D1D6`)**: Crisp `1px` structural dividers and perimeter outlines.
+- **Primary Ink (`#1D1D1F`)**: High-contrast Apple primary typography and headlines.
+- **Secondary Text (`#6E6E73`)**: Apple system gray 1 for labels, subheadings, and timestamps.
+- **Muted Placeholder (`#86868B`)**: Apple tertiary gray for placeholders, disabled icons, and subtle dividers.
 
-### Functional & Semantic Accents
-- **Emerald Forest (`#059669` / `#10B981`)**: Approved payments, confirmed orders, healthy inventory badges, balanced ledger debits/credits.
-- **Warm Amber (`#D97706` / `#F59E0B`)**: 4-day stock reservation countdown, pending receipt audit queue, low-stock alerts.
-- **Royal Cobalt (`#2563EB` / `#3B82F6`)**: Iran Post 24-digit barcode tracking, branch switcher chips, active navigation states.
-- **Crimson Rose (`#DC2626` / `#EF4444`)**: Rejected payment receipts, out-of-stock indicators, destructive modal confirmations.
+### Apple Functional & Semantic Accents
+- **System Blue (`#0071E3`)**: Primary actions, active navigation states, Iran Post 24-digit barcode tracking.
+- **System Green (`#34C759`)**: Approved payments, confirmed orders, healthy inventory badges, balanced ledger debits/credits (`#E8F8ED` chip).
+- **System Orange (`#FF9500`)**: 4-day stock reservation countdown, pending receipt audit queue, low-stock alerts (`#FFF4E5` chip).
+- **System Red (`#FF3B30`)**: Rejected payment receipts, out-of-stock indicators, destructive modal confirmations (`#FFEBEA` chip).
+- **System Indigo (`#5856D6`)**: System administration, superadmin quota indicators (`#F0EFFC` chip).
 
 ---
 

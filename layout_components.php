@@ -56,9 +56,9 @@ function render_pagination(int $currentPage, int $totalPages, string $baseUrl, a
 
     // Prev Button
     if ($currentPage > 1) {
-        $html .= '<a href="' . e($buildUrl($currentPage - 1)) . '" class="page-btn prev-btn" style="padding:6px 14px; border:1px solid #d1d5db; background:#fff; border-radius:8px; font-size:0.85rem; font-weight:bold; color:#374151; display:inline-flex; align-items:center; gap:4px;">' . icon('chevron-right', 14) . ' قبلی</a>';
+        $html .= '<a href="' . e($buildUrl($currentPage - 1)) . '" class="page-btn prev-btn" style="padding:6px 14px; border:1px solid var(--border-subtle); background:#fff; border-radius:8px; font-size:0.84rem; font-weight:600; color:var(--ink); display:inline-flex; align-items:center; gap:4px;">' . icon('chevron-right', 14) . ' قبلی</a>';
     } else {
-        $html .= '<span class="page-btn disabled" style="padding:6px 14px; border:1px solid #e5e7eb; background:#f9fafb; border-radius:8px; font-size:0.85rem; color:#9ca3af; cursor:not-allowed; display:inline-flex; align-items:center; gap:4px;">' . icon('chevron-right', 14) . ' قبلی</span>';
+        $html .= '<span class="page-btn disabled" style="padding:6px 14px; border:1px solid var(--border); background:var(--surface-well); border-radius:8px; font-size:0.84rem; color:var(--placeholder); cursor:not-allowed; display:inline-flex; align-items:center; gap:4px;">' . icon('chevron-right', 14) . ' قبلی</span>';
     }
 
     $pages = [];
@@ -85,19 +85,19 @@ function render_pagination(int $currentPage, int $totalPages, string $baseUrl, a
 
     foreach ($pages as $p) {
         if ($p === '...') {
-            $html .= '<span style="padding:6px 10px; color:#9ca3af; font-weight:bold;">…</span>';
+            $html .= '<span style="padding:6px 10px; color:var(--placeholder); font-weight:bold;">…</span>';
         } elseif ($p === $currentPage) {
-            $html .= '<span class="page-btn active" style="padding:6px 14px; background:#2563eb; color:#fff; border:1px solid #2563eb; border-radius:8px; font-size:0.88rem; font-weight:800; min-width:38px; text-align:center;">' . $fa($p) . '</span>';
+            $html .= '<span class="page-btn active" style="padding:6px 14px; background:var(--primary); color:#fff; border:1px solid var(--primary); border-radius:8px; font-size:0.86rem; font-weight:700; min-width:38px; text-align:center;">' . $fa($p) . '</span>';
         } else {
-            $html .= '<a href="' . e($buildUrl((int)$p)) . '" class="page-btn" style="padding:6px 14px; background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:8px; font-size:0.88rem; font-weight:bold; min-width:38px; text-align:center;">' . $fa((int)$p) . '</a>';
+            $html .= '<a href="' . e($buildUrl((int)$p)) . '" class="page-btn" style="padding:6px 14px; background:#fff; color:var(--ink); border:1px solid var(--border-subtle); border-radius:8px; font-size:0.86rem; font-weight:600; min-width:38px; text-align:center;">' . $fa((int)$p) . '</a>';
         }
     }
 
     // Next Button
     if ($currentPage < $totalPages) {
-        $html .= '<a href="' . e($buildUrl($currentPage + 1)) . '" class="page-btn next-btn" style="padding:6px 14px; border:1px solid #d1d5db; background:#fff; border-radius:8px; font-size:0.85rem; font-weight:bold; color:#374151; display:inline-flex; align-items:center; gap:4px;">بعدی ' . icon('chevron-left', 14) . '</a>';
+        $html .= '<a href="' . e($buildUrl($currentPage + 1)) . '" class="page-btn next-btn" style="padding:6px 14px; border:1px solid var(--border-subtle); background:#fff; border-radius:8px; font-size:0.84rem; font-weight:600; color:var(--ink); display:inline-flex; align-items:center; gap:4px;">بعدی ' . icon('chevron-left', 14) . '</a>';
     } else {
-        $html .= '<span class="page-btn disabled" style="padding:6px 14px; border:1px solid #e5e7eb; background:#f9fafb; border-radius:8px; font-size:0.85rem; color:#9ca3af; cursor:not-allowed; display:inline-flex; align-items:center; gap:4px;">بعدی ' . icon('chevron-left', 14) . '</span>';
+        $html .= '<span class="page-btn disabled" style="padding:6px 14px; border:1px solid var(--border); background:var(--surface-well); border-radius:8px; font-size:0.84rem; color:var(--placeholder); cursor:not-allowed; display:inline-flex; align-items:center; gap:4px;">بعدی ' . icon('chevron-left', 14) . '</span>';
     }
 
     $html .= '</nav>';
@@ -108,16 +108,16 @@ function card_start(?string $title = null, string $extraClass = '', ?string $act
 {
     echo '<div class="card ' . e($extraClass) . '">';
     if ($title !== null || $actions !== null) {
-        echo '<div class="card-header" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #f1f5f9;">';
+        echo '<div class="card-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); background:#fff;">';
         if ($title !== null) {
-            echo '<h3 style="font-size:0.95rem; font-weight:bold; margin:0; color:#1e293b;">' . e($title) . '</h3>';
+            echo '<h3 style="font-size:0.95rem; font-weight:600; margin:0; color:var(--ink);">' . e($title) . '</h3>';
         }
         if ($actions !== null) {
             echo '<div>' . $actions . '</div>';
         }
         echo '</div>';
     }
-    echo '<div class="card-body" style="padding:16px;">';
+    echo '<div class="card-body" style="padding:18px 20px;">';
 }
 
 function card_end(): void
