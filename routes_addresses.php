@@ -42,8 +42,8 @@ route('GET', '/(?:profile|account)/addresses(?:\.php)?', [], function () use ($p
 
                             <?php if (!empty($a['recipient_name']) || !empty($a['recipient_phone'])): ?>
                                 <div style="font-size:0.84rem; color:#1e293b; font-weight:bold; margin-bottom:4px;">
-                                    👤 گیرنده: <?= e($a['recipient_name'] ?: $user['nickname']) ?>
-                                    <?php if (!empty($a['recipient_phone'])): ?> | 📞 <?= en_to_fa_digits($a['recipient_phone']) ?><?php endif; ?>
+                                    گیرنده: <?= e($a['recipient_name'] ?: $user['nickname']) ?>
+                                    <?php if (!empty($a['recipient_phone'])): ?> | تلفن: <?= en_to_fa_digits($a['recipient_phone']) ?><?php endif; ?>
                                 </div>
                             <?php endif; ?>
 

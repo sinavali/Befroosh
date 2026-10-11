@@ -64,7 +64,7 @@ route('GET', '/categories(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 's
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h3>افزودن دسته‌بندی جدید</h3>
-                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close>✕</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-modal-close aria-label="بستن" style="font-size:1.2rem; line-height:1;">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-2">

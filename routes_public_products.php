@@ -119,7 +119,7 @@ route('GET', '/shop/([^/]+)/products', [], function ($slug) use ($pdo) {
             <div style="display:flex; gap:8px;">
                 <button type="submit" class="btn btn-primary" style="flex:1;">اعمال فیلتر</button>
                 <?php if ($q || $catId || $minPrice > 0 || $maxPrice > 0 || $inStockOnly || $sort !== 'newest'): ?>
-                    <a href="/shop/<?= e($shop['slug']) ?>/products" class="btn btn-outline" title="پاکسازی فیلترها">✕</a>
+                    <a href="/shop/<?= e($shop['slug']) ?>/products" class="btn btn-outline" title="پاکسازی فیلترها">پاکسازی</a>
                 <?php endif; ?>
             </div>
         </form>

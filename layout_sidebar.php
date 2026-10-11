@@ -175,13 +175,13 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                     <div style="font-weight:700; font-size:0.95rem; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">سامانه بفروش</div>
                     <div style="font-size:0.74rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($currentShop['name'] ?? 'پنل مدیریت') ?></div>
                 </div>
-                <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:var(--muted); font-size:1.1rem; cursor:pointer; padding:4px;" title="بستن منو">✕</button>
+                <button type="button" class="sidebar-close-btn" onclick="closeSidebar()" style="background:none; border:none; color:var(--muted); font-size:1.25rem; line-height:1; cursor:pointer; padding:4px;" aria-label="بستن منو" title="بستن منو">&times;</button>
             </div>
 
             <?php if (!empty($userBusinesses) && count($userBusinesses) > 1): ?>
                 <form method="post" action="/app/switch-business" style="margin-bottom:8px;">
                     <?= csrf_field() ?>
-                    <label style="display:block; font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:2px;">🏢 کسب‌وکار انتخابی:</label>
+                    <label style="display:block; font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:2px;">کسب‌وکار انتخابی:</label>
                     <select name="business_id" onchange="this.form.submit()" style="width:100%; font-size:0.8rem; padding:6px 8px; background:#fff; color:var(--ink); border:1px solid var(--border-subtle); border-radius:6px; cursor:pointer;">
                         <?php foreach ($userBusinesses as $biz): ?>
                             <option value="<?= (int)$biz['id'] ?>" <?= (int)$biz['id'] === $shopId ? 'selected' : '' ?>>
@@ -195,14 +195,14 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
             <?php if (!empty($assignedBranches)): ?>
                 <form method="post" action="/app/switch-branch" style="margin:0;">
                     <?= csrf_field() ?>
-                    <label style="display:block; font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:2px;">📍 فیلتر شعبه:</label>
+                    <label style="display:block; font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:2px;">انتخاب شعبه:</label>
                     <select name="branch_id" onchange="this.form.submit()" style="width:100%; font-size:0.8rem; padding:6px 8px; background:#fff; color:var(--ink); border:1px solid var(--border-subtle); border-radius:6px; cursor:pointer;">
                         <?php if (in_array($role, ['superadmin', 'admin', 'business_owner', 'shop_owner'], true)): ?>
-                            <option value="0" <?= $activeBranchId === null ? 'selected' : '' ?>>🏢 کل کسب‌وکار (سراسری)</option>
+                            <option value="0" <?= $activeBranchId === null ? 'selected' : '' ?>>کل کسب‌وکار (سراسری)</option>
                         <?php endif; ?>
                         <?php foreach ($assignedBranches as $br): ?>
                             <option value="<?= (int)$br['id'] ?>" <?= $activeBranchId === (int)$br['id'] ? 'selected' : '' ?>>
-                                📍 <?= e($br['name']) ?><?= !empty($br['is_main']) ? ' (اصلی)' : '' ?>
+                                <?= e($br['name']) ?><?= !empty($br['is_main']) ? ' (اصلی)' : '' ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -226,7 +226,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                 <div class="nav-group" data-active="<?= $hasActive ? 'true' : 'false' ?>">
                     <div class="nav-group-header" onclick="toggleNavGroup(this)" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.72rem; color:var(--muted); font-weight:700; margin:10px 12px 6px 0; padding:4px 0; text-transform:uppercase; letter-spacing:0.5px; transition:color 0.2s;">
                         <span><?= e($groupName) ?></span>
-                        <span class="nav-group-icon" style="transition:transform 0.2s; transform: <?= $hasActive ? 'rotate(180deg)' : 'rotate(0)' ?>;">▼</span>
+                        <span class="nav-group-icon" style="transition:transform 0.2s; font-size:0.65rem; transform: <?= $hasActive ? 'rotate(180deg)' : 'rotate(0)' ?>;">▾</span>
                     </div>
                     <div class="nav-group-items" style="display: <?= $hasActive ? 'block' : 'none' ?>; overflow:hidden;">
                         <?php foreach ($items as $item): 
@@ -238,7 +238,6 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                             $active = ($item['url'] === $bestMatchUrl);
                         ?>
                             <a href="<?= e($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
-                                <?= icon($item['icon'], 16) ?>
                                 <span><?= e($item['label']) ?></span>
                                 <?php if ($badgeVal > 0): ?>
                                     <span class="nav-badge"><?= $badgeVal ?></span>

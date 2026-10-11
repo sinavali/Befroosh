@@ -158,9 +158,9 @@ function layout_public_end(?array $shop = null): void
         <div id="miniCartDrawer" class="mini-cart-drawer">
             <div class="mini-cart-header">
                 <h3 style="margin:0; font-size:1rem; font-weight:800; display:flex; align-items:center; gap:8px;">
-                    <?= icon('cart', 18) ?> سبد خرید شما
+                    سبد خرید شما
                 </h3>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="window.closeMiniCart()" style="font-size:1.1rem; padding:4px 8px;">✕</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="window.closeMiniCart()" aria-label="بستن" style="font-size:1.2rem; line-height:1; padding:4px 8px;">&times;</button>
             </div>
             <div id="miniCartItems" class="mini-cart-items">
                 <!-- Injected via JavaScript -->
@@ -211,7 +211,7 @@ function layout_public_end(?array $shop = null): void
                             '<button type="button" class="btn btn-outline btn-sm" style="padding:2px 8px;" onclick="window.updateMiniCartQty(' + idx + ', 1)">+</button>' +
                         '</div>' +
                     '</div>' +
-                    '<button type="button" class="btn btn-ghost btn-sm" style="color:#ef4444; padding:4px;" onclick="window.removeMiniCartItem(' + idx + ')">✕</button>' +
+                    '<button type="button" class="btn btn-ghost btn-sm" style="color:var(--crimson); font-size:0.75rem; padding:4px 6px;" onclick="window.removeMiniCartItem(' + idx + ')">حذف</button>' +
                 '</div>';
             });
             box.innerHTML = html;

@@ -86,11 +86,11 @@ route('GET', '/b/([^/]+)/p/([^/]+)', [], function ($bizSlug, $prodIdentifier) us
                     <!-- Stock Status Badge -->
                     <div>
                         <?php if ($stock > 5): ?>
-                            <span class="badge badge-emerald">✓ موجود در انبار (تحویل فوری)</span>
+                            <span class="badge badge-emerald">موجود در انبار (تحویل فوری)</span>
                         <?php elseif ($stock > 0): ?>
-                            <span class="badge badge-amber">⚡ تنها <?= en_to_fa_digits((string)(int)$stock) ?> عدد در انبار باقی‌مانده</span>
+                            <span class="badge badge-amber">تنها <?= en_to_fa_digits((string)(int)$stock) ?> عدد در انبار باقی‌مانده</span>
                         <?php else: ?>
-                            <span class="badge badge-rose">✕ در حال حاضر ناموجود</span>
+                            <span class="badge badge-rose">در حال حاضر ناموجود</span>
                         <?php endif; ?>
                     </div>
 
@@ -224,8 +224,8 @@ route('GET', '/b/([^/]+)/([^/]+)', [], function ($bizSlug, $branchSlug) use ($pd
                 </div>
                 <div style="font-size:0.84rem; color:var(--muted);">
                     شعبه رسمی <a href="/b/<?= e($shop['slug']) ?>" style="color:var(--primary); font-weight:700;"><?= e($shop['name']) ?></a>
-                    <?php if ($branch['address']): ?> — 📍 <?= e($branch['address']) ?><?php endif; ?>
-                    <?php if ($branch['phone']): ?> — 📞 <span dir="ltr"><?= en_to_fa_digits($branch['phone']) ?></span><?php endif; ?>
+                    <?php if ($branch['address']): ?> — نشانی: <?= e($branch['address']) ?><?php endif; ?>
+                    <?php if ($branch['phone']): ?> — تلفن: <span dir="ltr"><?= en_to_fa_digits($branch['phone']) ?></span><?php endif; ?>
                 </div>
             </div>
 
@@ -243,7 +243,7 @@ route('GET', '/b/([^/]+)/([^/]+)', [], function ($bizSlug, $branchSlug) use ($pd
 
         <?php if (!empty($branch['group_name'])): ?>
             <div style="margin-top:14px; padding:10px 14px; background:#ecfdf5; border-radius:var(--radius-sm); border:1px solid #a7f3d0; font-size:0.82rem; color:#065f46;">
-                🚚 <strong>گروه ارسال متمرکز (<?= e($branch['group_name']) ?>):</strong> سفارش‌های ثبت‌شده از این شعبه با هزینه ارسال یکپارچه تحویل داده می‌شوند.
+                <strong>گروه ارسال متمرکز (<?= e($branch['group_name']) ?>):</strong> سفارش‌های ثبت‌شده از این شعبه با هزینه ارسال یکپارچه تحویل داده می‌شوند.
             </div>
         <?php endif; ?>
     </div>
@@ -461,7 +461,7 @@ route('GET', '/b/([^/]+)', [], function ($bizSlug) use ($pdo) {
     <div style="background:var(--canvas); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px 28px; margin-bottom:28px;">
         <div style="max-width:800px;">
             <div style="display:inline-flex; align-items:center; gap:6px; background:#eff6ff; border:1px solid #dbeafe; padding:4px 12px; border-radius:var(--radius-full); font-size:0.78rem; font-weight:700; color:var(--primary); margin-bottom:12px;">
-                ⚡ کسب‌وکار متصل به بفروش | شعب حضوری و فروش آنلاین
+                کسب‌وکار متصل به بفروش | شعب حضوری و فروش آنلاین
             </div>
             <h1 style="font-size:1.85rem; font-weight:800; color:var(--ink); margin-bottom:10px;"><?= e($shop['name']) ?></h1>
             <p style="color:var(--slate); font-size:0.95rem; line-height:1.8; margin-bottom:16px;">
@@ -494,16 +494,16 @@ route('GET', '/b/([^/]+)', [], function ($bizSlug) use ($pdo) {
                             </div>
                             <?php if (!empty($br['group_name'])): ?>
                                 <div style="font-size:0.74rem; color:var(--emerald); margin-bottom:6px; font-weight:600;">
-                                    ✓ ارسال متمرکز: <?= e($br['group_name']) ?>
+                                    ارسال متمرکز: <?= e($br['group_name']) ?>
                                 </div>
                             <?php endif; ?>
                             <div style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin-bottom:12px;">
-                                <?php if ($br['address']): ?><div>📍 <?= e($br['address']) ?></div><?php endif; ?>
-                                <?php if ($br['phone']): ?><div>📞 <span dir="ltr"><?= en_to_fa_digits($br['phone']) ?></span></div><?php endif; ?>
+                                <?php if ($br['address']): ?><div>نشانی: <?= e($br['address']) ?></div><?php endif; ?>
+                                <?php if ($br['phone']): ?><div>تلفن: <span dir="ltr"><?= en_to_fa_digits($br['phone']) ?></span></div><?php endif; ?>
                             </div>
                         </div>
                         <a href="/b/<?= e($shop['slug']) ?>/<?= e($br['slug']) ?>" class="btn btn-outline btn-sm" style="width:100%; justify-content:center;">
-                            ورود به ویترین این شعبه ←
+                            ورود به ویترین این شعبه
                         </a>
                     </div>
                 <?php endforeach; ?>

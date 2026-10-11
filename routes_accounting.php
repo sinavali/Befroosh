@@ -162,11 +162,11 @@ route('GET', '/(?:merchant/)?accounting(?:\.php)?', ['business_owner', 'shop_own
         <div>
             <?php if ($isBalanced): ?>
                 <div class="badge badge-emerald" style="padding:10px 18px; font-size:0.92rem; font-weight:700; gap:8px;">
-                    <span style="font-size:1.15rem;">✓</span> تراز دفاتر کاملاً متعادل است (مجموع بدهکار = مجموع بستانکار | اختلاف ۰ تومان)
+                    تراز دفاتر کاملاً متعادل است (مجموع بدهکار = مجموع بستانکار | اختلاف ۰ تومان)
                 </div>
             <?php else: ?>
                 <div class="badge badge-rose" style="padding:10px 18px; font-size:0.92rem; font-weight:700; gap:8px;">
-                    <span style="font-size:1.15rem;">✕</span> هشدار عدم تعادل دفاتر: اختلاف <?= format_irr($ledgerDifference) ?>
+                    هشدار عدم تعادل دفاتر: اختلاف <?= format_irr($ledgerDifference) ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -370,7 +370,7 @@ route('GET', '/(?:merchant/)?accounting(?:\.php)?', ['business_owner', 'shop_own
                                 </td>
                                 <td style="font-size:0.8rem; color:#64748b;"><?= e($entry['user_name'] ?: 'سیستم خودکار') ?></td>
                                 <td>
-                                    <span class="badge badge-emerald" style="font-size:0.7rem;">✓ قطعی</span>
+                                    <span class="badge badge-emerald" style="font-size:0.7rem;">قطعی</span>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

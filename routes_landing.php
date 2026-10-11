@@ -22,7 +22,7 @@ route('GET', '/', [], function () use ($pdo) {
     <div style="background:linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%); border-radius:24px; padding:56px 36px; color:#fff; text-align:center; margin-bottom:48px; box-shadow:0 10px 30px rgba(37,99,235,0.15);">
         <div style="max-width:820px; margin:0 auto;">
             <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); backdrop-filter:blur(8px); padding:6px 16px; border-radius:99px; font-size:0.85rem; font-weight:bold; margin-bottom:20px; border:1px solid rgba(255,255,255,0.2);">
-                ✨ ویژه فروشگاه‌های اینستاگرامی و کسب‌وکارهای دارای چند شعبه
+                ویژه فروشگاه‌های اینستاگرامی و کسب‌وکارهای دارای چند شعبه
             </div>
             <h1 style="font-size:2.3rem; font-weight:900; line-height:1.4; margin-bottom:18px; color:#ffffff;">
                 کسب‌وکار اجتماعی خود را به یک <span style="color:#60a5fa;">فروشگاه آنلاین هوشمند</span> تبدیل کنید
@@ -113,11 +113,11 @@ route('GET', '/', [], function () use ($pdo) {
                                 <?= (float)$p['price_monthly'] > 0 ? format_irt((float)$p['price_monthly']) . ' <span style="font-size:0.8rem; font-weight:normal; color:#64748b;">/ ماهانه</span>' : 'رایگان' ?>
                             </div>
                             <ul style="list-style:none; padding:0; margin:0 0 20px 0; font-size:0.86rem; color:#475569; line-height:2.2;">
-                                <li>✓ حداکثر <strong><?= (int)$p['max_branches'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_branches']) ?></strong> شعبه</li>
-                                <li>✓ حداکثر <strong><?= (int)$p['max_managers'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_managers']) ?></strong> مدیر شعبه</li>
-                                <li>✓ حداکثر <strong><?= (int)$p['max_products'] === 9999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_products']) ?></strong> کالا</li>
-                                <li><?= !empty($p['allow_custom_domain']) ? '✓ اتصال دامنه اختصاصی' : '✕ دامنه اختصاصی' ?></li>
-                                <li><?= !empty($p['allow_sms_alerts']) ? '✓ اطلاع‌رسانی پیامکی' : '✕ پیامک خودکار' ?></li>
+                                <li>حداکثر <strong><?= (int)$p['max_branches'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_branches']) ?></strong> شعبه</li>
+                                <li>حداکثر <strong><?= (int)$p['max_managers'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_managers']) ?></strong> مدیر شعبه</li>
+                                <li>حداکثر <strong><?= (int)$p['max_products'] === 9999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_products']) ?></strong> کالا</li>
+                                <li><?= !empty($p['allow_custom_domain']) ? 'اتصال دامنه اختصاصی' : 'بدون دامنه اختصاصی' ?></li>
+                                <li><?= !empty($p['allow_sms_alerts']) ? 'اطلاع‌رسانی پیامکی خودکار' : 'بدون پیامک خودکار' ?></li>
                             </ul>
                         </div>
                         <a href="/register" class="btn <?= $isPopular ? 'btn-primary' : 'btn-outline' ?>" style="width:100%; text-align:center;">

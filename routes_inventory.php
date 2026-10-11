@@ -228,16 +228,16 @@ route('GET', '/(?:merchant/)?inventory(?:\.php)?', ['business_owner', 'shop_owne
                                 </td>
                                 <td>
                                     <?php if ($isLow): ?>
-                                        <span class="badge badge-amber">⚡ زیر حد هشدار (<?= en_to_fa_digits((string)(float)$p['min_stock_alert']) ?>)</span>
+                                        <span class="badge badge-amber">زیر حد هشدار (<?= en_to_fa_digits((string)(float)$p['min_stock_alert']) ?>)</span>
                                     <?php else: ?>
-                                        <span class="badge badge-emerald">✓ مناسب</span>
+                                        <span class="badge badge-emerald">مطلوب</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <div class="flex gap-1">
                                         <a class="btn btn-outline btn-sm" href="/inventory/inward?product_id=<?= (int)$p['id'] ?>" title="ورود کالا به انبار">+ ورود</a>
                                         <a class="btn btn-outline btn-sm" href="/inventory/adjustment?product_id=<?= (int)$p['id'] ?>" title="تعدیل موجودی">تعدیل</a>
-                                        <a class="btn btn-ghost btn-sm" href="/inventory/transactions?product_id=<?= (int)$p['id'] ?>" title="گردش انبار"><?= icon('report', 13) ?></a>
+                                        <a class="btn btn-ghost btn-sm" href="/inventory/transactions?product_id=<?= (int)$p['id'] ?>" title="گردش انبار">گردش</a>
                                     </div>
                                 </td>
                             </tr>
