@@ -7,7 +7,7 @@ declare(strict_types=1);
  */
 
 // Cardex & Stock Movement Transactions
-route('GET', '/inventory/transactions', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+route('GET', '/(?:merchant/)?inventory/transactions', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     $shopId = active_shop_id();
     $page = max(1, (int)($_GET['page'] ?? 1));
@@ -102,7 +102,7 @@ route('GET', '/inventory/transactions', ['business_owner', 'shop_owner', 'branch
 });
 
 // Printable Inventory Count Sheet (برگه چاپی انبارگردانی)
-route('GET', '/inventory/count-sheet', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+route('GET', '/(?:merchant/)?inventory/count-sheet', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     $shopId = active_shop_id();
     $shop = current_shop();

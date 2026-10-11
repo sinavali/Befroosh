@@ -244,6 +244,23 @@ route('GET|POST', '/(?:orders/create|checkout)(?:\.php)?', ['customer', 'shop_ow
                     $paymentStatus = $isFreeOrder ? 'paid' : 'unpaid';
                     $paidAt = $isFreeOrder ? date('Y-m-d H:i:s') : null;
 
+                    // Check for optional receipt slip upload or reference code directly at checkout
+                    $reference = trim($_POST['receipt_description'] ?? $_POST['payment_reference'] ?? '');
+                    $receiptFileName = null;
+                    if (!$isFreeOrder && !empty($_FILES['receipt']) && $_FILES['receipt']['error'] === UPLOAD_ERR_OK) {
+                        $file = $_FILES['receipt'];
+                        $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+                        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                        if (in_array($ext, $allowedExts, true) && $file['size'] > 0 && $file['size'] <= 6 * 1024 * 1024) {
+                            $receiptFileName = 'receipt_' . uniqid() . '.' . $ext;
+                            @move_uploaded_file($file['tmp_name'], RECEIPT_UPLOAD_PATH . '/' . $receiptFileName);
+                        }
+                    }
+
+                    if (!$isFreeOrder && ($receiptFileName !== null || $reference !== '')) {
+                        $paymentStatus = 'pending_verification';
+                    }
+
                     $addressSnapshot = json_snapshot([
                         'state' => $addr['state'],
                         'city' => $addr['city'],
@@ -268,21 +285,25 @@ route('GET|POST', '/(?:orders/create|checkout)(?:\.php)?', ['customer', 'shop_ow
                             subtotal, shipping_cost, tax_amount, estimated_total, final_total,
                             payment_method, payment_status, payment_card_id, paid_at, reservation_expires_at,
                             shipping_method, address_id, address_snapshot, customer_snapshot, description,
-                            seen_by_customer, seen_by_admin, created_at, updated_at
+                            payment_reference, payment_receipt_path, receipt_description, receipt_image_path,
+                            receipt_status, seen_by_customer, seen_by_admin, created_at, updated_at
                         ) VALUES (
                             ?, ?, ?, ?, ?, ?,
                             ?, ?, ?, ?, ?,
                             'card_to_card', ?, ?, ?, ?,
                             'پست پیشتاز', ?, ?, ?, ?,
-                            ?, ?, datetime('now'), datetime('now')
+                            ?, ?, ?, ?,
+                            ?, ?, ?, datetime('now'), datetime('now')
                         )
                     ");
+                    $receiptStatus = ($paymentStatus === 'pending_verification') ? 'pending' : null;
                     $insOrder->execute([
                         $uuid, $shopId, $customerId, $user['role'], $user['id'], $status,
                         $subtotal, $shippingCost, $totalTax, $grandTotal, $grandTotal,
                         $paymentStatus, $selectedCardId, $paidAt, $reservationExpires,
                         $addressId, $addressSnapshot, $customerSnapshot, $desc,
-                        $seenByCustomer, $seenByAdmin
+                        $reference ?: null, $receiptFileName, $reference ?: null, $receiptFileName,
+                        $receiptStatus, $seenByCustomer, $seenByAdmin
                     ]);
 
                     $orderId = (int)$pdo->lastInsertId();

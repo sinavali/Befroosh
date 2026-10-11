@@ -1,0 +1,22 @@
+{
+    "name": "befroosh/core",
+    "description": "Befroosh Social-Commerce & Multi-Tenant Retail CMS",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "php test.php"
+    }
+}

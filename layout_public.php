@@ -55,7 +55,7 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
             /* Mini-cart drawer */
             .mini-cart-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; opacity: 0; visibility: hidden; transition: all 0.25s ease-in-out; }
             .mini-cart-backdrop.open { opacity: 1; visibility: visible; }
-            .mini-cart-drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 100%; max-width: 380px; background: #fff; z-index: 9999; box-shadow: -4px 0 25px rgba(0,0,0,0.15); transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
+            .mini-cart-drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 100%; max-width: 380px; background: #fff; z-index: 9999; box-shadow: 4px 0 25px rgba(15, 23, 42, 0.15); transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
             .mini-cart-drawer.open { transform: translateX(0); }
             .mini-cart-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
             .mini-cart-items { flex: 1; overflow-y: auto; padding: 16px 20px; }

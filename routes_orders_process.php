@@ -39,6 +39,11 @@ route('POST', '/(?:app/)?orders/(\d+)/payment/card-to-card', ['customer', 'busin
             redirect("/orders/$id");
         }
 
+        if ($file['size'] <= 0) {
+            flash('error', 'فایل بارگذاری‌شده خالی (۰ بایت) یا خراب است.');
+            redirect("/orders/$id");
+        }
+
         if ($file['size'] > 6 * 1024 * 1024) {
             flash('error', 'حداکثر حجم مجاز برای تصویر فیش ۶ مگابایت است.');
             redirect("/orders/$id");
@@ -95,34 +100,50 @@ route('POST', '/(?:app/)?orders/(\d+)/payment/verify', ['business_owner', 'shop_
         $tax = (float)($order['tax_amount'] ?? 0);
         $shipping = (float)($order['shipping_cost'] ?? 0);
 
+        $bankCardId = !empty($_POST['bank_card_id']) ? (int)$_POST['bank_card_id'] : (!empty($order['payment_card_id']) ? (int)$order['payment_card_id'] : null);
+        $discount = (float)($order['discount_amount'] ?? 0);
+
         $pdo->beginTransaction();
         try {
             // Update order status to paid and approve receipt
             $pdo->prepare("
                 UPDATE orders 
-                SET status = 'paid', payment_status = 'paid', paid_at = ?, receipt_status = 'approved', receipt_verified_by = ?, receipt_verified_at = ?, seen_by_customer = 0, updated_at = datetime('now')
+                SET status = 'paid', payment_status = 'paid', paid_at = ?, receipt_status = 'approved', receipt_verified_by = ?, receipt_verified_at = ?, payment_card_id = COALESCE(?, payment_card_id), seen_by_customer = 0, updated_at = datetime('now')
                 WHERE id = ?
-            ")->execute([$now, (int)$user['id'], $now, $id]);
+            ")->execute([$now, (int)$user['id'], $now, $bankCardId, $id]);
 
             // Automated Double-Entry Ledger Entries
             $shopId = (int)$order['shop_id'];
 
             // 1. Debit Cash/Bank
-            record_accounting_entry(
-                $shopId, 'payment_received', $id, $grandTotal, 0, 'cash_bank',
-                "واریز وجه کارت‌به‌کارت سفارش #{$order['uuid']} - پیگیری: {$order['payment_reference']}",
-                (int)$user['id'], $now
-            );
+            if ($grandTotal > 0.0001) {
+                record_accounting_entry(
+                    $shopId, 'payment_received', $id, $grandTotal, 0, 'cash_bank',
+                    "واریز وجه کارت‌به‌کارت سفارش #{$order['uuid']} - پیگیری: {$order['payment_reference']}",
+                    (int)$user['id'], $now
+                );
+            }
 
-            // 2. Credit Sales Revenue
-            record_accounting_entry(
-                $shopId, 'sale_revenue', $id, 0, $subtotal, 'sales_revenue',
-                "درآمد حاصل از فروش کالا - سفارش #{$order['uuid']}",
-                (int)$user['id'], $now
-            );
+            // 2. Debit Discounts (if any)
+            if ($discount > 0.0001) {
+                record_accounting_entry(
+                    $shopId, 'discount_expense', $id, $discount, 0, 'discounts',
+                    "تخفیف اعطایی به مشتری در سفارش #{$order['uuid']}",
+                    (int)$user['id'], $now
+                );
+            }
 
-            // 3. Credit Tax Payable (if any)
-            if ($tax > 0) {
+            // 3. Credit Sales Revenue
+            if ($subtotal > 0.0001) {
+                record_accounting_entry(
+                    $shopId, 'sale_revenue', $id, 0, $subtotal, 'sales_revenue',
+                    "درآمد حاصل از فروش کالا - سفارش #{$order['uuid']}",
+                    (int)$user['id'], $now
+                );
+            }
+
+            // 4. Credit Tax Payable (if any)
+            if ($tax > 0.0001) {
                 record_accounting_entry(
                     $shopId, 'tax_payable', $id, 0, $tax, 'tax_payable',
                     "مالیات بر ارزش افزوده سفارش #{$order['uuid']}",
@@ -130,8 +151,8 @@ route('POST', '/(?:app/)?orders/(\d+)/payment/verify', ['business_owner', 'shop_
                 );
             }
 
-            // 4. Credit Shipping Revenue (if any)
-            if ($shipping > 0) {
+            // 5. Credit Shipping Revenue (if any)
+            if ($shipping > 0.0001) {
                 record_accounting_entry(
                     $shopId, 'shipping_revenue', $id, 0, $shipping, 'shipping_revenue',
                     "درآمد حمل و نقل و پست پیشتاز - سفارش #{$order['uuid']}",

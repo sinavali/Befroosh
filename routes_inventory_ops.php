@@ -7,7 +7,7 @@ declare(strict_types=1);
  */
 
 // Inward stock entry (ورود کالا به انبار / خرید)
-route('GET|POST', '/inventory/inward', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+route('GET|POST', '/(?:merchant/)?inventory/inward', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     $shopId = active_shop_id();
     $productId = (int)($_GET['product_id'] ?? $_POST['product_id'] ?? 0);
@@ -133,7 +133,7 @@ route('GET|POST', '/inventory/inward', ['business_owner', 'shop_owner', 'branch_
 });
 
 // Stock Adjustment (تعدیل موجودی انبار)
-route('GET|POST', '/inventory/adjustment', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+route('GET|POST', '/(?:merchant/)?inventory/adjustment', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     $shopId = active_shop_id();
     $productId = (int)($_GET['product_id'] ?? $_POST['product_id'] ?? 0);
