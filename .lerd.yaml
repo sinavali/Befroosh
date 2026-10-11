@@ -1,0 +1,5 @@
+domains:
+  - befroosh
+php_version: "8.4"
+node_version: "24"
+secured: true

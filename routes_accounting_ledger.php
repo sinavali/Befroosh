@@ -7,20 +7,35 @@ declare(strict_types=1);
  */
 
 // Full General Ledger / دفتر روزنامه کل
-route('GET', '/accounting/ledger', ['shop_owner', 'admin', 'superadmin'], function () use ($pdo) {
-    $user = require_roles(['shop_owner', 'admin', 'superadmin']);
+route('GET', '/(?:merchant/)?accounting/ledger', ['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+    $user = require_roles(['business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin']);
     $shop = get_current_management_shop($user);
-    $shopId = (int)$shop['id'];
+    $shopId = (int)($shop['id'] ?? $shop[0] ?? 1);
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = 30;
     $accountFilter = trim($_GET['account'] ?? '');
+
+    // Overall balance check
+    $stmtBal = $pdo->prepare("SELECT COALESCE(SUM(debit), 0) AS total_debit, COALESCE(SUM(credit), 0) AS total_credit FROM accounting_ledger WHERE shop_id = ?");
+    $stmtBal->execute([$shopId]);
+    $balData = $stmtBal->fetch(PDO::FETCH_ASSOC);
+    $totDebit = (float)($balData['total_debit'] ?? 0);
+    $totCredit = (float)($balData['total_credit'] ?? 0);
+    $diffBal = abs($totDebit - $totCredit);
+    $isBalanced = ($diffBal < 0.01);
 
     $where = "WHERE al.shop_id = ?";
     $params = [$shopId];
 
     if ($accountFilter !== '') {
-        $where .= " AND al.account = ?";
-        $params[] = $accountFilter;
+        if ($accountFilter === 'sales_revenue' || $accountFilter === 'sales_income') {
+            $where .= " AND al.account IN ('sales_revenue', 'sales_income')";
+        } elseif ($accountFilter === 'shipping_revenue' || $accountFilter === 'shipping_income') {
+            $where .= " AND al.account IN ('shipping_revenue', 'shipping_income')";
+        } else {
+            $where .= " AND al.account = ?";
+            $params[] = $accountFilter;
+        }
     }
 
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM accounting_ledger al $where");
@@ -48,12 +63,39 @@ route('GET', '/accounting/ledger', ['shop_owner', 'admin', 'superadmin'], functi
             <div class="page-icon"><?= icon('orders', 18) ?></div>
             <div>
                 <h1>دفتر روزنامه و ریز گردش حساب‌ها</h1>
-                <div class="page-sub">کلیه تراکنش‌های مالی و ثبتی سیستم به همراه سند مرجع</div>
+                <div class="page-sub">کلیه تراکنش‌های مالی و ثبتی سیستم به همراه سند مرجع و تراز دوبل</div>
             </div>
         </div>
         <div class="action-cluster">
             <button type="button" class="btn btn-outline" onclick="window.print()"><?= icon('document', 14) ?> چاپ گزارش</button>
             <a class="btn btn-outline" href="/accounting">بازگشت به داشبورد مالی</a>
+        </div>
+    </div>
+
+    <!-- STRICT BALANCE CHECK -->
+    <div class="balance-check-banner">
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div class="balance-metric">
+                <span class="balance-metric-label">گردش کل بدهکار</span>
+                <span class="balance-metric-value"><?= format_irr($totDebit) ?></span>
+            </div>
+            <div style="font-size:1.3rem; color:#94a3b8;">=</div>
+            <div class="balance-metric">
+                <span class="balance-metric-label">گردش کل بستانکار</span>
+                <span class="balance-metric-value"><?= format_irr($totCredit) ?></span>
+            </div>
+            <div style="width:1px; height:32px; background:#e2e8f0;"></div>
+            <div class="balance-metric">
+                <span class="balance-metric-label">اختلاف دفاتر</span>
+                <span class="balance-metric-value" style="color:<?= $isBalanced ? '#059669' : '#dc2626' ?>;"><?= format_irr($diffBal) ?></span>
+            </div>
+        </div>
+        <div>
+            <?php if ($isBalanced): ?>
+                <span class="badge badge-emerald" style="padding:8px 14px; font-weight:700;">✓ تراز دفاتر کاملاً متوازن است (مجموع بدهکار = مجموع بستانکار)</span>
+            <?php else: ?>
+                <span class="badge badge-rose" style="padding:8px 14px; font-weight:700;">✕ هشدار عدم توازن دفاتر (اختلاف: <?= format_irr($diffBal) ?>)</span>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -64,10 +106,12 @@ route('GET', '/accounting/ledger', ['shop_owner', 'admin', 'superadmin'], functi
                     <option value="">همه سرفصل‌های حساب</option>
                     <option value="cash_bank" <?= $accountFilter === 'cash_bank' ? 'selected' : '' ?>>نقد و بانک</option>
                     <option value="inventory_asset" <?= $accountFilter === 'inventory_asset' ? 'selected' : '' ?>>موجودی کالا</option>
-                    <option value="sales_income" <?= $accountFilter === 'sales_income' ? 'selected' : '' ?>>درآمد فروش</option>
+                    <option value="sales_revenue" <?= in_array($accountFilter, ['sales_revenue', 'sales_income'], true) ? 'selected' : '' ?>>درآمد فروش کالا</option>
+                    <option value="shipping_revenue" <?= in_array($accountFilter, ['shipping_revenue', 'shipping_income'], true) ? 'selected' : '' ?>>درآمد کرایه حمل</option>
                     <option value="cogs" <?= $accountFilter === 'cogs' ? 'selected' : '' ?>>بهای تمام‌شده (COGS)</option>
                     <option value="tax_payable" <?= $accountFilter === 'tax_payable' ? 'selected' : '' ?>>مالیات بر ارزش افزوده</option>
                     <option value="discounts" <?= $accountFilter === 'discounts' ? 'selected' : '' ?>>تخفیفات</option>
+                    <option value="adjustment" <?= $accountFilter === 'adjustment' ? 'selected' : '' ?>>تعدیلات انبار و حسابداری</option>
                 </select>
                 <?php if ($accountFilter): ?>
                     <a class="btn btn-outline btn-sm" href="/accounting/ledger">نمایش همه</a>

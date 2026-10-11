@@ -54,4 +54,8 @@ try {
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/layout.php';
 
+require_once __DIR__ . '/src/Infrastructure/Container/Autoloader.php';
+require_once __DIR__ . '/src/Infrastructure/Container/Bootstrapper.php';
+\App\Infrastructure\Container\Bootstrapper::boot(null, $pdo);
+
 $GLOBALS['routes'] = [];

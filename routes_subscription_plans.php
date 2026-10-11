@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 /**
  * routes_subscription_plans.php
- * Subscription Plans Management for SuperAdmins and Plan Overview for Business Owners
+ * SuperAdmin Platform Panel (/admin/plans & /app/plans)
+ * - 4-Tier Subscription Matrix (Free, Plus, Pro, Ultimate)
+ * - Business Quota Usage Meters (Branches, Managers, Products)
+ * - High-Priority Ticket Escalation Queue (Ultimate VIP priority handling)
  */
 
 // Helper: Get active subscription plan for a shop
@@ -25,94 +28,178 @@ function get_shop_subscription_info(int $shopId): array
         // Fallback to Free plan
         $def = $pdo->query("SELECT * FROM subscription_plans WHERE code = 'free'")->fetch(PDO::FETCH_ASSOC);
         return $def ?: [
-            'name' => 'رایگان', 'code' => 'free', 'price_monthly' => 0, 'price_yearly' => 0,
-            'max_branches' => 1, 'max_managers' => 1, 'max_products' => 30,
+            'name' => 'طرح پایه رایگان', 'code' => 'free', 'price_monthly' => 0, 'price_yearly' => 0,
+            'max_branches' => 1, 'max_managers' => 1, 'max_products' => 50,
             'allow_custom_domain' => 0, 'allow_sms_alerts' => 0, 'subscription_expires_at' => null
         ];
     } catch (Throwable $e) {
-        return ['name' => 'رایگان', 'code' => 'free', 'max_branches' => 1, 'max_managers' => 1, 'max_products' => 30];
+        return ['name' => 'طرح پایه رایگان', 'code' => 'free', 'max_branches' => 1, 'max_managers' => 1, 'max_products' => 50];
     }
 }
 
-// 1. SuperAdmin Plans Management View: /app/plans
-route('GET', '/app/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($pdo) {
+// 1. SuperAdmin Platform Panel View: /admin/plans & /app/plans
+route('GET', '/(?:admin|app)/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($pdo) {
     $user = require_roles(['superadmin', 'admin']);
 
     $plans = $pdo->query("SELECT * FROM subscription_plans ORDER BY sort_order ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
-    $shops = $pdo->query("SELECT s.id, s.name, s.slug, s.subscription_expires_at, sp.name AS plan_name, sp.code AS plan_code FROM shops s LEFT JOIN subscription_plans sp ON sp.id = s.subscription_plan_id WHERE s.active = 1 ORDER BY s.id ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $shops = $pdo->query("
+        SELECT s.id, s.name, s.slug, s.subscription_expires_at, sp.name AS plan_name, sp.code AS plan_code,
+               sp.max_branches, sp.max_managers, sp.max_products
+        FROM shops s 
+        LEFT JOIN subscription_plans sp ON sp.id = s.subscription_plan_id 
+        WHERE s.active = 1 
+        ORDER BY s.id ASC
+    ")->fetchAll(PDO::FETCH_ASSOC);
 
-    layout_start('مدیریت پلن‌های اشتراک و سطوح دسترسی', $user);
+    // Prepare quota metrics for each shop
+    $shopsWithQuotas = [];
+    foreach ($shops as $sh) {
+        $sId = (int)$sh['id'];
+        $bCount = (int)$pdo->query("SELECT COUNT(*) FROM branches WHERE business_id = {$sId} AND active = 1")->fetchColumn();
+        $pCount = (int)$pdo->query("SELECT COUNT(*) FROM products WHERE shop_id = {$sId} AND active = 1 AND deleted_at IS NULL")->fetchColumn();
+        $mCount = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE shop_id = {$sId} AND role IN ('branch_manager', 'manager', 'shop_manager')")->fetchColumn();
+
+        $maxB = (int)($sh['max_branches'] ?? 1);
+        $maxP = (int)($sh['max_products'] ?? 50);
+        $maxM = (int)($sh['max_managers'] ?? 1);
+
+        $sh['branch_count'] = $bCount;
+        $sh['prod_count'] = $pCount;
+        $sh['manager_count'] = $mCount;
+        $sh['branch_pct'] = $maxB >= 999 ? 100 : min(100, (int)round(($bCount / max(1, $maxB)) * 100));
+        $sh['prod_pct'] = $maxP >= 9999 ? 100 : min(100, (int)round(($pCount / max(1, $maxP)) * 100));
+        $sh['manager_pct'] = $maxM >= 999 ? 100 : min(100, (int)round(($mCount / max(1, $maxM)) * 100));
+
+        $shopsWithQuotas[] = $sh;
+    }
+
+    // High-Priority Ticket Escalation Queue
+    $stmtEscalated = $pdo->query("
+        SELECT t.*, s.name AS shop_name, s.slug AS shop_slug, u.nickname AS customer_name, u.username AS customer_username,
+               sp.name AS plan_name, sp.code AS plan_code
+        FROM tickets t
+        LEFT JOIN shops s ON s.id = t.shop_id
+        LEFT JOIN subscription_plans sp ON sp.id = s.subscription_plan_id
+        LEFT JOIN users u ON u.id = t.customer_id
+        WHERE t.is_escalated_to_superadmin = 1 OR t.is_elevated_to_superadmin = 1
+        ORDER BY CASE WHEN t.status = 'open' THEN 0 ELSE 1 END, t.updated_at DESC
+    ");
+    $escalatedTickets = $stmtEscalated->fetchAll(PDO::FETCH_ASSOC);
+
+    layout_start('مدیریت پلن‌های اشتراک و سهمیه‌های سراسری', $user);
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
             <div class="page-icon"><?= icon('shield', 18) ?></div>
             <div>
-                <h1>مدیریت پلن‌های اشتراک (Free, Plus, Pro, Ultimate)</h1>
-                <div class="page-sub">تعیین محدودیت شعب، مدیران، محصولات و تخصیص پلن به کسب‌وکارها</div>
+                <h1>پنل پلتفرم و مدیریت پلن‌های اشتراک (Platform SuperAdmin Panel)</h1>
+                <div class="page-sub">تعیین محدودیت‌های ۴ سطحی، پایش سهمیه کسب‌وکارها و صف ارجاع فوری تیکت‌ها</div>
             </div>
+        </div>
+        <div class="action-cluster">
+            <a class="btn btn-outline" href="/dashboard"><?= icon('dashboard', 14) ?> بازگشت به داشبورد</a>
+            <a class="btn btn-outline" href="/tickets"><?= icon('tickets', 14) ?> کلیه تیکت‌ها</a>
         </div>
     </div>
 
-    <!-- PLANS GRID -->
+    <!-- 1. 4-TIER SUBSCRIPTION PLANS MATRIX -->
+    <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h2 style="font-size:1.15rem; margin:0; font-weight:800; color:#0f172a;">ماتریس سطوح اشتراک پلتفرم (Free, Plus, Pro, Ultimate)</h2>
+            <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">تعرفه ماهانه، سهمیه شعب و انبارها، و مجوز ارجاع VIP تیکت به سوپرادمین</div>
+        </div>
+        <span class="badge badge-emerald">۴ سطح پلن فعال</span>
+    </div>
+
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-bottom:36px;">
-        <?php foreach ($plans as $p): ?>
-            <div class="card" style="padding:22px; border-radius:14px; position:relative; display:flex; flex-direction:column; justify-content:space-between;">
+        <?php foreach ($plans as $p): 
+            $isUltimate = ($p['code'] === 'ultimate');
+            $isPro = ($p['code'] === 'pro');
+            $isPlus = ($p['code'] === 'plus');
+        ?>
+            <div class="card" style="padding:24px; border-radius:16px; position:relative; display:flex; flex-direction:column; justify-content:space-between; <?= $isUltimate ? 'border: 2px solid #c084fc; box-shadow: 0 4px 20px rgba(168,85,247,0.12); background:#fff;' : '' ?>">
                 <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h2 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin:0;"><?= e($p['name']) ?></h2>
-                        <span class="badge <?= $p['code'] === 'ultimate' ? 'badge-purple' : ($p['code'] === 'pro' ? 'badge-blue' : 'badge-gray') ?>">
-                            <code><?= e($p['code']) ?></code>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h3 style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0;"><?= e($p['name']) ?></h3>
+                        <span class="badge <?= $isUltimate ? 'badge-purple' : ($isPro ? 'badge-blue' : ($isPlus ? 'badge-amber' : 'badge-gray')) ?>" style="font-weight:700;">
+                            <?= $isUltimate ? '👑 ' : '' ?><code><?= e($p['code']) ?></code>
                         </span>
                     </div>
+
                     <?php if (isset($p['active']) && !$p['active']): ?>
                         <div style="margin-bottom:8px;"><span class="badge badge-rose" style="font-size:0.7rem;">غیرفعال برای فروش</span></div>
                     <?php endif; ?>
 
-                    <div style="font-size:1.3rem; font-weight:900; color:#2563eb; margin-bottom:12px;">
-                        <?= (float)$p['price_monthly'] > 0 ? format_irt((float)$p['price_monthly']) . ' <small style="font-size:0.75rem; color:#64748b;">ماهانه</small>' : 'رایگان' ?>
+                    <div style="font-size:1.45rem; font-weight:900; color:<?= $isUltimate ? '#7c3aed' : '#2563eb' ?>; margin-bottom:16px; font-variant-numeric:tabular-nums;">
+                        <?= (float)$p['price_monthly'] > 0 ? format_irr((float)$p['price_monthly']) . ' <small style="font-size:0.76rem; color:#64748b; font-weight:500;">ماهانه</small>' : 'رایگان' ?>
                     </div>
 
-                    <ul style="list-style:none; padding:0; margin:0 0 16px 0; font-size:0.86rem; color:#475569; line-height:2.2;">
-                        <li>حداکثر شعب: <strong><?= (int)$p['max_branches'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_branches']) ?></strong></li>
-                        <li>حداکثر مدیران: <strong><?= (int)$p['max_managers'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_managers']) ?></strong></li>
-                        <li>حداکثر کالاها: <strong><?= (int)$p['max_products'] === 9999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_products']) ?></strong></li>
-                        <li>دامنه اختصاصی: <?= $p['allow_custom_domain'] ? '✓ فعال' : '✕ غیرفعال' ?></li>
-                        <li>پیامک اطلاع‌رسانی: <?= $p['allow_sms_alerts'] ? '✓ فعال' : '✕ غیرفعال' ?></li>
+                    <ul style="list-style:none; padding:0; margin:0 0 20px 0; font-size:0.86rem; color:#475569; line-height:2.3;">
+                        <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
+                            <span>حداکثر تعداد شعب:</span>
+                            <strong style="color:#0f172a;"><?= (int)$p['max_branches'] >= 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_branches']) . ' شعبه' ?></strong>
+                        </li>
+                        <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
+                            <span>حداکثر تعداد مدیران:</span>
+                            <strong style="color:#0f172a;"><?= (int)$p['max_managers'] >= 999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_managers']) . ' نفر' ?></strong>
+                        </li>
+                        <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
+                            <span>سقف کاتالوگ محصولات:</span>
+                            <strong style="color:#0f172a;"><?= (int)$p['max_products'] >= 9999 ? 'نامحدود' : en_to_fa_digits((string)$p['max_products']) . ' کالا' ?></strong>
+                        </li>
+                        <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
+                            <span>دامنه اختصاصی:</span>
+                            <span style="color:<?= $p['allow_custom_domain'] ? '#059669' : '#94a3b8' ?>; font-weight:600;">
+                                <?= $p['allow_custom_domain'] ? '✓ فعال' : '✕ غیرفعال' ?>
+                            </span>
+                        </li>
+                        <li style="display:flex; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
+                            <span>پیامک خودکار به خریدار:</span>
+                            <span style="color:<?= $p['allow_sms_alerts'] ? '#059669' : '#94a3b8' ?>; font-weight:600;">
+                                <?= $p['allow_sms_alerts'] ? '✓ فعال' : '✕ غیرفعال' ?>
+                            </span>
+                        </li>
+                        <li style="display:flex; justify-content:space-between; padding-top:2px;">
+                            <span>ارجاع تیکت به سوپرادمین:</span>
+                            <span style="color:<?= !empty($p['has_ticket_escalation']) ? '#7c3aed' : '#94a3b8' ?>; font-weight:700;">
+                                <?= !empty($p['has_ticket_escalation']) ? '👑 VIP آنی' : '✕ غیرفعال' ?>
+                            </span>
+                        </li>
                     </ul>
                 </div>
 
                 <?php if ($user['role'] === 'superadmin'): ?>
-                    <details style="margin-top:10px; border-top:1px solid #f1f5f9; padding-top:10px;">
-                        <summary style="cursor:pointer; font-size:0.82rem; color:#2563eb; font-weight:bold;">ویرایش تنظیمات این پلن</summary>
-                        <form method="post" action="/app/plans/update" style="margin-top:12px;">
+                    <details style="margin-top:12px; border-top:1px solid #f1f5f9; padding-top:12px;">
+                        <summary style="cursor:pointer; font-size:0.82rem; color:var(--primary); font-weight:bold;">ویرایش تنظیمات این پلن</summary>
+                        <form method="post" action="/admin/plans/update" style="margin-top:12px;">
                             <?= csrf_field() ?>
                             <input type="hidden" name="plan_id" value="<?= (int)$p['id'] ?>">
                             <div class="form-group" style="margin-bottom:8px;">
                                 <label style="font-size:0.75rem;">نام نمایشی:</label>
-                                <input type="text" name="name" class="input" style="padding:4px 8px; font-size:0.82rem;" value="<?= e($p['name']) ?>" required>
+                                <input type="text" name="name" class="input" style="padding:5px 8px; font-size:0.82rem;" value="<?= e($p['name']) ?>" required>
                             </div>
                             <div class="form-group" style="margin-bottom:8px;">
                                 <label style="font-size:0.75rem;">قیمت ماهانه (تومان):</label>
-                                <input type="text" name="price_monthly" class="input price-input" style="padding:4px 8px; font-size:0.82rem;" value="<?= e((string)(int)$p['price_monthly']) ?>" required>
+                                <input type="text" name="price_monthly" class="input price-input" style="padding:5px 8px; font-size:0.82rem;" value="<?= e((string)(int)$p['price_monthly']) ?>" required>
                             </div>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
                                 <div>
                                     <label style="font-size:0.75rem;">حداکثر شعب:</label>
-                                    <input type="number" name="max_branches" class="input" style="padding:4px 8px; font-size:0.82rem;" value="<?= (int)$p['max_branches'] ?>" required>
+                                    <input type="number" name="max_branches" class="input" style="padding:5px 8px; font-size:0.82rem;" value="<?= (int)$p['max_branches'] ?>" required>
                                 </div>
                                 <div>
                                     <label style="font-size:0.75rem;">حداکثر مدیران:</label>
-                                    <input type="number" name="max_managers" class="input" style="padding:4px 8px; font-size:0.82rem;" value="<?= (int)$p['max_managers'] ?>" required>
+                                    <input type="number" name="max_managers" class="input" style="padding:5px 8px; font-size:0.82rem;" value="<?= (int)$p['max_managers'] ?>" required>
                                 </div>
                             </div>
                             <div class="form-group" style="margin-bottom:10px;">
                                 <label style="font-size:0.75rem;">حداکثر کالاها:</label>
-                                <input type="number" name="max_products" class="input" style="padding:4px 8px; font-size:0.82rem;" value="<?= (int)$p['max_products'] ?>" required>
+                                <input type="number" name="max_products" class="input" style="padding:5px 8px; font-size:0.82rem;" value="<?= (int)$p['max_products'] ?>" required>
                             </div>
-                            <div class="form-group" style="margin-bottom:10px;">
+                            <div class="form-group" style="margin-bottom:12px;">
                                 <label style="font-size:0.75rem; display:flex; align-items:center; gap:8px;">
                                     <input type="checkbox" name="active" value="1" <?= (!isset($p['active']) || $p['active']) ? 'checked' : '' ?>>
-                                    فعال و قابل فروش
+                                    فعال و قابل فروش در سامانه
                                 </label>
                             </div>
                             <button class="btn btn-primary btn-sm" style="width:100%;">ذخیره تغییرات پلن</button>
@@ -123,34 +210,171 @@ route('GET', '/app/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($
         <?php endforeach; ?>
     </div>
 
-    <!-- BUSINESSES SUBSCRIPTION ASSIGNMENT TABLE -->
-    <div class="card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="font-size:1.1rem; margin:0;">پلن فعال کسب‌وکارهای ثبت‌شده</h2>
+    <!-- 2. HIGH-PRIORITY TICKET ESCALATION QUEUE -->
+    <div class="card mb-3" style="border: 1px solid #e9d5ff; box-shadow: 0 4px 16px rgba(168,85,247,0.06);">
+        <div class="card-header" style="background:#faf5ff; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3e8ff;">
+            <div>
+                <h2 style="font-size:1.15rem; margin:0; color:#6b21a8; display:flex; align-items:center; gap:8px;">
+                    <span>👑</span> صف ارجاع تیکت‌های با اولویت آنی (High-Priority Escalation Queue)
+                </h2>
+                <div style="font-size:0.8rem; color:#7e22ce; margin-top:2px;">
+                    تیکت‌های ارجاع‌داده‌شده مستقیم از سوی مشتریان سازمانی پلن Ultimate و موارد نیازمند اقدام فوری سوپرادمین
+                </div>
+            </div>
+            <span class="badge badge-purple" style="font-weight:700; font-size:0.82rem;">
+                <?= en_to_fa_digits((string)count($escalatedTickets)) ?> تیکت ارجاع‌شده
+            </span>
         </div>
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>شناسه</th>
+                        <th style="width:80px;">شماره</th>
+                        <th>اولویت و پلن</th>
+                        <th>کسب‌وکار</th>
+                        <th>مشتری / کاربر</th>
+                        <th>موضوع تیکت</th>
+                        <th>وضعیت</th>
+                        <th>آخرین بروزرسانی</th>
+                        <th>اقدام</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!$escalatedTickets): ?>
+                        <tr><td colspan="8"><?= empty_state('هیچ تیکت ارجاع‌شده‌ای در انتظار رسیدگی سوپرادمین وجود ندارد') ?></td></tr>
+                    <?php else: ?>
+                        <?php foreach ($escalatedTickets as $t): ?>
+                            <tr style="<?= $t['status'] === 'open' ? 'background:#fffbfb;' : '' ?>">
+                                <td>
+                                    <strong style="font-family:'JetBrains Mono', monospace; color:#6b21a8;">
+                                        #T-<?= en_to_fa_digits((string)$t['id']) ?>
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-purple" style="font-size:0.75rem; font-weight:700;">
+                                        👑 VIP Escalated
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong><?= e($t['shop_name'] ?? 'مرکزی') ?></strong>
+                                    <div style="font-size:0.75rem; color:#64748b;">(<?= e($t['shop_slug'] ?? 'central') ?>)</div>
+                                </td>
+                                <td>
+                                    <?= e($t['customer_name'] ?: $t['customer_username'] ?: '—') ?>
+                                </td>
+                                <td>
+                                    <strong><?= e($t['subject']) ?></strong>
+                                </td>
+                                <td>
+                                    <?php if ($t['status'] === 'open'): ?>
+                                        <span class="badge badge-amber">در انتظار رسیدگی</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-emerald">بسته شده</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="date-cell" style="font-size:0.82rem;"><?= format_jalali($t['updated_at']) ?></td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm" href="/tickets/<?= (int)$t['id'] ?>" style="background:#7c3aed; border-color:#7c3aed;">
+                                        <?= icon('send', 12) ?> پاسخ فوری
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. BUSINESS QUOTA USAGE METERS & PLAN ASSIGNMENT -->
+    <div class="card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h2 style="font-size:1.15rem; margin:0;">پایش سهمیه‌های مصرفی کسب‌وکارها (Quota Usage Meters)</h2>
+                <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">بررسی زنده میزان مصرف شعب، کاتالوگ محصولات و حساب‌های مدیریتی به همراه تخصیص پلن</div>
+            </div>
+            <span class="badge badge-gray"><?= en_to_fa_digits((string)count($shopsWithQuotas)) ?> کسب‌وکار</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">شناسه</th>
                         <th>نام کسب‌وکار</th>
-                        <th>پلن جاری</th>
-                        <th>تاریخ انقضا</th>
+                        <th>سطح پلن</th>
+                        <th style="min-width:180px;">سهمیه شعب (Branches)</th>
+                        <th style="min-width:180px;">سهمیه مدیران (Managers)</th>
+                        <th style="min-width:180px;">سهمیه کالاها (Products)</th>
+                        <th>انقضا</th>
                         <?php if ($user['role'] === 'superadmin'): ?>
-                            <th>تغییر / تمدید پلن</th>
+                            <th>تغییر / تخصیص پلن</th>
                         <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($shops as $sh): ?>
+                    <?php foreach ($shopsWithQuotas as $sh): 
+                        $bUnlimited = (int)($sh['max_branches'] ?? 1) >= 999;
+                        $mUnlimited = (int)($sh['max_managers'] ?? 1) >= 999;
+                        $pUnlimited = (int)($sh['max_products'] ?? 50) >= 9999;
+                    ?>
                         <tr>
                             <td><?= (int)$sh['id'] ?></td>
-                            <td><strong><?= e($sh['name']) ?></strong> <span style="font-size:0.78rem; color:#64748b;">(<?= e($sh['slug']) ?>)</span></td>
-                            <td><span class="badge badge-blue"><?= e($sh['plan_name'] ?: 'رایگان') ?></span></td>
-                            <td><?= !empty($sh['subscription_expires_at']) ? en_to_fa_digits(substr($sh['subscription_expires_at'], 0, 10)) : 'دائمی / بدون انقضا' ?></td>
+                            <td>
+                                <strong><?= e($sh['name']) ?></strong>
+                                <div style="font-size:0.78rem; color:#64748b; font-family:'JetBrains Mono', monospace;">(<?= e($sh['slug']) ?>)</div>
+                            </td>
+                            <td>
+                                <span class="badge <?= $sh['plan_code'] === 'ultimate' ? 'badge-purple' : ($sh['plan_code'] === 'pro' ? 'badge-blue' : ($sh['plan_code'] === 'plus' ? 'badge-amber' : 'badge-gray')) ?>" style="font-weight:700;">
+                                    <?= e($sh['plan_name'] ?: 'طرح پایه رایگان') ?>
+                                </span>
+                            </td>
+
+                            <!-- Branches Meter -->
+                            <td>
+                                <div class="quota-meter-wrap">
+                                    <div class="quota-meter-label">
+                                        <span><?= en_to_fa_digits((string)$sh['branch_count']) ?> از <?= $bUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['max_branches']) ?></span>
+                                        <span><?= $bUnlimited ? '✓' : en_to_fa_digits((string)$sh['branch_pct']) . '٪' ?></span>
+                                    </div>
+                                    <div class="quota-meter-bar">
+                                        <div class="quota-meter-fill" style="width:<?= $bUnlimited ? 100 : $sh['branch_pct'] ?>%; background:<?= $bUnlimited ? '#7c3aed' : ($sh['branch_pct'] > 85 ? '#dc2626' : ($sh['branch_pct'] > 60 ? '#f59e0b' : '#2563eb')) ?>;"></div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Managers Meter -->
+                            <td>
+                                <div class="quota-meter-wrap">
+                                    <div class="quota-meter-label">
+                                        <span><?= en_to_fa_digits((string)$sh['manager_count']) ?> از <?= $mUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['max_managers']) ?></span>
+                                        <span><?= $mUnlimited ? '✓' : en_to_fa_digits((string)$sh['manager_pct']) . '٪' ?></span>
+                                    </div>
+                                    <div class="quota-meter-bar">
+                                        <div class="quota-meter-fill" style="width:<?= $mUnlimited ? 100 : $sh['manager_pct'] ?>%; background:<?= $mUnlimited ? '#7c3aed' : ($sh['manager_pct'] > 85 ? '#dc2626' : ($sh['manager_pct'] > 60 ? '#f59e0b' : '#059669')) ?>;"></div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Products Meter -->
+                            <td>
+                                <div class="quota-meter-wrap">
+                                    <div class="quota-meter-label">
+                                        <span><?= en_to_fa_digits((string)$sh['prod_count']) ?> از <?= $pUnlimited ? 'نامحدود' : en_to_fa_digits((string)$sh['max_products']) ?></span>
+                                        <span><?= $pUnlimited ? '✓' : en_to_fa_digits((string)$sh['prod_pct']) . '٪' ?></span>
+                                    </div>
+                                    <div class="quota-meter-bar">
+                                        <div class="quota-meter-fill" style="width:<?= $pUnlimited ? 100 : $sh['prod_pct'] ?>%; background:<?= $pUnlimited ? '#7c3aed' : ($sh['prod_pct'] > 85 ? '#dc2626' : ($sh['prod_pct'] > 60 ? '#f59e0b' : '#2563eb')) ?>;"></div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td style="font-size:0.82rem; color:#475569;">
+                                <?= !empty($sh['subscription_expires_at']) ? en_to_fa_digits(substr($sh['subscription_expires_at'], 0, 10)) : 'دائمی / بدون انقضا' ?>
+                            </td>
+
                             <?php if ($user['role'] === 'superadmin'): ?>
                                 <td>
-                                    <form method="post" action="/app/plans/assign" style="display:inline-flex; gap:6px; align-items:center;">
+                                    <form method="post" action="/admin/plans/assign" style="display:inline-flex; gap:6px; align-items:center;">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="shop_id" value="<?= (int)$sh['id'] ?>">
                                         <select name="plan_id" class="select" style="padding:4px 8px; font-size:0.8rem;">
@@ -176,7 +400,7 @@ route('GET', '/app/plans(?:\.php)?', ['superadmin', 'admin'], function () use ($
 });
 
 // 2. Update Plan Action
-route('POST', '/app/plans/update', ['superadmin'], function () use ($pdo) {
+route('POST', '/(?:admin|app)/plans/update', ['superadmin'], function () use ($pdo) {
     require_roles(['superadmin']);
     verify_csrf_or_die();
 
@@ -197,11 +421,11 @@ route('POST', '/app/plans/update', ['superadmin'], function () use ($pdo) {
         $stmt->execute([$name, $priceMonthly, $maxBranches, $maxManagers, $maxProducts, $active, $planId]);
         flash('success', 'مشخصات پلن با موفقیت به‌روزرسانی شد.');
     }
-    safe_redirect_back('/app/plans');
+    safe_redirect_back('/admin/plans');
 });
 
 // 3. Assign Plan to Shop Action
-route('POST', '/app/plans/assign', ['superadmin'], function () use ($pdo) {
+route('POST', '/(?:admin|app)/plans/assign', ['superadmin'], function () use ($pdo) {
     require_roles(['superadmin']);
     verify_csrf_or_die();
 
@@ -213,11 +437,11 @@ route('POST', '/app/plans/assign', ['superadmin'], function () use ($pdo) {
         $stmt->execute([$planId, $shopId]);
         flash('success', 'پلن کسب‌وکار با موفقیت تغییر یافت.');
     }
-    safe_redirect_back('/app/plans');
+    safe_redirect_back('/admin/plans');
 });
 
-// 4. Business Owner Plan Overview: /app/plans/my-plan
-route('GET', '/app/plans/my-plan(?:\.php)?', ['business_owner', 'shop_owner', 'superadmin'], function () use ($pdo) {
+// 4. Business Owner Plan Overview: /app/plans/my-plan & /admin/plans/my-plan
+route('GET', '/(?:admin|app)/plans/my-plan(?:\.php)?', ['business_owner', 'shop_owner', 'superadmin'], function () use ($pdo) {
     $user = require_roles(['business_owner', 'shop_owner', 'superadmin']);
     [$shopId, $shop] = get_current_management_shop($user);
 
@@ -278,12 +502,28 @@ route('GET', '/app/plans/my-plan(?:\.php)?', ['business_owner', 'shop_owner', 's
 });
 
 // 5. Ticket Escalation to SuperAdmin Action
-route('POST', '/app/tickets/escalate', ['business_owner', 'shop_owner', 'superadmin', 'admin'], function () use ($pdo) {
+route('POST', '/(?:admin|app)/tickets/escalate', ['business_owner', 'shop_owner', 'superadmin', 'admin'], function () use ($pdo) {
     $user = require_roles(['business_owner', 'shop_owner', 'superadmin', 'admin']);
     verify_csrf_or_die();
 
     $ticketId = (int)($_POST['ticket_id'] ?? 0);
     if ($ticketId > 0) {
+        $stmtT = $pdo->prepare("
+            SELECT t.shop_id, sp.has_ticket_escalation, sp.code 
+            FROM tickets t 
+            LEFT JOIN shops s ON s.id = t.shop_id 
+            LEFT JOIN subscription_plans sp ON sp.id = s.subscription_plan_id 
+            WHERE t.id = ?
+        ");
+        $stmtT->execute([$ticketId]);
+        $tData = $stmtT->fetch(PDO::FETCH_ASSOC);
+
+        if ($user['role'] !== 'superadmin' && empty($tData['has_ticket_escalation'])) {
+            flash('error', 'ارجاع تیکت به سوپرادمین منحصراً در پلن سازمانی (Ultimate) مجاز می‌باشد.');
+            safe_redirect_back('/tickets');
+            return;
+        }
+
         $stmt = $pdo->prepare("UPDATE tickets SET is_escalated_to_superadmin = 1, updated_at = datetime('now') WHERE id = ?");
         $stmt->execute([$ticketId]);
         flash('success', 'تیکت با اولویت بالا به مدیریت ارشد سامانه (SuperAdmin) ارجاع داده شد.');
