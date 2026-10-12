@@ -59,6 +59,9 @@ route('GET', '/tickets/(\d+)', ['customer', 'admin', 'superadmin'], function ($i
                 <div class="page-sub">
                     <?= $user['role'] !== 'customer' ? 'مشتری: ' . e($ticket['customer_nickname']) . ' | ' : '' ?>
                     وضعیت: <?= ticket_badge($ticket['status']) ?>
+                    <?php if (!empty($ticket['is_escalated_to_superadmin']) || !empty($ticket['is_elevated_to_superadmin'])): ?>
+                        <span class="badge badge-purple">پشتیبانی ویژه پلن آلتیمیت</span>
+                    <?php endif; ?>
                     <?php if (in_array($user['role'], ['admin', 'superadmin'], true)): ?>
                         | آخرین پاسخ مدیر: <strong><?= e($lastAdminName ?: '—') ?></strong>
                     <?php endif; ?>

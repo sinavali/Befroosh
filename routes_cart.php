@@ -42,8 +42,8 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
     <div style="margin-bottom:24px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-                <h1 style="font-size:1.4rem; font-weight:800; color:#0f172a; margin-bottom:4px;">سبد خرید شما</h1>
-                <div style="font-size:0.85rem; color:#64748b;">اقلام به تفکیک فروشگاه به مدت ۷ روز نگهداری می‌شوند</div>
+                <h1 style="font-size:1.35rem; font-weight:700; color:var(--ink); margin-bottom:4px; letter-spacing:-0.01em;">سبد خرید شما</h1>
+                <div style="font-size:0.82rem; color:var(--muted);">اقلام به تفکیک فروشگاه به مدت ۷ روز در سبد ذخیره می‌مانند</div>
             </div>
             <a class="btn btn-outline" href="/shops"><?= icon('plus', 14) ?> مرور فروشگاه‌ها</a>
         </div>
@@ -71,7 +71,7 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
                     <div class="card">
                         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div>
-                                <h2 style="font-size:1.1rem;"><?= e($shopCart['shop_name']) ?></h2>
+                                <h2 style="font-size:1.05rem; font-weight:600;"><?= e($shopCart['shop_name']) ?></h2>
                                 <div style="font-size:0.75rem; color:var(--muted);">سفارش مجزا از این فروشگاه ارسال خواهد شد</div>
                             </div>
                             <a class="btn btn-outline btn-sm" href="/s/<?= urlencode($shopCart['shop_slug']) ?>">مشاهده ویترین فروشگاه</a>
@@ -94,27 +94,27 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
                                         <tr>
                                             <td style="width:50px;">
                                                 <?php if (!empty($item['image_path']) && file_exists(STORAGE_PATH . '/' . $item['image_path'])): ?>
-                                                    <img src="/storage/<?= e($item['image_path']) ?>" alt="" style="width:42px; height:42px; object-fit:cover; border-radius:6px; border:1px solid #e5e7eb;">
+                                                    <img src="/storage/<?= e($item['image_path']) ?>" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border);">
                                                 <?php else: ?>
-                                                    <div style="width:42px; height:42px; background:#f3f4f6; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:0.7rem;">عکس</div>
+                                                    <div style="width:40px; height:40px; background:var(--surface-well); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.68rem; border:1px solid var(--border);">کالا</div>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <a href="/s/<?= urlencode($shopCart['shop_slug']) ?>/p/<?= (int)$item['product_id'] ?>" style="font-weight:700; color:#1e40af; text-decoration:none;">
+                                                <a href="/s/<?= urlencode($shopCart['shop_slug']) ?>/p/<?= (int)$item['product_id'] ?>" style="font-weight:600; color:var(--ink); text-decoration:none;">
                                                     <?= e($item['product_title']) ?>
                                                 </a>
-                                                <div style="font-size:0.75rem; color:#6b7280;">واحد: <?= e($item['unit'] ?: 'عدد') ?></div>
+                                                <div style="font-size:0.75rem; color:var(--muted);">واحد سنجش: <?= e($item['unit'] ?: 'عدد') ?></div>
                                             </td>
-                                            <td><?= format_irr((float)$item['price']) ?></td>
+                                            <td><span class="tabular-nums" style="font-weight:600;"><?= format_irr((float)$item['price']) ?></span></td>
                                             <td>
                                                 <form method="post" action="/cart/update" style="display:inline-flex; align-items:center; gap:6px;">
                                                     <?= csrf_field() ?>
                                                     <input type="hidden" name="cart_id" value="<?= (int)$item['id'] ?>">
-                                                    <input type="number" name="quantity" value="<?= (float)$item['quantity'] ?>" min="1" step="1" class="input" style="width:70px; padding:4px 8px; font-size:0.85rem;" required>
+                                                    <input type="number" name="quantity" value="<?= (float)$item['quantity'] ?>" min="1" step="1" class="input tabular-nums" style="width:70px; padding:4px 8px; font-size:0.85rem;" required>
                                                     <button class="btn btn-outline btn-sm" title="به‌روزرسانی تعداد">ثبت</button>
                                                 </form>
                                             </td>
-                                            <td><strong><?= format_irr((float)$item['line_total']) ?></strong></td>
+                                            <td><strong class="tabular-nums"><?= format_irr((float)$item['line_total']) ?></strong></td>
                                             <td>
                                                 <form method="post" action="/cart/remove" class="inline-form" data-confirm="این کالا از سبد خرید حذف شود؟">
                                                     <?= csrf_field() ?>
@@ -128,16 +128,16 @@ route('GET', '/cart(?:\.php)?', [], function () use ($pdo) {
                             </table>
                         </div>
 
-                        <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#f9fafb;">
+                        <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:var(--surface-muted);">
                             <div>
-                                <div>جمع کالاها: <strong><?= format_irr($subtotal) ?></strong></div>
-                                <div style="font-size:0.8rem; color:#6b7280; margin-top:2px;">
-                                    هزینه ارسال: <?= $isFreeShipping ? '<span class="badge badge-emerald">رایگان</span>' : format_irr($shipping) ?>
+                                <div>جمع کالاها: <strong class="tabular-nums"><?= format_irr($subtotal) ?></strong></div>
+                                <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
+                                    هزینه ارسال: <?= $isFreeShipping ? '<span class="badge badge-emerald">رایگان</span>' : '<span class="tabular-nums">' . format_irr($shipping) . '</span>' ?>
                                     <?php if (!$isFreeShipping && $shopCart['free_shipping_threshold'] > 0): ?>
-                                        <span style="font-size:0.75rem;">(ارسال رایگان برای خریدهای بالای <?= format_irr($shopCart['free_shipping_threshold']) ?>)</span>
+                                        <span style="font-size:0.75rem;">(ارسال رایگان برای خریدهای بالای <span class="tabular-nums"><?= format_irr($shopCart['free_shipping_threshold']) ?></span>)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div style="font-size:1rem; font-weight:800; color:#1e3a8a; margin-top:4px;">مبلغ کل برآوردی: <?= format_irr($estimatedTotal) ?></div>
+                                <div style="font-size:1.05rem; font-weight:700; color:var(--ink); margin-top:4px;">مبلغ کل برآوردی: <span class="tabular-nums"><?= format_irr($estimatedTotal) ?></span></div>
                             </div>
                             <a class="btn btn-primary" href="/orders/create?shop_id=<?= (int)$sid ?>">
                                 <?= icon('check', 14) ?> تسویه حساب و ثبت سفارش از این فروشگاه

@@ -117,17 +117,51 @@ function render_layout_head(string $title): void
         .page-title-wrap h1 { font-size: 1.3rem; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.01em; }
         .page-sub { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
         .filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 18px; }
-        .stat-card { background: var(--canvas); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-whisper); transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .stat-card:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-        .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-        .stat-icon.emerald { background: #e8f8ed; color: #1d833e; border: 1px solid rgba(52, 199, 89, 0.2); }
-        .stat-icon.blue { background: #edf5ff; color: #0071e3; border: 1px solid rgba(0, 113, 227, 0.2); }
-        .stat-icon.purple { background: #f0effc; color: #4341b4; border: 1px solid rgba(88, 86, 214, 0.2); }
-        .stat-icon.amber { background: #fff4e5; color: #a05e00; border: 1px solid rgba(255, 149, 0, 0.2); }
-        .stat-icon.rose { background: #ffebea; color: #d70015; border: 1px solid rgba(255, 59, 48, 0.2); }
-        .stat-value { font-size: 1.35rem; font-weight: 700; color: var(--ink); line-height: 1.2; font-variant-numeric: tabular-nums; }
-        .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 3px; font-weight: 500; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .stat-card, .metric-card {
+            background: var(--canvas);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+            box-shadow: var(--shadow-whisper);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+        }
+        .stat-card:hover, .metric-card:hover {
+            border-color: var(--border-subtle);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+        .metric-header, .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .metric-label, .stat-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        .metric-value, .stat-value {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+        .metric-sub, .stat-sub {
+            font-size: 0.74rem;
+            color: var(--slate);
+            font-weight: 400;
+        }
+        .stat-icon { display: none; }
         .table-responsive { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
         .table th { background: var(--surface-muted); padding: 11px 16px; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
         .table td { padding: 13px 16px; font-size: 0.88rem; border-bottom: 1px solid #f2f2f7; vertical-align: middle; color: var(--ink); }
@@ -513,6 +547,69 @@ function render_layout_head(string $title): void
             height: 100%;
             border-radius: 99px;
             transition: width 0.4s ease;
+        }
+        /* Apple Messages Style Chat Thread */
+        .chat, .chat-thread {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 8px 4px;
+        }
+        .chat .message, .chat-bubble-wrap {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            box-shadow: var(--shadow-whisper);
+            border: 1px solid var(--border);
+            transition: all 0.15s ease;
+        }
+        .chat .message.mine, .chat-bubble-wrap.mine {
+            align-self: flex-start;
+            background: #ffffff;
+            border-right: 3px solid var(--primary);
+        }
+        .chat .message.other, .chat-bubble-wrap.other {
+            align-self: flex-end;
+            background: var(--surface-muted);
+            border-left: 3px solid var(--border-subtle);
+        }
+        .chat .message-meta, .chat-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .chat .message-body, .chat-body {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--ink);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .chat .attachments, .chat-attachments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+        }
+        .chat .attachments a img, .chat-attachments a img {
+            width: 76px;
+            height: 76px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .chat .attachments a img:hover, .chat-attachments a img:hover {
+            transform: scale(1.04);
+            box-shadow: var(--shadow);
         }
 
         .gap-1 { gap: 6px; }

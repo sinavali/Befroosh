@@ -60,44 +60,49 @@ route('GET', '/(?:app/)?dashboard(?:\.php)?', [], function () use ($pdo) {
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon blue"><?= icon('orders', 18) ?></div>
-                <div>
-                    <div class="stat-value"><?= en_to_fa_digits((string) $totalOrders) ?></div>
-                    <div class="stat-label">کل سفارشات</div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">کل سفارشات</span>
+                    <span class="badge badge-muted">ثبت‌شده</span>
                 </div>
+                <div class="metric-value"><?= en_to_fa_digits((string) $totalOrders) ?></div>
+                <div class="metric-sub">سفارش‌های ثبت شده در حساب شما</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon amber"><?= icon('clock', 18) ?></div>
-                <div>
-                    <div class="stat-value"><?= en_to_fa_digits((string) $placedOrders) ?></div>
-                    <div class="stat-label">در انتظار نهایی‌سازی</div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">در انتظار نهایی‌سازی</span>
+                    <span class="badge badge-amber">جاری</span>
                 </div>
+                <div class="metric-value"><?= en_to_fa_digits((string) $placedOrders) ?></div>
+                <div class="metric-sub">نیاز به تسویه یا تایید پیش‌فاکتور</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon emerald"><?= icon('check', 18) ?></div>
-                <div>
-                    <div class="stat-value"><?= en_to_fa_digits((string) $completedOrders) ?></div>
-                    <div class="stat-label">تکمیل شده</div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">تحویل‌شده</span>
+                    <span class="badge badge-emerald">موفق</span>
                 </div>
+                <div class="metric-value"><?= en_to_fa_digits((string) $completedOrders) ?></div>
+                <div class="metric-sub">سفارش‌های ارسال و تحویل شده</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon purple"><?= icon('report', 18) ?></div>
-                <div>
-                    <div class="stat-value"><?= format_irr($totalSpend) ?></div>
-                    <div class="stat-label">مجموع خرید نهایی</div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">مجموع خرید نهایی</span>
+                    <span class="badge badge-blue">تومان</span>
                 </div>
+                <div class="metric-value"><?= format_irr($totalSpend) ?></div>
+                <div class="metric-sub">ارزش فاکتورهای نهایی شما</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon rose"><?= icon('tickets', 18) ?></div>
-                <div>
-                    <div class="stat-value"><?= en_to_fa_digits((string) $openTickets) ?></div>
-                    <div class="stat-label">تیکت باز</div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-label">تیکت‌های پشتیبانی</span>
+                    <span class="badge badge-rose"><?= $openTickets > 0 ? 'پاسخ لازم' : 'عادی' ?></span>
                 </div>
+                <div class="metric-value"><?= en_to_fa_digits((string) $openTickets) ?></div>
+                <div class="metric-sub">درخواست‌های فعال و باز</div>
             </div>
         </div>
 
@@ -243,39 +248,48 @@ route('GET', '/(?:app/)?dashboard(?:\.php)?', [], function () use ($pdo) {
                 <div class="page-sub"><?= e($dashSub) ?></div>
             </div>
         </div>
+        <div class="action-cluster">
+            <a class="btn btn-outline" href="/orders?status=all&payment_status=pending_verification"><?= icon('receipt', 14) ?> صف تایید فیش‌ها</a>
+            <a class="btn btn-outline" href="/inventory"><?= icon('inventory', 14) ?> انبارداری</a>
+            <a class="btn btn-primary" href="/orders/create"><?= icon('plus', 14) ?> ثبت سفارش</a>
+        </div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon blue"><?= icon('orders', 18) ?></div>
-            <div>
-                <div class="stat-value"><?= en_to_fa_digits((string) $ordersToday) ?></div>
-                <div class="stat-label">سفارش امروز</div>
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-label">سفارش‌های امروز</span>
+                <span class="badge badge-blue">لحظه‌ای</span>
             </div>
+            <div class="metric-value"><?= en_to_fa_digits((string) $ordersToday) ?></div>
+            <div class="metric-sub">تعداد کل سفارش‌های ثبت شده امروز</div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon emerald"><?= icon('report', 18) ?></div>
-            <div>
-                <div class="stat-value"><?= format_irt($revenue) ?></div>
-                <div class="stat-label">درآمد نهایی/تکمیل‌شده</div>
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-label">درآمد نهایی / تکمیل‌شده</span>
+                <span class="badge badge-emerald">تومان</span>
             </div>
+            <div class="metric-value"><?= format_irt($revenue) ?></div>
+            <div class="metric-sub">ارزش کل فاکتورهای پرداخت‌شده و تحویل‌شده</div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon purple"><?= icon('customers', 18) ?></div>
-            <div>
-                <div class="stat-value"><?= $extraKpiVal ?></div>
-                <div class="stat-label"><?= e($extraKpiLabel) ?></div>
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-label"><?= e($extraKpiLabel) ?></span>
+                <span class="badge badge-amber">عملیاتی</span>
             </div>
+            <div class="metric-value"><?= $extraKpiVal ?></div>
+            <div class="metric-sub"><?= $isStaffRole ? 'رسیدهای بانکی نیازمند تطبیق و ثبت سند' : 'کسب‌وکارهای فعال در پلتفرم' ?></div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon amber"><?= icon('tickets', 18) ?></div>
-            <div>
-                <div class="stat-value"><?= en_to_fa_digits((string) $openTickets) ?></div>
-                <div class="stat-label">تیکت باز</div>
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-label">تیکت‌های باز پشتیبانی</span>
+                <span class="badge badge-purple"><?= $openTickets > 0 ? 'نیازمند پاسخ' : 'تکمیل' ?></span>
             </div>
+            <div class="metric-value"><?= en_to_fa_digits((string) $openTickets) ?></div>
+            <div class="metric-sub">درخواست‌های باز مشتریان و همکاران</div>
         </div>
     </div>
 

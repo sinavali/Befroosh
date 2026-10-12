@@ -54,22 +54,28 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
 
     layout_start('تنظیمات فروشگاه', $user);
     ?>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <div>
-            <h1 style="font-size:1.3rem; font-weight:800; margin:0; color:#0f172a;">تنظیمات فروشگاه «<?= e($shop['name']) ?>»</h1>
-            <div style="font-size:0.85rem; color:#64748b;">مدیریت کارت‌های بانکی، سیاست‌های خرید، متن درباره‌ما و مشخصات فروشگاه</div>
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <div class="page-icon"><?= icon('store', 18) ?></div>
+            <div>
+                <h1>تنظیمات فروشگاه «<?= e($shop['name']) ?>»</h1>
+                <div class="page-sub">مدیریت کارت‌های بانکی مقصد، سیاست‌های خرید، متن درباره‌ما و مشخصات فروشگاه</div>
+            </div>
         </div>
-        <a href="/shop/<?= e($shop['slug']) ?>" target="_blank" class="btn btn-outline"><?= icon('store', 14) ?> مشاهده ویترین عمومی</a>
+        <a href="/shop/<?= e($shop['slug']) ?>" target="_blank" class="btn btn-outline"><?= icon('eye', 14) ?> مشاهده ویترین عمومی</a>
     </div>
 
-    <?php if ($error): ?><div class="card" style="background:#fef2f2; border-color:#fecaca; color:#991b1b; padding:12px;"><?= e($error) ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="alert alert-error mb-3"><?= e($error) ?></div><?php endif; ?>
 
     <!-- MAIN SETTINGS & RICH TEXT FORM -->
-    <div class="card" style="padding:24px; margin-bottom:24px;">
-        <h2 style="font-size:1.05rem; font-weight:bold; margin-bottom:16px;">مشخصات مالی، ارسال و ویرایشگر متون فروشگاه</h2>
-        <form method="post" action="/shop/settings" id="shopSettingsForm">
-            <?= csrf_field() ?>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:20px;">
+    <div class="card mb-3">
+        <div class="card-header">
+            <h2>مشخصات مالی، ارسال و ویرایشگر متون فروشگاه</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/shop/settings" id="shopSettingsForm">
+                <?= csrf_field() ?>
+                <div class="form-grid mb-3">
                 <div>
                     <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">تلفن پشتیبانی فروشگاه:</label>
                     <input type="text" name="phone" class="input" value="<?= e($shop['phone']) ?>">
@@ -122,32 +128,38 @@ route('GET|POST', '/shop/settings', ['shop_owner', 'superadmin'], function () us
     </div>
 
     <!-- BANK CARDS SECTION -->
-    <div class="card" style="padding:24px; margin-bottom:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <h2 style="font-size:1.05rem; font-weight:bold; margin:0;">کارت‌های بانکی جهت تسویه کارت‌به‌کارت</h2>
+    <div class="card mb-3">
+        <div class="card-header">
+            <h2>کارت‌های بانکی مقصد جهت تسویه کارت‌به‌کارت</h2>
         </div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>شماره کارت</th>
-                    <th>نام صاحب حساب</th>
-                    <th>بانک</th>
-                    <th>شماره شبا</th>
-                    <th>وضعیت</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($cards as $c): ?>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td><code><?= e($c['card_number']) ?></code></td>
-                        <td><?= e($c['card_holder']) ?></td>
-                        <td><?= e($c['bank_name']) ?></td>
-                        <td><small><?= e($c['shaba_number']) ?></small></td>
-                        <td><span class="badge badge-emerald">فعال</span></td>
+                        <th>شماره کارت</th>
+                        <th>نام صاحب حساب</th>
+                        <th>بانک مقصد</th>
+                        <th>شماره شبا (IBAN)</th>
+                        <th>وضعیت</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if (empty($cards)): ?>
+                        <tr><td colspan="5"><?= empty_state('هیچ کارت بانکی فعالی ثبت نشده است') ?></td></tr>
+                    <?php else: ?>
+                        <?php foreach ($cards as $c): ?>
+                            <tr>
+                                <td><code class="tabular-nums" style="font-size:0.95rem; font-weight:700; background:var(--surface-well); padding:3px 8px; border-radius:4px; border:1px solid var(--border);"><?= chunk_card(e($c['card_number'])) ?></code></td>
+                                <td style="font-weight:600;"><?= e($c['card_holder']) ?></td>
+                                <td><?= e($c['bank_name']) ?></td>
+                                <td><code class="tabular-nums" style="font-size:0.82rem; color:var(--slate);"><?= e($c['shaba_number'] ?: '—') ?></code></td>
+                                <td><span class="badge badge-emerald">فعال</span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <?php
