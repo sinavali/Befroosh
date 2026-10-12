@@ -19,22 +19,22 @@ route('GET', '/', [], function () use ($pdo) {
     layout_public_start('پلتفرم جامع فروشگاه‌ساز و مدیریت شعب آنلاین', null, $user);
     ?>
     <!-- HERO SECTION -->
-    <div style="background:linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%); border-radius:24px; padding:56px 36px; color:#fff; text-align:center; margin-bottom:48px; box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+    <div class="card" style="border-radius:20px; padding:56px 36px; text-align:center; margin-bottom:48px; border:1px solid var(--border); box-shadow:var(--shadow-whisper);">
         <div style="max-width:820px; margin:0 auto;">
-            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); backdrop-filter:blur(8px); padding:6px 16px; border-radius:99px; font-size:0.85rem; font-weight:bold; margin-bottom:20px; border:1px solid rgba(255,255,255,0.2);">
+            <div style="display:inline-flex; align-items:center; gap:8px; background:#edf5ff; border:1px solid rgba(0,113,227,0.2); padding:6px 16px; border-radius:var(--radius-full); font-size:0.85rem; font-weight:700; margin-bottom:20px; color:var(--primary);">
                 ویژه فروشگاه‌های اینستاگرامی و کسب‌وکارهای دارای چند شعبه
             </div>
-            <h1 style="font-size:2.3rem; font-weight:900; line-height:1.4; margin-bottom:18px; color:#ffffff;">
-                کسب‌وکار اجتماعی خود را به یک <span style="color:#60a5fa;">فروشگاه آنلاین هوشمند</span> تبدیل کنید
+            <h1 style="font-size:2.3rem; font-weight:900; line-height:1.4; margin-bottom:18px; color:var(--ink); letter-spacing:-0.02em;">
+                کسب‌وکار اجتماعی خود را به یک <span style="color:var(--primary);">فروشگاه آنلاین هوشمند</span> تبدیل کنید
             </h1>
-            <p style="font-size:1.05rem; line-height:1.9; color:#cbd5e1; margin-bottom:32px;">
+            <p style="font-size:1.02rem; line-height:1.9; color:var(--slate); margin-bottom:32px;">
                 بدون درگیری با مالیات و کارمزدهای سنگین درگاه‌های بانکی، سفارش‌های دایرکت را ساماندهی کنید. دریافت مستقیم وجه با کارت‌به‌کارت، بارگذاری فیش، سیستم خودکار رزرو، و مدیریت هماهنگ شعب و انبارها.
             </p>
             <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
-                <a href="/register" class="btn btn-primary" style="background:#22c55e; border-color:#22c55e; font-size:1rem; padding:12px 28px; font-weight:800;">
+                <a href="/register" class="btn btn-primary btn-lg" style="font-weight:700;">
                     <?= icon('store', 16) ?> راه‌اندازی فروشگاه (رایگان)
                 </a>
-                <a href="/shops" class="btn btn-outline" style="background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.3); font-size:1rem; padding:12px 24px;">
+                <a href="/shops" class="btn btn-outline btn-lg" style="font-weight:600;">
                     <?= icon('search', 16) ?> مشاهده فروشگاه‌های نمونه
                 </a>
             </div>

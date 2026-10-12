@@ -78,6 +78,29 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
 
     $merchantCards = $isMerchant ? get_shop_active_cards($mgmtShopId > 0 ? $mgmtShopId : active_shop_id()) : [];
 
+    $branchFilter = !empty($_GET['branch_id']) ? (int)$_GET['branch_id'] : 0;
+    if ($branchFilter > 0) {
+        $where .= " AND o.branch_id = ?";
+        $params[] = $branchFilter;
+    }
+
+    $fromJdate = trim($_GET['from_jdate'] ?? '');
+    $toJdate = trim($_GET['to_jdate'] ?? '');
+    if ($fromJdate !== '') {
+        $utcFrom = jalali_to_utc($fromJdate, false);
+        if ($utcFrom) {
+            $where .= " AND o.created_at >= ?";
+            $params[] = $utcFrom;
+        }
+    }
+    if ($toJdate !== '') {
+        $utcTo = jalali_to_utc($toJdate, true);
+        if ($utcTo) {
+            $where .= " AND o.created_at <= ?";
+            $params[] = $utcTo;
+        }
+    }
+
     if ($status !== '') {
         $where .= " AND o.status = ?";
         $params[] = $status;
@@ -98,6 +121,50 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
             $params[] = "%$search%";
             $params[] = "%$search%";
         }
+    }
+
+    // CSV Export
+    if (isset($_GET['export']) && $_GET['export'] === 'csv' && $user['role'] !== 'customer') {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="orders_export_' . date('Ymd_His') . '.csv"');
+        echo "\xEF\xBB\xBF";
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['شناسه', 'کد سفارش', 'فروشگاه', 'خریدار', 'تلفن', 'وضعیت', 'پرداخت', 'مبلغ کل (تومان)', 'تاریخ ثبت']);
+        $expStmt = $pdo->prepare("
+            SELECT o.*, u.nickname AS customer_nickname, u.phone AS customer_phone, s.name AS shop_name
+            FROM orders o
+            JOIN users u ON u.id = o.customer_id
+            LEFT JOIN shops s ON s.id = o.shop_id
+            $where
+            ORDER BY o.id DESC
+        ");
+        $expStmt->execute($params);
+        while ($r = $expStmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($out, [
+                $r['id'],
+                $r['uuid'],
+                $r['shop_name'] ?: 'مرکزی',
+                $r['customer_nickname'],
+                $r['customer_phone'],
+                $r['status'],
+                $r['payment_status'],
+                (float)($r['final_total'] ?: $r['estimated_total']),
+                format_jalali($r['created_at'])
+            ]);
+        }
+        fclose($out);
+        exit;
+    }
+
+    // Fetch active branches of business for filter dropdown
+    $branchOptions = [];
+    if ($isMerchant) {
+        $sId = $mgmtShopId > 0 ? $mgmtShopId : active_shop_id();
+        try {
+            $bStmt = $pdo->prepare("SELECT id, name FROM branches WHERE business_id = ? AND active = 1 ORDER BY is_main DESC, name ASC");
+            $bStmt->execute([$sId]);
+            $branchOptions = $bStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Throwable) {}
     }
 
     $countStmt = $pdo->prepare("
@@ -198,13 +265,22 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
     <div class="card mb-3">
         <div class="card-body">
             <form class="filter-bar" method="get">
-                <input class="input" type="text" name="search" placeholder="جستجوی کد سفارش، مشتری..." value="<?= e($search) ?>" style="min-width:200px;">
+                <input class="input" type="text" name="search" placeholder="جستجوی کد سفارش، مشتری..." value="<?= e($search) ?>" style="min-width:180px;">
 
                 <?php if (in_array($user['role'], ['superadmin', 'admin'], true)): ?>
                     <select class="select" name="shop_id">
                         <option value="">همه فروشگاه‌ها</option>
                         <?php foreach ($shops as $s): ?>
                             <option value="<?= (int)$s['id'] ?>" <?= $shopFilter === (int)$s['id'] ? 'selected' : '' ?>><?= e($s['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
+
+                <?php if (!empty($branchOptions)): ?>
+                    <select class="select" name="branch_id">
+                        <option value="">همه شعب</option>
+                        <?php foreach ($branchOptions as $bo): ?>
+                            <option value="<?= (int)$bo['id'] ?>" <?= $branchFilter === (int)$bo['id'] ? 'selected' : '' ?>><?= e($bo['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 <?php endif; ?>
@@ -226,30 +302,42 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                     <option value="rejected" <?= $paymentStatus === 'rejected' ? 'selected' : '' ?>>فیش رد شده</option>
                 </select>
 
+                <!-- Shamsi Date Range Inputs -->
+                <input class="input jdate" type="text" name="from_jdate" placeholder="از تاریخ..." value="<?= e($fromJdate) ?>" style="max-width:130px;" autocomplete="off">
+                <input class="input jdate" type="text" name="to_jdate" placeholder="تا تاریخ..." value="<?= e($toJdate) ?>" style="max-width:130px;" autocomplete="off">
+
                 <button class="btn btn-outline"><?= icon('search', 14) ?> فیلتر</button>
-                <?php if ($search !== '' || $status !== '' || $paymentStatus !== '' || $shopFilter > 0): ?>
+                <?php if ($search !== '' || $status !== '' || $paymentStatus !== '' || $shopFilter > 0 || $branchFilter > 0 || $fromJdate !== '' || $toJdate !== ''): ?>
                     <a class="btn btn-ghost" href="/orders">حذف فیلترها</a>
                 <?php endif; ?>
             </form>
         </div>
     </div>
 
-    <!-- ORDERS TABLE WITH BULK PRINT FORM -->
+    <!-- ORDERS TABLE WITH BULK PRINT & BATCH ACTIONS FORM -->
     <form method="post" action="/orders/bulk-print">
         <?= csrf_field() ?>
 
         <?php if ($user['role'] !== 'customer' && !empty($orders)): ?>
-            <div class="card mb-2" style="background:#f8fafc; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <div style="font-size:0.85rem; color:#475569;">
-                    عملیات چاپ گروهی برای سفارشات انتخاب شده:
+            <div class="card mb-2" style="background:#f8fafc; padding:10px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border:1px solid var(--border);">
+                <div style="font-size:0.85rem; color:var(--slate); font-weight:600;">
+                    عملیات دسته‌ای برای سفارش‌های انتخاب‌شده:
                 </div>
-                <div style="display:flex; gap:6px;">
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <button type="submit" name="print_type" value="invoice" formtarget="_blank" class="btn btn-outline btn-sm">
-                        <?= icon('print', 13) ?> چاپ گروهی فاکتور رسمی
+                        <?= icon('print', 13) ?> چاپ فاکتورها
                     </button>
                     <button type="submit" name="print_type" value="shipping_label" formtarget="_blank" class="btn btn-outline btn-sm">
-                        چاپ گروهی برچسب پستی
+                        چاپ بارکد و برچسب پستی
                     </button>
+                    <?php
+                    $csvParams = $_GET;
+                    $csvParams['export'] = 'csv';
+                    $csvUrl = '/orders?' . http_build_query($csvParams);
+                    ?>
+                    <a href="<?= e($csvUrl) ?>" class="btn btn-outline btn-sm">
+                        خروجی اکسل / CSV
+                    </a>
                 </div>
             </div>
         <?php endif; ?>
@@ -318,6 +406,8 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                                                 'customer' => $o['customer_nickname'],
                                                 'phone' => $o['customer_phone'],
                                                 'amount' => format_irt((float)($o['final_total'] ?? $o['estimated_total'])),
+                                                'subtotal' => format_irt((float)($o['subtotal'] ?: ($o['final_total'] ?? $o['estimated_total']))),
+                                                'shipping' => format_irt((float)($o['shipping_cost'] ?? 0)),
                                                 'ref' => $o['payment_reference'] ?: 'ثبت نشده',
                                                 'img' => $receiptImg ? '/storage/' . $receiptImg : '',
                                                 'card_id' => (int)($o['payment_card_id'] ?? 0),
@@ -406,6 +496,26 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
                                 </div>
                             </div>
 
+                            <!-- Live Double-Entry Accounting Ledger Preview -->
+                            <div class="ledger-preview-card" id="ledgerPreviewCard">
+                                <div class="ledger-preview-header">
+                                    <span>پیش‌نمایش سند دوبل حسابداری (سیستم پس از تأیید)</span>
+                                    <span class="ledger-preview-delta font-mono">تراز دفاتر: &Delta; = ۰</span>
+                                </div>
+                                <div class="ledger-preview-row">
+                                    <span>بدهکار (1010 Dr.): حساب نقد و بانک</span>
+                                    <strong id="ledgerDrAmount" class="tabular-nums font-mono" style="color:var(--emerald);"></strong>
+                                </div>
+                                <div class="ledger-preview-row">
+                                    <span>بستانکار (4010 Cr.): حساب درآمد فروش کالا</span>
+                                    <strong id="ledgerCrSales" class="tabular-nums font-mono" style="color:var(--primary);"></strong>
+                                </div>
+                                <div class="ledger-preview-row" id="ledgerCrShippingRow">
+                                    <span>بستانکار (2050 Cr.): حساب درآمد خدمات ارسال و پست</span>
+                                    <strong id="ledgerCrShipping" class="tabular-nums font-mono" style="color:var(--slate);"></strong>
+                                </div>
+                            </div>
+
                             <div style="padding:10px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:0.78rem; color:#166534; line-height:1.6; margin-bottom:14px;">
                                 <strong>اتوماسیون مالی:</strong> با تأیید فیش، فاکتور در وضعیت «پرداخت‌شده» قرار گرفته و اسناد دوبل بدهکار نقد/بانک و بستانکار درآمد فروش به صورت خودکار صادر می‌شوند.
                             </div>
@@ -478,6 +588,13 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
             document.getElementById('inspectCustomerName').textContent = data.customer;
             document.getElementById('inspectCustomerPhone').textContent = data.phone;
             document.getElementById('inspectOrderRef').textContent = data.ref;
+
+            const drEl = document.getElementById('ledgerDrAmount');
+            if (drEl) drEl.textContent = data.amount;
+            const crSalesEl = document.getElementById('ledgerCrSales');
+            if (crSalesEl) crSalesEl.textContent = data.subtotal || data.amount;
+            const crShipEl = document.getElementById('ledgerCrShipping');
+            if (crShipEl) crShipEl.textContent = data.shipping || '۰ تومان';
 
             const imgEl = document.getElementById('inspectReceiptImg');
             const linkEl = document.getElementById('inspectReceiptLink');

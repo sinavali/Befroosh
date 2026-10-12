@@ -57,7 +57,7 @@ function render_order_create_form(
         <?php endif; ?>
 
         <!-- 4-DAY INVENTORY RESERVATION URGENCY BANNER -->
-        <div class="reservation-banner">
+        <div class="reservation-banner reservation-urgency-banner">
             <div>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <strong style="color:#92400e; font-size:0.95rem;">رزرو اختصاصی کالا به مدت <?= en_to_fa_digits((string)$reservationHours) ?> ساعت (<?= en_to_fa_digits((string)$reservationDays) ?> روز)</strong>
@@ -177,7 +177,7 @@ function render_order_create_form(
                                 <div class="bank-card-mockup" id="bankCardContainer">
                                     <div style="display:flex; justify-content:space-between; align-items:center;">
                                         <div class="bank-card-chip"></div>
-                                        <div style="font-size:0.9rem; font-weight:800; color:#f8fafc;" id="bankNameDisplay">
+                                        <div style="font-size:0.9rem; font-weight:800; color:var(--ink);" id="bankNameDisplay">
                                             <?= e($primaryCard['bank_name'] ?: 'بانک عضو شتاب') ?>
                                         </div>
                                     </div>
@@ -188,10 +188,10 @@ function render_order_create_form(
 
                                     <div class="bank-card-details">
                                         <div>
-                                            <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:2px;">صاحب حساب:</div>
+                                            <div style="font-size:0.72rem; color:var(--muted); margin-bottom:2px;">صاحب حساب:</div>
                                             <div class="bank-card-holder" id="cardHolderDisplay"><?= e($primaryCard['card_holder']) ?></div>
                                         </div>
-                                        <button type="button" class="btn btn-sm btn-outline" id="copyCardBtn" onclick="window.copyCardNumber()" style="background:rgba(255,255,255,0.15); color:#fff; border-color:rgba(255,255,255,0.3); font-size:0.78rem;">
+                                        <button type="button" class="btn btn-sm btn-outline" id="copyCardBtn" onclick="window.copyCardNumber()" style="background:#f2f2f7; color:var(--ink); border:1px solid var(--border-subtle); font-size:0.78rem;">
                                             کپی شماره کارت
                                         </button>
                                     </div>
@@ -263,8 +263,8 @@ function render_order_create_form(
                                     </div>
                                 </div>
 
-                                <div style="padding:12px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:var(--radius-sm); font-size:0.8rem; color:#1e40af; line-height:1.7;">
-                                    ℹ️ پس از ثبت نهایی، وضعیت سفارش در پنل شما قابل پیگیری بوده و به محض تأیید رسید توسط فروشگاه، فرآیند بسته‌بندی و صدور بارنامه پستی آغاز می‌گردد.
+                                <div style="padding:12px 14px; background:#edf5ff; border:1px solid #d0e2ff; border-radius:var(--radius-sm); font-size:0.8rem; color:#0051a8; line-height:1.7;">
+                                    <strong>اطلاعیه پیگیری:</strong> پس از ثبت نهایی، وضعیت سفارش در پنل شما قابل پیگیری بوده و به محض تأیید رسید توسط فروشگاه، فرآیند بسته‌بندی و صدور بارنامه پستی آغاز می‌گردد.
                                 </div>
                             </div>
                         </div>

@@ -134,14 +134,14 @@ function render_layout_head(string $title): void
         .table tbody tr:hover { background: #fbfbfd; }
         .flex { display: flex; align-items: center; }
 
-        /* Bank Card Mockup Component */
+        /* Bank Card Mockup Component (Apple Light HIG) */
         .bank-card-mockup {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 1px solid #334155;
+            background: #ffffff;
+            border: 1px solid var(--border);
             border-radius: 16px;
-            color: #ffffff;
+            color: var(--ink);
             padding: 24px 28px;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+            box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
             max-width: 440px;
@@ -154,15 +154,15 @@ function render_layout_head(string $title): void
             right: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(0,113,227,0.03) 0%, transparent 70%);
             pointer-events: none;
         }
         .bank-card-chip {
             width: 44px;
             height: 32px;
-            background: linear-gradient(135deg, #fcd34d, #d97706);
+            background: linear-gradient(135deg, #fcd34d, #f59e0b);
             border-radius: 6px;
-            border: 1px solid #b45309;
+            border: 1px solid #d97706;
             margin-bottom: 20px;
             position: relative;
         }
@@ -174,27 +174,27 @@ function render_layout_head(string $title): void
             text-align: center;
             margin: 16px 0;
             font-weight: 700;
-            color: #f8fafc;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            color: var(--ink);
+            text-shadow: none;
         }
         .bank-card-details {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             font-size: 0.85rem;
-            color: #94a3b8;
+            color: var(--muted);
             margin-top: 14px;
         }
         .bank-card-holder {
             font-weight: 700;
-            color: #ffffff;
+            color: var(--ink);
             font-size: 0.95rem;
         }
 
         /* 4-Day Reservation Banner Component */
         .reservation-banner {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
+            background: var(--amber-bg);
+            border: 1px solid rgba(255, 149, 0, 0.28);
             border-radius: var(--radius);
             padding: 16px 20px;
             display: flex;
@@ -209,25 +209,25 @@ function render_layout_head(string $title): void
             align-items: center;
             gap: 6px;
             background: #ffffff;
-            border: 1px solid #fcd34d;
+            border: 1px solid rgba(255, 149, 0, 0.35);
             padding: 6px 14px;
             border-radius: var(--radius-full);
             font-weight: 800;
-            color: #b45309;
+            color: #a05e00;
             font-size: 0.92rem;
             font-variant-numeric: tabular-nums;
         }
         .reservation-progress {
             width: 100%;
             height: 5px;
-            background: #fef3c7;
+            background: rgba(255, 149, 0, 0.15);
             border-radius: 99px;
             overflow: hidden;
             margin-top: 8px;
         }
         .reservation-progress-bar {
             height: 100%;
-            background: #f59e0b;
+            background: var(--amber);
             border-radius: 99px;
             transition: width 1s linear;
         }
@@ -407,8 +407,44 @@ function render_layout_head(string $title): void
         }
         @media (max-width: 768px) {
             .split-inspect-grid { grid-template-columns: 1fr; }
-            .stepper-5 { grid-template-columns: 1fr; gap: 14px; }
-            .stepper-track { display: none; }
+        /* Live Ledger Preview in Inspection Modal */
+        .ledger-preview-card {
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin: 12px 0;
+        }
+        .ledger-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--slate);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .ledger-preview-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            padding: 3px 0;
+            color: var(--ink);
+        }
+        .ledger-preview-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #1d833e;
+            background: #e8f8ed;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(52, 199, 89, 0.3);
         }
 
         /* Double-Entry Ledger & Balance Verification */
@@ -485,7 +521,7 @@ function render_layout_head(string $title): void
         .fav-heart-btn { cursor: pointer; transition: transform 0.15s; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; }
         .fav-heart-btn:hover { transform: scale(1.15); }
         .fav-heart-btn.is-active svg { fill: #ef4444 !important; stroke: #ef4444 !important; }
-        .toast-msg { position: fixed; bottom: 24px; left: 24px; z-index: 9999; background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast-msg { position: fixed; bottom: 24px; left: 24px; z-index: 9999; background: #ffffff; color: #1d1d1f; border: 1px solid rgba(0,0,0,0.08); padding: 12px 20px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 12px 32px rgba(0,0,0,0.12); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .toast-msg.show { transform: translateY(0); opacity: 1; }
         /* Quill RTL styling */
         .ql-editor { direction: rtl; text-align: right; font-family: var(--font); min-height: 180px; font-size: 0.92rem; line-height: 1.8; }
