@@ -109,5 +109,6 @@ route('POST', '/logout', [], function () {
 });
 
 require_once __DIR__ . '/routes_dashboard.php';
+require_once __DIR__ . '/routes_customer.php';
 require_once __DIR__ . '/routes_auth_profile.php';
 require_once __DIR__ . '/routes_addresses.php';

@@ -33,7 +33,11 @@ function render_order_create_form(
         'image_path' => $p['image_path'] ?? null
     ], $products);
 
-    layout_start('تکمیل سفارش و پرداخت — ' . $shop['name'], $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('تکمیل سفارش و پرداخت — ' . $shop['name'], 'orders', $user);
+    } else {
+        layout_start('تکمیل سفارش و پرداخت — ' . $shop['name'], $user);
+    }
     ?>
     <div style="max-width:960px; margin:0 auto;">
         <!-- PAGE HEADER -->
@@ -520,5 +524,9 @@ function render_order_create_form(
         <?php endif; ?>
     </div>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 }

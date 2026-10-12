@@ -47,7 +47,11 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
         }
     }
 
-    layout_start('پیگیری وضعیت سفارش', $user ?: ['role' => 'customer', 'nickname' => 'کاربر مهمان']);
+    if (!$user || $user['role'] === 'customer') {
+        layout_customer_start('پیگیری وضعیت سفارش', 'track', $user ?: ['role' => 'customer', 'nickname' => 'کاربر مهمان']);
+    } else {
+        layout_start('پیگیری وضعیت سفارش', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -256,5 +260,9 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
         </div>
     <?php endif; ?>
     <?php
-    layout_end();
+    if (!$user || $user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });

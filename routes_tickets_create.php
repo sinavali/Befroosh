@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-route('GET|POST', '/tickets/create', ['customer', 'admin', 'superadmin'], function () use ($pdo) {
+route('GET|POST', '/(?:my/)?tickets/create', ['customer', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_login();
     $isAdmin = in_array($user['role'], ['admin', 'superadmin'], true);
 
@@ -142,7 +142,11 @@ route('GET|POST', '/tickets/create', ['customer', 'admin', 'superadmin'], functi
         }
     }
 
-    layout_start('تیکت جدید', $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('تیکت جدید', 'tickets', $user);
+    } else {
+        layout_start('تیکت جدید', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -199,5 +203,9 @@ route('GET|POST', '/tickets/create', ['customer', 'admin', 'superadmin'], functi
         </div>
     </form>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-route('GET', '/tickets/(\d+)', ['customer', 'admin', 'superadmin'], function ($id) use ($pdo) {
+route('GET', '/(?:my/)?tickets/(\d+)', ['customer', 'admin', 'superadmin'], function ($id) use ($pdo) {
     $user = require_login();
 
     $stmt = $pdo->prepare("SELECT t.*, u.nickname AS customer_nickname FROM tickets t JOIN users u ON u.id = t.customer_id WHERE t.id = ?");
@@ -49,7 +49,11 @@ route('GET', '/tickets/(\d+)', ['customer', 'admin', 'superadmin'], function ($i
     $stmt->execute([$id]);
     $lastAdminName = $stmt->fetchColumn();
 
-    layout_start('مشاهده تیکت', $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('مشاهده تیکت', 'tickets', $user);
+    } else {
+        layout_start('مشاهده تیکت', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -160,10 +164,14 @@ route('GET', '/tickets/(\d+)', ['customer', 'admin', 'superadmin'], function ($i
         </div>
     </form>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 
-route('POST', '/tickets/(\d+)/reply', ['customer', 'admin', 'superadmin'], function ($id) use ($pdo) {
+route('POST', '/(?:my/)?tickets/(\d+)/reply', ['customer', 'admin', 'superadmin'], function ($id) use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 

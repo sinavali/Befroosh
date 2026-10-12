@@ -13,8 +13,8 @@ require_once __DIR__ . '/routes_orders_print.php';
 require_once __DIR__ . '/routes_orders_track.php';
 require_once __DIR__ . '/routes_orders_report.php';
 
-// Order List View (/orders, /merchant/orders, and alias /profile/orders)
-route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
+// Order List View (/orders, /my/orders, /merchant/orders, and alias /profile/orders)
+route('GET', '/(?:my/|profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_owner', 'shop_owner', 'branch_manager', 'shop_manager', 'manager', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_login();
     release_expired_reservations();
 
@@ -198,8 +198,12 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $shops = all_active_shops();
-
-    layout_start('سفارشات', $user);
+ 
+    if ($user['role'] === 'customer') {
+        layout_customer_start('سفارش‌های من', 'orders', $user);
+    } else {
+        layout_start('سفارشات', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -668,7 +672,11 @@ route('GET', '/(?:profile/|merchant/)?orders(?:\.php)?', ['customer', 'business_
     });
     </script>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 
 // Re-order POST /orders/{id}/reorder

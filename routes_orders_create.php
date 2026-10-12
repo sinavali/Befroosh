@@ -22,7 +22,11 @@ route('GET|POST', '/(?:orders/create|checkout)(?:\.php)?', ['customer', 'shop_ow
 
     if (!$shop) {
         $shops = all_active_shops();
-        layout_start('انتخاب فروشگاه', $user);
+        if ($user['role'] === 'customer') {
+            layout_customer_start('انتخاب فروشگاه', 'orders', $user);
+        } else {
+            layout_start('انتخاب فروشگاه', $user);
+        }
         ?>
         <div class="page-header">
             <div class="page-title-wrap">
@@ -45,7 +49,11 @@ route('GET|POST', '/(?:orders/create|checkout)(?:\.php)?', ['customer', 'shop_ow
             <?php endforeach; ?>
         </div>
         <?php
-        layout_end();
+        if ($user['role'] === 'customer') {
+            layout_customer_end();
+        } else {
+            layout_end();
+        }
         return;
     }
 

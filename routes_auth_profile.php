@@ -18,7 +18,7 @@ $profilePageHandler = function () use ($pdo) {
 
     $isCustomer = ($user['role'] === 'customer');
     if ($isCustomer) {
-        layout_public_start('پروفایل کاربری', null, $user);
+        layout_customer_start('مشخصات و امنیت حساب', 'profile', $user);
     } else {
         layout_start('حساب کاربری', $user);
     }
@@ -119,17 +119,16 @@ $profilePageHandler = function () use ($pdo) {
     </form>
     <?php
     if ($isCustomer) {
-        layout_public_end(null);
+        layout_customer_end();
     } else {
         layout_end();
     }
 };
 
-route('GET', '/account/profile(?:\.php)?', [], $profilePageHandler);
-route('GET', '/profile(?:\.php)?', [], $profilePageHandler);
+route('GET', '/(?:my/profile|profile|account/profile)(?:\.php)?', [], $profilePageHandler);
 
 // Save Profile Updates
-route('POST', '/(?:profile|account/profile)', [], function () use ($pdo) {
+route('POST', '/(?:my/profile|profile|account/profile)', [], function () use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 
@@ -177,7 +176,7 @@ route('POST', '/(?:profile|account/profile)', [], function () use ($pdo) {
 });
 
 // Change Password Handler
-route('POST', '/(?:profile/password|account/password)', [], function () use ($pdo) {
+route('POST', '/(?:my/profile/password|profile/password|account/password)', [], function () use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 
