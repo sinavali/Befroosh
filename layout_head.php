@@ -117,31 +117,65 @@ function render_layout_head(string $title): void
         .page-title-wrap h1 { font-size: 1.3rem; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.01em; }
         .page-sub { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
         .filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 18px; }
-        .stat-card { background: var(--canvas); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-whisper); transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .stat-card:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-        .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-        .stat-icon.emerald { background: #e8f8ed; color: #1d833e; border: 1px solid rgba(52, 199, 89, 0.2); }
-        .stat-icon.blue { background: #edf5ff; color: #0071e3; border: 1px solid rgba(0, 113, 227, 0.2); }
-        .stat-icon.purple { background: #f0effc; color: #4341b4; border: 1px solid rgba(88, 86, 214, 0.2); }
-        .stat-icon.amber { background: #fff4e5; color: #a05e00; border: 1px solid rgba(255, 149, 0, 0.2); }
-        .stat-icon.rose { background: #ffebea; color: #d70015; border: 1px solid rgba(255, 59, 48, 0.2); }
-        .stat-value { font-size: 1.35rem; font-weight: 700; color: var(--ink); line-height: 1.2; font-variant-numeric: tabular-nums; }
-        .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 3px; font-weight: 500; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .stat-card, .metric-card {
+            background: var(--canvas);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+            box-shadow: var(--shadow-whisper);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+        }
+        .stat-card:hover, .metric-card:hover {
+            border-color: var(--border-subtle);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+        .metric-header, .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .metric-label, .stat-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        .metric-value, .stat-value {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+        .metric-sub, .stat-sub {
+            font-size: 0.74rem;
+            color: var(--slate);
+            font-weight: 400;
+        }
+        .stat-icon { display: none; }
         .table-responsive { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
         .table th { background: var(--surface-muted); padding: 11px 16px; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
         .table td { padding: 13px 16px; font-size: 0.88rem; border-bottom: 1px solid #f2f2f7; vertical-align: middle; color: var(--ink); }
         .table tbody tr:hover { background: #fbfbfd; }
         .flex { display: flex; align-items: center; }
 
-        /* Bank Card Mockup Component */
+        /* Bank Card Mockup Component (Apple Light HIG) */
         .bank-card-mockup {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 1px solid #334155;
+            background: #ffffff;
+            border: 1px solid var(--border);
             border-radius: 16px;
-            color: #ffffff;
+            color: var(--ink);
             padding: 24px 28px;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+            box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
             max-width: 440px;
@@ -154,15 +188,15 @@ function render_layout_head(string $title): void
             right: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(0,113,227,0.03) 0%, transparent 70%);
             pointer-events: none;
         }
         .bank-card-chip {
             width: 44px;
             height: 32px;
-            background: linear-gradient(135deg, #fcd34d, #d97706);
+            background: linear-gradient(135deg, #fcd34d, #f59e0b);
             border-radius: 6px;
-            border: 1px solid #b45309;
+            border: 1px solid #d97706;
             margin-bottom: 20px;
             position: relative;
         }
@@ -174,27 +208,27 @@ function render_layout_head(string $title): void
             text-align: center;
             margin: 16px 0;
             font-weight: 700;
-            color: #f8fafc;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            color: var(--ink);
+            text-shadow: none;
         }
         .bank-card-details {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             font-size: 0.85rem;
-            color: #94a3b8;
+            color: var(--muted);
             margin-top: 14px;
         }
         .bank-card-holder {
             font-weight: 700;
-            color: #ffffff;
+            color: var(--ink);
             font-size: 0.95rem;
         }
 
         /* 4-Day Reservation Banner Component */
         .reservation-banner {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
+            background: var(--amber-bg);
+            border: 1px solid rgba(255, 149, 0, 0.28);
             border-radius: var(--radius);
             padding: 16px 20px;
             display: flex;
@@ -209,25 +243,25 @@ function render_layout_head(string $title): void
             align-items: center;
             gap: 6px;
             background: #ffffff;
-            border: 1px solid #fcd34d;
+            border: 1px solid rgba(255, 149, 0, 0.35);
             padding: 6px 14px;
             border-radius: var(--radius-full);
             font-weight: 800;
-            color: #b45309;
+            color: #a05e00;
             font-size: 0.92rem;
             font-variant-numeric: tabular-nums;
         }
         .reservation-progress {
             width: 100%;
             height: 5px;
-            background: #fef3c7;
+            background: rgba(255, 149, 0, 0.15);
             border-radius: 99px;
             overflow: hidden;
             margin-top: 8px;
         }
         .reservation-progress-bar {
             height: 100%;
-            background: #f59e0b;
+            background: var(--amber);
             border-radius: 99px;
             transition: width 1s linear;
         }
@@ -407,8 +441,44 @@ function render_layout_head(string $title): void
         }
         @media (max-width: 768px) {
             .split-inspect-grid { grid-template-columns: 1fr; }
-            .stepper-5 { grid-template-columns: 1fr; gap: 14px; }
-            .stepper-track { display: none; }
+        /* Live Ledger Preview in Inspection Modal */
+        .ledger-preview-card {
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin: 12px 0;
+        }
+        .ledger-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--slate);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .ledger-preview-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            padding: 3px 0;
+            color: var(--ink);
+        }
+        .ledger-preview-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #1d833e;
+            background: #e8f8ed;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(52, 199, 89, 0.3);
         }
 
         /* Double-Entry Ledger & Balance Verification */
@@ -478,6 +548,69 @@ function render_layout_head(string $title): void
             border-radius: 99px;
             transition: width 0.4s ease;
         }
+        /* Apple Messages Style Chat Thread */
+        .chat, .chat-thread {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 8px 4px;
+        }
+        .chat .message, .chat-bubble-wrap {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            box-shadow: var(--shadow-whisper);
+            border: 1px solid var(--border);
+            transition: all 0.15s ease;
+        }
+        .chat .message.mine, .chat-bubble-wrap.mine {
+            align-self: flex-start;
+            background: #ffffff;
+            border-right: 3px solid var(--primary);
+        }
+        .chat .message.other, .chat-bubble-wrap.other {
+            align-self: flex-end;
+            background: var(--surface-muted);
+            border-left: 3px solid var(--border-subtle);
+        }
+        .chat .message-meta, .chat-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .chat .message-body, .chat-body {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--ink);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .chat .attachments, .chat-attachments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+        }
+        .chat .attachments a img, .chat-attachments a img {
+            width: 76px;
+            height: 76px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .chat .attachments a img:hover, .chat-attachments a img:hover {
+            transform: scale(1.04);
+            box-shadow: var(--shadow);
+        }
 
         .gap-1 { gap: 6px; }
         .gap-2 { gap: 10px; }
@@ -485,7 +618,7 @@ function render_layout_head(string $title): void
         .fav-heart-btn { cursor: pointer; transition: transform 0.15s; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; }
         .fav-heart-btn:hover { transform: scale(1.15); }
         .fav-heart-btn.is-active svg { fill: #ef4444 !important; stroke: #ef4444 !important; }
-        .toast-msg { position: fixed; bottom: 24px; left: 24px; z-index: 9999; background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast-msg { position: fixed; bottom: 24px; left: 24px; z-index: 9999; background: #ffffff; color: #1d1d1f; border: 1px solid rgba(0,0,0,0.08); padding: 12px 20px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 12px 32px rgba(0,0,0,0.12); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .toast-msg.show { transform: translateY(0); opacity: 1; }
         /* Quill RTL styling */
         .ql-editor { direction: rtl; text-align: right; font-family: var(--font); min-height: 180px; font-size: 0.92rem; line-height: 1.8; }

@@ -26,32 +26,32 @@ function layout_public_start(string $title, ?array $shop = null, ?array $user = 
     <head>
         <?php render_layout_head($title . ' - ' . $shopName); ?>
         <style>
-            .store-header { background: #fff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 50; }
-            .store-top-announcement { background: #1e293b; color: #f8fafc; font-size: 0.8rem; padding: 6px 16px; text-align: center; }
+            .store-header { background: #ffffff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+            .store-top-announcement { background: #f2f2f7; color: var(--ink); font-size: 0.82rem; padding: 7px 16px; text-align: center; border-bottom: 1px solid var(--border); font-weight: 500; }
             .store-nav-container { max-width: 1280px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-            .store-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: #0f172a; }
-            .store-brand-logo { width: 40px; height: 40px; border-radius: 10px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; }
+            .store-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: var(--ink); }
+            .store-brand-logo { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; }
             .store-search-form { flex: 1; max-width: 480px; min-width: 240px; position: relative; }
-            .store-search-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 99px; padding: 8px 38px 8px 16px; font-size: 0.88rem; outline: none; background: #f8fafc; }
-            .store-search-input:focus { background: #fff; border-color: #2563eb; }
-            .store-search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+            .store-search-input { width: 100%; border: 1px solid var(--border-subtle); border-radius: 99px; padding: 8px 38px 8px 16px; font-size: 0.88rem; outline: none; background: #f2f2f7; color: var(--ink); }
+            .store-search-input:focus { background: #fff; border-color: var(--primary); }
+            .store-search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--placeholder); }
             .store-actions { display: flex; align-items: center; gap: 10px; }
-            .store-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; font-size: 0.86rem; font-weight: bold; color: #334155; position: relative; cursor: pointer; }
-            .store-action-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
-            .store-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 900; border-radius: 99px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
-            .store-menubar { background: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #e2e8f0; }
+            .store-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fff; font-size: 0.86rem; font-weight: 600; color: var(--slate); position: relative; cursor: pointer; transition: all 0.15s ease; }
+            .store-action-btn:hover { background: var(--surface-well); border-color: var(--border-subtle); color: var(--ink); }
+            .store-badge { position: absolute; top: -6px; right: -6px; background: var(--crimson); color: #fff; font-size: 0.7rem; font-weight: 900; border-radius: 99px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+            .store-menubar { background: var(--surface-muted); border-top: 1px solid #f2f2f7; border-bottom: 1px solid var(--border); }
             .store-menu-list { max-width: 1280px; margin: 0 auto; padding: 0 20px; display: flex; gap: 8px; list-style: none; overflow-x: auto; }
-            .store-menu-item a { display: block; padding: 10px 14px; font-size: 0.88rem; font-weight: bold; color: #475569; border-bottom: 2px solid transparent; white-space: nowrap; }
-            .store-menu-item a:hover { color: #2563eb; }
-            .store-menu-item a.active { color: #2563eb; border-bottom-color: #2563eb; }
+            .store-menu-item a { display: block; padding: 10px 14px; font-size: 0.88rem; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.15s; }
+            .store-menu-item a:hover { color: var(--primary); }
+            .store-menu-item a.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
             .store-main-content { max-width: 1280px; margin: 0 auto; padding: 24px 20px; min-height: 70vh; }
-            .store-footer { background: #0f172a; color: #94a3b8; font-size: 0.88rem; padding: 48px 20px 24px; margin-top: 60px; border-top: 1px solid #1e293b; }
+            .store-footer { background: #ffffff; color: var(--muted); font-size: 0.88rem; padding: 48px 20px 24px; margin-top: 60px; border-top: 1px solid var(--border); }
             .store-footer-grid { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; margin-bottom: 36px; }
-            .store-footer-col h4 { color: #f8fafc; font-size: 1rem; margin-bottom: 16px; font-weight: bold; }
+            .store-footer-col h4 { color: var(--ink); font-size: 1rem; margin-bottom: 16px; font-weight: 700; }
             .store-footer-col ul { list-style: none; }
             .store-footer-col ul li { margin-bottom: 8px; }
-            .store-footer-col ul li a:hover { color: #fff; }
-            .store-footer-bottom { max-width: 1280px; margin: 0 auto; border-top: 1px solid #1e293b; padding-top: 20px; text-align: center; font-size: 0.8rem; color: #64748b; }
+            .store-footer-col ul li a:hover { color: var(--primary); }
+            .store-footer-bottom { max-width: 1280px; margin: 0 auto; border-top: 1px solid var(--border); padding-top: 20px; text-align: center; font-size: 0.8rem; color: var(--placeholder); }
             /* Mini-cart drawer */
             .mini-cart-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; opacity: 0; visibility: hidden; transition: all 0.25s ease-in-out; }
             .mini-cart-backdrop.open { opacity: 1; visibility: visible; }

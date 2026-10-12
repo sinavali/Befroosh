@@ -158,41 +158,41 @@ route('GET', '/products(?:\.php)?', ['shop_owner', 'shop_manager', 'admin', 'sup
                         <tr>
                             <td>
                                 <?php if (!empty($p['image_path']) && file_exists(STORAGE_PATH . '/' . $p['image_path'])): ?>
-                                    <img src="/storage/<?= e($p['image_path']) ?>" alt="" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid #e5e7eb;">
+                                    <img src="/storage/<?= e($p['image_path']) ?>" alt="" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid var(--border);">
                                 <?php else: ?>
-                                    <div style="width:36px; height:36px; background:#f3f4f6; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:0.65rem;">عکس</div>
+                                    <div style="width:36px; height:36px; background:var(--surface-well); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.65rem; border:1px solid var(--border);">کالا</div>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <strong><?= e($p['title']) ?></strong>
-                                <div style="font-size:0.75rem; color:#6b7280;">واحد: <?= e($p['unit'] ?: 'عدد') ?></div>
+                                <div style="font-weight:600; color:var(--ink); font-size:0.92rem;"><?= e($p['title']) ?></div>
+                                <div style="font-size:0.75rem; color:var(--muted);">واحد سنجش: <?= e($p['unit'] ?: 'عدد') ?></div>
                             </td>
-                            <td><?= e($p['category_name'] ?: '—') ?></td>
+                            <td><span class="badge badge-muted"><?= e($p['category_name'] ?: 'عمومی') ?></span></td>
                             <td>
-                                <code><?= e($p['sku'] ?: '—') ?></code>
+                                <code class="tabular-nums" style="font-size:0.8rem; background:var(--surface-well); padding:2px 6px; border-radius:4px; border:1px solid var(--border);"><?= e($p['sku'] ?: 'بدون SKU') ?></code>
                                 <?php if (!empty($p['barcode'])): ?>
-                                    <div style="font-size:0.75rem; color:#6b7280; font-family:monospace;"><?= e($p['barcode']) ?></div>
+                                    <div class="tabular-nums" style="font-size:0.72rem; color:var(--muted); margin-top:2px;"><?= e($p['barcode']) ?></div>
                                 <?php endif; ?>
                             </td>
-                            <td><?= format_irr((float)$p['price']) ?></td>
+                            <td><span class="tabular-nums" style="font-weight:600; color:var(--ink); font-size:0.92rem;"><?= format_irr((float)$p['price']) ?></span></td>
                             <td>
                                 <?php if ((float)$p['stock_quantity'] <= 0): ?>
-                                    <span class="badge badge-rose">اتمام موجودی</span>
+                                    <span class="badge badge-rose">ناموجود</span>
                                 <?php elseif ((float)$p['stock_quantity'] <= (float)$p['min_stock_alert']): ?>
-                                    <span class="badge badge-amber"><?= en_to_fa_digits((string)$p['stock_quantity']) ?> (هشدار کسری)</span>
+                                    <span class="badge badge-amber"><span class="tabular-nums"><?= en_to_fa_digits((string)$p['stock_quantity']) ?></span> (کسری انبار)</span>
                                 <?php else: ?>
-                                    <span class="badge badge-emerald"><?= en_to_fa_digits((string)$p['stock_quantity']) ?></span>
+                                    <span class="badge badge-emerald"><span class="tabular-nums"><?= en_to_fa_digits((string)$p['stock_quantity']) ?></span> موجود</span>
                                 <?php endif; ?>
                             </td>
-                            <td style="font-size:0.75rem;">
+                            <td style="font-size:0.75rem; color:var(--slate);">
                                 <?php if (!empty($p['max_per_order']) && $p['max_per_order'] > 0): ?>
-                                    هر سفارش: <?= en_to_fa_digits((string)$p['max_per_order']) ?><br>
+                                    <div>هر سفارش: <span class="tabular-nums" style="font-weight:600;"><?= en_to_fa_digits((string)$p['max_per_order']) ?></span></div>
                                 <?php endif; ?>
                                 <?php if (!empty($p['max_per_month']) && $p['max_per_month'] > 0): ?>
-                                    ماهانه: <?= en_to_fa_digits((string)$p['max_per_month']) ?>
+                                    <div>ماهانه: <span class="tabular-nums" style="font-weight:600;"><?= en_to_fa_digits((string)$p['max_per_month']) ?></span></div>
                                 <?php endif; ?>
                                 <?php if (empty($p['max_per_order']) && empty($p['max_per_month'])): ?>
-                                    <span style="color:#9ca3af;">نامحدود</span>
+                                    <span style="color:var(--muted);">نامحدود</span>
                                 <?php endif; ?>
                             </td>
                             <td>

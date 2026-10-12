@@ -4,7 +4,7 @@ A simple, fast, and feature-rich multi-tenant CMS tailored for small businesses 
 
 ---
 
-## 🌟 ویژگی‌های کلیدی (Key Features)
+## ویژگی‌های کلیدی (Key Features)
 
 - **چند فروشگاهی (Multi-Tenant Architecture)**: هر فروشگاه دارای لندینگ اختصاصی، مدیر، محصولات و گزارش‌های تفکیک‌شده است.
 - **بدون درگاه آنلاین (Offline Payment / Card-to-Card)**: پشتیبانی از کارت‌به‌کارت با قابلیت بارگذاری رسید واریز و تأیید/رد توسط مدیر فروشگاه.
@@ -28,7 +28,7 @@ A simple, fast, and feature-rich multi-tenant CMS tailored for small businesses 
 
 ---
 
-## 🚀 راه‌اندازی سریع (Quick Start)
+## راه‌اندازی سریع (Quick Start)
 
 1. مخزن را کلون کنید:
    ```bash

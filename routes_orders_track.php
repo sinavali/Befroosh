@@ -119,61 +119,76 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
                 </div>
             <?php endif; ?>
 
-            <!-- VISUAL STEPPER TIMELINE -->
-            <?php if (!$isCanceled): ?>
-                <div style="padding:24px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
-                    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; text-align:center; position:relative;">
-                        <!-- Step 1: Submitted -->
-                        <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isSubmitted ? 'var(--primary)' : '#e2e8f0' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                ۱
-                            </div>
-                            <strong style="font-size:0.85rem; color:#1e293b;">ثبت سفارش</strong>
-                            <span style="font-size:0.7rem; color:#64748b;"><?= format_jalali($order['created_at']) ?></span>
-                        </div>
-
-                        <!-- Step 2: Paid -->
-                        <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isPaid ? 'var(--primary)' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                ۲
-                            </div>
-                            <strong style="font-size:0.85rem; color:<?= $isPaid ? '#1e293b' : '#94a3b8' ?>;">تایید پرداخت</strong>
-                            <span style="font-size:0.7rem; color:#64748b;"><?= $order['paid_at'] ? format_jalali($order['paid_at']) : 'در انتظار تایید فیش' ?></span>
-                        </div>
-
-                        <!-- Step 3: Shipped -->
-                        <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isShipped ? 'var(--primary)' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                ۳
-                            </div>
-                            <strong style="font-size:0.85rem; color:<?= $isShipped ? '#1e293b' : '#94a3b8' ?>;">تحویل به پست</strong>
-                            <span style="font-size:0.7rem; color:#64748b;"><?= $order['shipped_at'] ? format_jalali($order['shipped_at']) : 'در حال آماده‌سازی' ?></span>
-                        </div>
-
-                        <!-- Step 4: Completed -->
-                        <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div style="width:36px; height:36px; border-radius:50%; background:<?= $isCompleted ? 'var(--primary)' : '#cbd5e1' ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; margin-bottom:6px;">
-                                ۴
-                            </div>
-                            <strong style="font-size:0.85rem; color:<?= $isCompleted ? '#1e293b' : '#94a3b8' ?>;">تحویل نهایی</strong>
-                            <span style="font-size:0.7rem; color:#64748b;"><?= $order['completed_at'] ? format_jalali($order['completed_at']) : 'تکمیل مرسوله' ?></span>
-                        </div>
+            <!-- 5-STAGE MILESTONE STEPPER -->
+            <?php
+            $isCanceled = ($order['status'] === 'canceled');
+            $currentStep = 1;
+            if (!$isCanceled) {
+                if ($order['status'] === 'completed') {
+                    $currentStep = 5;
+                } elseif ($order['status'] === 'shipped' || !empty($order['tracking_code'])) {
+                    $currentStep = 4;
+                } elseif (in_array($order['status'], ['paid', 'finalised'], true)) {
+                    $currentStep = 3;
+                } elseif ($order['payment_status'] === 'paid') {
+                    $currentStep = 2;
+                } else {
+                    $currentStep = ($order['payment_status'] === 'pending_verification') ? 2 : 1;
+                }
+            }
+            $milestones = [
+                1 => 'ثبت و تأیید سفارش',
+                2 => 'تأیید فیش بانکی',
+                3 => 'بسته‌بندی و صدور بارنامه',
+                4 => 'تحویل به پست پیشتاز',
+                5 => 'تحویل به گیرنده'
+            ];
+            ?>
+            <div class="card mb-3 no-print" style="padding:20px 24px; margin:16px;">
+                <div class="stepper-5">
+                    <div class="stepper-track">
+                        <div class="stepper-track-fill" style="width: <?= $isCanceled ? 0 : (($currentStep - 1) / 4 * 100) ?>%;"></div>
                     </div>
+                    <?php foreach ($milestones as $stepNum => $stepLabel): ?>
+                        <?php
+                        $done = (!$isCanceled && ($currentStep > $stepNum || ($order['status'] === 'completed' && $stepNum === 5)));
+                        $active = (!$isCanceled && $currentStep === $stepNum && $order['status'] !== 'completed');
+                        ?>
+                        <div class="stepper-item <?= $done ? 'done' : ($active ? 'active' : '') ?>">
+                            <div class="stepper-circle">
+                                <?= en_to_fa_digits((string)$stepNum) ?>
+                            </div>
+                            <div class="stepper-label">
+                                <?= e($stepLabel) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endif; ?>
+            </div>
 
             <!-- POSTAL TRACKING BOX (IF SHIPPED) -->
             <?php if (!empty($order['tracking_code'])): ?>
-                <div style="margin:16px; background:#eff6ff; border:1.5px dashed #3b82f6; border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div class="barcode-tracking-box no-print" style="margin:16px;">
                     <div>
-                        <div style="font-size:0.85rem; color:#1e40af; font-weight:700;">کد رهگیری پست پیشتاز مرسوله:</div>
-                        <div style="font-size:1.3rem; font-weight:900; font-family:monospace; color:#1e3a8a; margin-top:4px;" dir="ltr">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <strong style="color:#0071e3; font-size:0.95rem;">مرسوله به شرکت پست پیشتاز تحویل داده شد</strong>
+                            <span class="badge badge-blue">۲۴ رقمی معتبر</span>
+                        </div>
+                        <div style="font-size:0.82rem; color:var(--muted); margin-bottom:6px;">
+                            شماره بارنامه پستی جمهوری اسلامی ایران جهت استعلام وضعیت:
+                        </div>
+                        <div class="barcode-number" id="postalBarcodeVal">
                             <?= e($order['tracking_code']) ?>
                         </div>
                     </div>
-                    <a class="btn btn-primary btn-sm" href="https://tracking.post.ir/?id=<?= urlencode($order['tracking_code']) ?>" target="_blank" rel="noopener noreferrer">
-                        پیگیری در سامانه شرکت پست ↗
-                    </a>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('<?= e($order['tracking_code']) ?>'); window.BefrooshStore.showToast('کد ۲۴ رقمی رهگیری کپی شد.');">
+                            کپی بارکد
+                        </button>
+                        <a class="btn btn-primary btn-sm" href="https://tracking.post.ir/?id=<?= urlencode($order['tracking_code']) ?>" target="_blank" rel="noopener noreferrer">
+                            استعلام در سامانه پست
+                        </a>
+                    </div>
                 </div>
             <?php endif; ?>
 
@@ -198,12 +213,12 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">مبلغ کل سفارش</div>
-                        <div class="detail-value"><?= format_irr((float)($order['final_total'] ?? $order['estimated_total'])) ?></div>
+                        <div class="detail-value tabular-nums"><?= format_irt((float)($order['final_total'] ?? $order['estimated_total'])) ?></div>
                     </div>
                     <?php if (!empty($order['reservation_expires_at']) && $st === 'submitted'): ?>
-                        <div class="detail-item" style="border-color:#f59e0b; background:#fffbeb;">
-                            <div class="detail-label" style="color:#b45309;">مهلت واریز و رزرو انبار</div>
-                            <div class="detail-value" style="color:#b45309;"><?= format_jalali($order['reservation_expires_at']) ?></div>
+                        <div class="detail-item" style="border-color:rgba(255,149,0,0.3); background:var(--amber-bg);">
+                            <div class="detail-label" style="color:#a05e00;">مهلت واریز و رزرو انبار</div>
+                            <div class="detail-value tabular-nums" style="color:#a05e00;"><?= format_jalali($order['reservation_expires_at']) ?></div>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -224,10 +239,14 @@ route('GET', '/(?:orders/)?track(?:\.php)?', [], function () use ($pdo) {
                             <?php foreach ($items as $idx => $it): ?>
                                 <tr>
                                     <td><?= en_to_fa_digits((string)($idx + 1)) ?></td>
-                                    <td><strong><?= e($it['product_title']) ?></strong></td>
-                                    <td><?= en_to_fa_digits((string)$it['quantity']) ?> <?= e($it['unit'] ?: 'عدد') ?></td>
-                                    <td><?= format_irr((float)$it['unit_price']) ?></td>
-                                    <td><?= format_irr((float)$it['line_total']) ?></td>
+                                    <td>
+                                        <a href="/b/<?= urlencode($order['shop_slug'] ?? 'central') ?>/p/<?= (int)$it['product_id'] ?>" target="_blank" style="color:var(--primary); font-weight:700;">
+                                            <?= e($it['product_title']) ?>
+                                        </a>
+                                    </td>
+                                    <td class="tabular-nums"><?= en_to_fa_digits((string)$it['quantity']) ?> <?= e($it['unit'] ?: 'عدد') ?></td>
+                                    <td class="tabular-nums"><?= format_irt((float)$it['unit_price']) ?></td>
+                                    <td class="tabular-nums"><?= format_irt((float)$it['line_total']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

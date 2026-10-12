@@ -189,6 +189,9 @@ route('GET', '/tickets(?:\.php)?', ['customer', 'admin', 'superadmin'], function
                                 <td>
                                     <strong><?= e($t['subject']) ?></strong>
                                     <?php if (!$t[$seenField]): ?><span class="badge badge-rose">جدید</span><?php endif; ?>
+                                    <?php if (!empty($t['is_escalated_to_superadmin']) || !empty($t['is_elevated_to_superadmin'])): ?>
+                                        <span class="badge badge-purple">ویژه آلتیمیت</span>
+                                    <?php endif; ?>
                                 </td>
 
                                 <?php if ($user['role'] !== 'customer'): ?>

@@ -106,9 +106,9 @@ route('GET', '/app/branches(?:\.php)?', ['business_owner', 'shop_owner', 'branch
                                         <span class="badge badge-emerald">ترکیبی (کسب‌وکار + اختصاصی)</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= format_irt((float)$b['default_shipping_cost']) ?></td>
-                                <td style="font-size:0.82rem; color:#64748b;">
-                                    <div><?= e($b['phone'] ?: '—') ?></div>
+                                <td><span class="tabular-nums" style="font-weight:600;"><?= format_irt((float)$b['default_shipping_cost']) ?></span></td>
+                                <td style="font-size:0.82rem; color:var(--muted);">
+                                    <div class="tabular-nums"><?= e($b['phone'] ?: '—') ?></div>
                                     <div style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= e($b['address'] ?: '—') ?></div>
                                 </td>
                                 <td>

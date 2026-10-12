@@ -49,15 +49,15 @@ function auth_layout_start(string $title): void
     <head>
         <?php render_layout_head($title); ?>
         <style>
-            body { background: linear-gradient(135deg, #0f172a, #1e293b 60%, #334155); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-            .auth-card { width: 100%; max-width: 440px; background: #fff; border-radius: 12px; padding: 32px 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+            body { background: var(--app-bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+            .auth-card { width: 100%; max-width: 440px; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 36px 32px; box-shadow: var(--shadow); }
         </style>
     </head>
     <body>
         <div class="auth-card">
-            <div style="text-align:center; margin-bottom:20px;">
-                <div style="width:48px; height:48px; border-radius:12px; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.3rem; margin:0 auto 10px;">بف</div>
-                <h1 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin:0;"><?= e($title) ?></h1>
+            <div style="text-align:center; margin-bottom:24px;">
+                <div style="width:48px; height:48px; border-radius:12px; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.3rem; margin:0 auto 12px; box-shadow:0 4px 12px rgba(0,113,227,0.25);">بف</div>
+                <h1 style="font-size:1.3rem; font-weight:800; color:var(--ink); margin:0; letter-spacing:-0.01em;"><?= e($title) ?></h1>
             </div>
     <?php
 }

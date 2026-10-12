@@ -448,6 +448,19 @@ route('GET', '/(?:admin|app)/plans/my-plan(?:\.php)?', ['business_owner', 'shop_
     $sub = get_shop_subscription_info($shopId);
     $branchCount = (int)$pdo->query("SELECT COUNT(*) FROM branches WHERE business_id = {$shopId} AND active = 1")->fetchColumn();
     $prodCount = (int)$pdo->query("SELECT COUNT(*) FROM products WHERE shop_id = {$shopId} AND active = 1 AND deleted_at IS NULL")->fetchColumn();
+    $managerCount = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE shop_id = {$shopId} AND role IN ('branch_manager', 'manager', 'shop_manager')")->fetchColumn();
+
+    $maxB = (int)($sub['max_branches'] ?? 1);
+    $maxP = (int)($sub['max_products'] ?? 50);
+    $maxM = (int)($sub['max_managers'] ?? 1);
+
+    $bUnlimited = ($maxB >= 999);
+    $pUnlimited = ($maxP >= 9999);
+    $mUnlimited = ($maxM >= 999);
+
+    $branchPct = $bUnlimited ? 0 : min(100, (int)round(($branchCount / max(1, $maxB)) * 100));
+    $prodPct = $pUnlimited ? 0 : min(100, (int)round(($prodCount / max(1, $maxP)) * 100));
+    $managerPct = $mUnlimited ? 0 : min(100, (int)round(($managerCount / max(1, $maxM)) * 100));
 
     layout_start('پلن اشتراک و سهمیه‌های کسب‌وکار', $user);
     ?>
@@ -456,44 +469,110 @@ route('GET', '/(?:admin|app)/plans/my-plan(?:\.php)?', ['business_owner', 'shop_
             <div class="page-icon"><?= icon('shield', 18) ?></div>
             <div>
                 <h1>پلن اشتراک کسب‌وکار: <?= e($shop['name']) ?></h1>
-                <div class="page-sub">مشاهده محدودیت‌ها، سهمیه‌های استفاده‌شده و ارتقای حساب</div>
+                <div class="page-sub">مشاهده محدودیت‌ها، سهمیه‌های استفاده‌شده و ارتقای حساب کاربری</div>
             </div>
+        </div>
+        <div class="action-cluster">
+            <?php if ($user['role'] === 'superadmin'): ?>
+                <a class="btn btn-outline" href="/admin/plans"><?= icon('shield', 14) ?> مدیریت پلن‌های پلتفرم</a>
+            <?php endif; ?>
+            <a class="btn btn-outline" href="/dashboard"><?= icon('dashboard', 14) ?> بازگشت به داشبورد</a>
         </div>
     </div>
 
-    <div class="card" style="padding:28px; border-radius:16px; margin-bottom:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+    <!-- Active Subscription Overview -->
+    <div class="card" style="padding:28px; border-radius:16px; margin-bottom:24px; background:#ffffff; border:1px solid #e5e5ea;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
             <div>
-                <span style="font-size:0.85rem; color:#64748b;">سطح اشتراک فعال:</span>
-                <h2 style="font-size:1.6rem; font-weight:900; color:#2563eb; margin:4px 0 0 0;"><?= e($sub['name']) ?></h2>
+                <span style="font-size:0.85rem; color:#86868b; font-weight:500;">سطح اشتراک فعال کسب‌وکار:</span>
+                <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
+                    <h2 style="font-size:1.6rem; font-weight:900; color:#1d1d1f; margin:0;"><?= e($sub['name']) ?></h2>
+                    <span class="badge <?= $sub['code'] === 'ultimate' ? 'badge-purple' : ($sub['code'] === 'pro' ? 'badge-blue' : ($sub['code'] === 'plus' ? 'badge-amber' : 'badge-gray')) ?>" style="font-weight:700;">
+                        <code><?= e($sub['code']) ?></code>
+                    </span>
+                </div>
             </div>
-            <?php if ($sub['code'] === 'ultimate'): ?>
-                <span class="badge badge-purple" style="font-size:0.9rem; padding:8px 14px;">پلن نامحدود سازمانی (Ultimate)</span>
-            <?php else: ?>
-                <a href="/tickets/create?subject=درخواست ارتقای پلن اشتراک" class="btn btn-primary">
-                    ارتقای پلن اشتراک
-                </a>
-            <?php endif; ?>
+            <div>
+                <?php if ($sub['code'] === 'ultimate'): ?>
+                    <span class="badge badge-purple" style="font-size:0.9rem; padding:8px 16px;">پلن نامحدود سازمانی (VIP آنی)</span>
+                <?php else: ?>
+                    <a href="/tickets/create?subject=درخواست ارتقای پلن اشتراک" class="btn btn-primary" style="padding:10px 20px; font-weight:700;">
+                        ارتقای پلن اشتراک
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px;">
-            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-                <div style="font-size:0.82rem; color:#64748b; margin-bottom:6px;">شعب ایجاد شده:</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#0f172a;">
-                    <?= en_to_fa_digits((string)$branchCount) ?> / <?= (int)$sub['max_branches'] === 999 ? 'نامحدود' : en_to_fa_digits((string)$sub['max_branches']) ?>
+        <!-- Quota Progress Meters Grid -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;">
+            <!-- 1. Branches Quota -->
+            <div style="background:#f5f5f7; padding:20px; border-radius:12px; border:1px solid #e5e5ea;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">سهمیه شعب و انبارها</span>
+                    <span style="font-size:0.8rem; color:#86868b;" class="tabular-nums">
+                        <?= en_to_fa_digits((string)$branchCount) ?> / <?= $bUnlimited ? 'نامحدود' : en_to_fa_digits((string)$maxB) ?>
+                    </span>
+                </div>
+                <div class="quota-meter-bar">
+                    <div class="quota-meter-fill" style="width:<?= $bUnlimited ? 100 : $branchPct ?>%; background:<?= $bUnlimited ? '#5856d6' : ($branchPct > 85 ? '#ff3b30' : ($branchPct > 60 ? '#ff9500' : '#0071e3')) ?>;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.78rem; color:#86868b;" class="tabular-nums">
+                    <span><?= $bUnlimited ? 'بدون محدودیت' : 'درصد مصرف: ' . en_to_fa_digits((string)$branchPct) . '٪' ?></span>
+                    <span><?= $bUnlimited ? 'نامحدود' : 'باقیمانده: ' . en_to_fa_digits((string)max(0, $maxB - $branchCount)) . ' شعبه' ?></span>
                 </div>
             </div>
-            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-                <div style="font-size:0.82rem; color:#64748b; margin-bottom:6px;">کالاهای ثبت شده:</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#0f172a;">
-                    <?= en_to_fa_digits((string)$prodCount) ?> / <?= (int)$sub['max_products'] === 9999 ? 'نامحدود' : en_to_fa_digits((string)$sub['max_products']) ?>
+
+            <!-- 2. Products Quota -->
+            <div style="background:#f5f5f7; padding:20px; border-radius:12px; border:1px solid #e5e5ea;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">سهمیه کاتالوگ محصولات</span>
+                    <span style="font-size:0.8rem; color:#86868b;" class="tabular-nums">
+                        <?= en_to_fa_digits((string)$prodCount) ?> / <?= $pUnlimited ? 'نامحدود' : en_to_fa_digits((string)$maxP) ?>
+                    </span>
                 </div>
+                <div class="quota-meter-bar">
+                    <div class="quota-meter-fill" style="width:<?= $pUnlimited ? 100 : $prodPct ?>%; background:<?= $pUnlimited ? '#5856d6' : ($prodPct > 85 ? '#ff3b30' : ($prodPct > 60 ? '#ff9500' : '#0071e3')) ?>;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.78rem; color:#86868b;" class="tabular-nums">
+                    <span><?= $pUnlimited ? 'بدون محدودیت' : 'درصد مصرف: ' . en_to_fa_digits((string)$prodPct) . '٪' ?></span>
+                    <span><?= $pUnlimited ? 'نامحدود' : 'باقیمانده: ' . en_to_fa_digits((string)max(0, $maxP - $prodCount)) . ' کالا' ?></span>
+                </div>
+            </div>
+
+            <!-- 3. Managers Quota -->
+            <div style="background:#f5f5f7; padding:20px; border-radius:12px; border:1px solid #e5e5ea;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">سهمیه حساب‌های مدیران</span>
+                    <span style="font-size:0.8rem; color:#86868b;" class="tabular-nums">
+                        <?= en_to_fa_digits((string)$managerCount) ?> / <?= $mUnlimited ? 'نامحدود' : en_to_fa_digits((string)$maxM) ?>
+                    </span>
+                </div>
+                <div class="quota-meter-bar">
+                    <div class="quota-meter-fill" style="width:<?= $mUnlimited ? 100 : $managerPct ?>%; background:<?= $mUnlimited ? '#5856d6' : ($managerPct > 85 ? '#ff3b30' : ($managerPct > 60 ? '#ff9500' : '#0071e3')) ?>;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.78rem; color:#86868b;" class="tabular-nums">
+                    <span><?= $mUnlimited ? 'بدون محدودیت' : 'درصد مصرف: ' . en_to_fa_digits((string)$managerPct) . '٪' ?></span>
+                    <span><?= $mUnlimited ? 'نامحدود' : 'باقیمانده: ' . en_to_fa_digits((string)max(0, $maxM - $managerCount)) . ' کاربر' ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plan Features List -->
+        <div style="margin-top:24px; padding-top:20px; border-top:1px solid #e5e5ea; display:flex; flex-wrap:wrap; gap:24px; font-size:0.85rem; color:#48484a;">
+            <div>
+                دامنه اختصاصی: <strong style="color:<?= $sub['allow_custom_domain'] ? '#34c759' : '#86868b' ?>;"><?= $sub['allow_custom_domain'] ? 'فعال' : 'غیرفعال' ?></strong>
+            </div>
+            <div>
+                پیامک خودکار به خریدار: <strong style="color:<?= $sub['allow_sms_alerts'] ? '#34c759' : '#86868b' ?>;"><?= $sub['allow_sms_alerts'] ? 'فعال' : 'غیرفعال' ?></strong>
+            </div>
+            <div>
+                ارجاع تیکت به سوپرادمین: <strong style="color:<?= !empty($sub['has_ticket_escalation']) ? '#5856d6' : '#86868b' ?>;"><?= !empty($sub['has_ticket_escalation']) ? 'VIP آنی فعال' : 'غیرفعال' ?></strong>
             </div>
         </div>
 
         <?php if ($sub['code'] === 'ultimate'): ?>
-            <div style="margin-top:20px; padding:14px 18px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:10px; color:#6b21a8; font-size:0.88rem; line-height:1.8;">
-                با توجه به فعال بودن پلن Ultimate، تیکت‌های پشتیبانی شما با اولویت آنی بررسی شده و امکان ارجاع مستقیم به سوپرادمین سامانه وجود دارد.
+            <div style="margin-top:20px; padding:16px 20px; background:#f0effc; border:1px solid rgba(88,86,214,0.15); border-radius:12px; color:#5856d6; font-size:0.88rem; line-height:1.8;">
+                <strong>اولویت ویژه سازمانی:</strong> با توجه به فعال بودن پلن Ultimate، تیکت‌های پشتیبانی کسب‌وکار شما با اولویت آنی بررسی شده و امکان ارجاع مستقیم به سوپرادمین سامانه برای حل فوری مشکلات در دسترس است.
             </div>
         <?php endif; ?>
     </div>
