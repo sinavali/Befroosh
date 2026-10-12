@@ -34,33 +34,69 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
         ];
     } elseif (in_array($role, ['business_owner', 'shop_owner'], true)) {
         $shopSlug = $currentShop['slug'] ?? 'central';
-        $navItems = [
-            'مدیریت و شعب' => [
-                ['url' => '/dashboard', 'label' => 'داشبورد کسب‌وکار', 'icon' => 'dashboard'],
-                ['url' => '/app/branches', 'label' => 'مدیریت شعب', 'icon' => 'store'],
-                ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders']
-            ],
-            'عملیات و فروش' => [
-                ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'],
-                ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'],
-                ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products']
-            ],
-            'مالی و گزارشات' => [
-                ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'],
-                ['url' => '/reports', 'label' => 'گزارش‌های جامع و مالیاتی', 'icon' => 'report']
-            ],
-            'مشتریان و پشتیبانی' => [
-                ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'],
-                ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'],
-                ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send']
-            ],
-            'تنظیمات و حساب' => [
-                ['url' => '/shop/settings', 'label' => 'تنظیمات کسب‌وکار', 'icon' => 'settings'],
-                ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
-                ['url' => '/profile', 'label' => 'پروفایل من', 'icon' => 'user'],
-                ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store']
-            ]
-        ];
+        $staffCount = 0;
+        $branchCount = 1;
+        if ($shopId > 0 && !empty($currentShop['owner_id'])) {
+            $staffCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE shop_id = {$shopId} AND id != " . (int)$currentShop['owner_id'] . " AND deleted_at IS NULL")->fetchColumn();
+            $branchCount = (int) $pdo->query("SELECT COUNT(*) FROM branches WHERE business_id = {$shopId} AND active = 1")->fetchColumn();
+        }
+        $isSoloMerchant = ($staffCount === 0 && $branchCount <= 1);
+
+        if ($isSoloMerchant) {
+            $navItems = [
+                'فروشگاه و پیشخوان' => [
+                    ['url' => '/dashboard', 'label' => 'پیشخوان فروشگاه', 'icon' => 'dashboard'],
+                    ['url' => '/b/' . $shopSlug, 'label' => 'ویترین آنلاین', 'icon' => 'store']
+                ],
+                'سفارشات و انبار' => [
+                    ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'],
+                    ['url' => '/orders?status=all&payment_status=pending_verification', 'label' => 'صف تایید فیش‌ها', 'icon' => 'receipt'],
+                    ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'],
+                    ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products']
+                ],
+                'مالی و مشتریان' => [
+                    ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'],
+                    ['url' => '/reports', 'label' => 'گزارش‌های فروش', 'icon' => 'report'],
+                    ['url' => '/customers', 'label' => 'مشتریان', 'icon' => 'customers'],
+                    ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets']
+                ],
+                'تنظیمات و شعب' => [
+                    ['url' => '/shop/settings', 'label' => 'تنظیمات کسب‌وکار', 'icon' => 'settings'],
+                    ['url' => '/app/branches', 'label' => 'افزودن شعبه / ارتقا', 'icon' => 'store'],
+                    ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
+                    ['url' => '/profile', 'label' => 'پروفایل من', 'icon' => 'user']
+                ]
+            ];
+        } else {
+            $navItems = [
+                'مدیریت و شعب' => [
+                    ['url' => '/dashboard', 'label' => 'داشبورد کسب‌وکار', 'icon' => 'dashboard'],
+                    ['url' => '/app/branches', 'label' => 'مدیریت شعب (' . $branchCount . ')', 'icon' => 'store'],
+                    ['url' => '/app/shipping-groups', 'label' => 'گروه‌های ارسال متمرکز', 'icon' => 'orders']
+                ],
+                'عملیات و فروش' => [
+                    ['url' => '/orders', 'label' => 'سفارشات', 'icon' => 'orders'],
+                    ['url' => '/orders?status=all&payment_status=pending_verification', 'label' => 'صف تایید فیش‌ها', 'icon' => 'receipt'],
+                    ['url' => '/products', 'label' => 'کالاها و بارکدها', 'icon' => 'products'],
+                    ['url' => '/inventory', 'label' => 'موجودی و انبارداری', 'icon' => 'products']
+                ],
+                'مالی و گزارشات' => [
+                    ['url' => '/accounting', 'label' => 'دفتر کل و مالی', 'icon' => 'report'],
+                    ['url' => '/reports', 'label' => 'گزارش‌های جامع و مالیاتی', 'icon' => 'report']
+                ],
+                'مشتریان و تیم' => [
+                    ['url' => '/customers', 'label' => 'مشتریان و همکاران', 'icon' => 'customers'],
+                    ['url' => '/tickets', 'label' => 'تیکت‌های مشتریان', 'icon' => 'tickets'],
+                    ['url' => '/shop/messages', 'label' => 'پیام‌های تماس', 'icon' => 'send']
+                ],
+                'تنظیمات و حساب' => [
+                    ['url' => '/shop/settings', 'label' => 'تنظیمات کسب‌وکار', 'icon' => 'settings'],
+                    ['url' => '/profile/addresses', 'label' => 'آدرس‌های تحویل', 'icon' => 'location'],
+                    ['url' => '/profile', 'label' => 'پروفایل من', 'icon' => 'user'],
+                    ['url' => '/b/' . $shopSlug, 'label' => 'مشاهده ویترین آنلاین', 'icon' => 'store']
+                ]
+            ];
+        }
     } elseif (in_array($role, ['branch_manager', 'shop_manager', 'manager'], true)) {
         $shopSlug = $currentShop['slug'] ?? 'central';
         $navItems = [
@@ -137,6 +173,7 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
     $unseenTickets = 0;
     $unseenMessages = 0;
     $cartCount = 0;
+    $pendingSlips = 0;
     try {
         if ($role === 'customer') {
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE customer_id = " . (int)$user['id'] . " AND seen_by_customer = 0")->fetchColumn();
@@ -146,9 +183,11 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE shop_id = {$shopId} AND seen_by_admin = 0")->fetchColumn();
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE shop_id = {$shopId} AND seen_by_admin = 0")->fetchColumn();
             $unseenMessages = (int)$pdo->query("SELECT COUNT(*) FROM shop_contact_messages WHERE shop_id = {$shopId} AND is_read = 0")->fetchColumn();
+            $pendingSlips = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE shop_id = {$shopId} AND payment_status = 'pending_verification'")->fetchColumn();
         } else {
             $unseenOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE seen_by_admin = 0")->fetchColumn();
             $unseenTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE seen_by_admin = 0")->fetchColumn();
+            $pendingSlips = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status = 'pending_verification'")->fetchColumn();
         }
     } catch (Throwable $e) {}
 
@@ -226,12 +265,13 @@ function render_dashboard_sidebar(array $user, int $shopId, ?array $currentShop)
                 <div class="nav-group" data-active="<?= $hasActive ? 'true' : 'false' ?>">
                     <div class="nav-group-header" onclick="toggleNavGroup(this)" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.72rem; color:var(--muted); font-weight:700; margin:10px 12px 6px 0; padding:4px 0; text-transform:uppercase; letter-spacing:0.5px; transition:color 0.2s;">
                         <span><?= e($groupName) ?></span>
-                        <span class="nav-group-icon" style="transition:transform 0.2s; font-size:0.65rem; transform: <?= $hasActive ? 'rotate(180deg)' : 'rotate(0)' ?>;">▾</span>
+                        <span class="nav-group-icon" style="transition:transform 0.2s; display:inline-flex; align-items:center; transform: <?= $hasActive ? 'rotate(180deg)' : 'rotate(0)' ?>;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
                     </div>
                     <div class="nav-group-items" style="display: <?= $hasActive ? 'block' : 'none' ?>; overflow:hidden;">
                         <?php foreach ($items as $item): 
                             $badgeVal = 0;
                             if ($item['url'] === '/orders') $badgeVal = $unseenOrders;
+                            if (str_contains($item['url'], 'pending_verification')) $badgeVal = $pendingSlips;
                             if ($item['url'] === '/tickets') $badgeVal = $unseenTickets;
                             if ($item['url'] === '/cart') $badgeVal = $cartCount;
                             if ($item['url'] === '/shop/messages') $badgeVal = $unseenMessages;
