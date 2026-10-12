@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-route('GET', '/tickets(?:\.php)?', ['customer', 'admin', 'superadmin'], function () use ($pdo) {
+route('GET', '/(?:my/)?tickets(?:\.php)?', ['customer', 'admin', 'superadmin'], function () use ($pdo) {
     $user = require_login();
 
     $isStaff = in_array($user['role'], ['admin', 'superadmin'], true);
@@ -118,7 +118,11 @@ route('GET', '/tickets(?:\.php)?', ['customer', 'admin', 'superadmin'], function
         }
     }
 
-    layout_start('تیکت‌ها', $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('پشتیبانی و تیکت‌ها', 'tickets', $user);
+    } else {
+        layout_start('تیکت‌ها', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -216,7 +220,11 @@ route('GET', '/tickets(?:\.php)?', ['customer', 'admin', 'superadmin'], function
 
     <?= pagination_html('/tickets', $pag['page'], $pag['pages']) ?>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 
 require_once __DIR__ . '/routes_tickets_create.php';

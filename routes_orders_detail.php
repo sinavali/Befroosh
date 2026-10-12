@@ -57,7 +57,11 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
     $canComplete = ($isShopStaff || $isPlatformAdmin) && $order['status'] === 'shipped';
     $canCancel = in_array($order['status'], ['submitted', 'placed', 'paid'], true) && ($isCustomerOwner || $isShopStaff || $isPlatformAdmin);
 
-    layout_start('جزئیات سفارش ' . $order['uuid'], $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('جزئیات سفارش ' . $order['uuid'], 'orders', $user);
+    } else {
+        layout_start('جزئیات سفارش ' . $order['uuid'], $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -360,6 +364,10 @@ route('GET', '/(?:app/)?orders/(\d+)', ['customer', 'business_owner', 'shop_owne
     require_once __DIR__ . '/routes_orders_modals.php';
     render_order_modals($id);
 
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 

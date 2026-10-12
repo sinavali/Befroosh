@@ -7,14 +7,18 @@ declare(strict_types=1);
  * Accessible via /profile/addresses and backwards-compatible /account/addresses
  */
 
-route('GET', '/(?:profile|account)/addresses(?:\.php)?', [], function () use ($pdo) {
+route('GET', '/(?:my/addresses|addresses|profile/addresses|account/addresses)(?:\.php)?', [], function () use ($pdo) {
     $user = require_login();
 
     $stmt = $pdo->prepare("SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC");
     $stmt->execute([$user['id']]);
     $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    layout_start('دفترچه آدرس‌های تحویل', $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('دفترچه آدرس‌های تحویل', 'addresses', $user);
+    } else {
+        layout_start('دفترچه آدرس‌های تحویل', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -80,10 +84,14 @@ route('GET', '/(?:profile|account)/addresses(?:\.php)?', [], function () use ($p
         </div>
     </div>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 
-route('GET|POST', '/(?:profile|account)/addresses/create', [], function () use ($pdo) {
+route('GET|POST', '/(?:my/addresses|addresses|profile/addresses|account/addresses)/create', [], function () use ($pdo) {
     $user = require_login();
     $error = '';
     
@@ -126,7 +134,11 @@ route('GET|POST', '/(?:profile|account)/addresses/create', [], function () use (
         }
     }
 
-    layout_start('ثبت آدرس جدید', $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('ثبت آدرس جدید', 'addresses', $user);
+    } else {
+        layout_start('ثبت آدرس جدید', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -192,10 +204,14 @@ route('GET|POST', '/(?:profile|account)/addresses/create', [], function () use (
         </div>
     </form>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 
-route('GET|POST', '/(?:profile|account)/addresses/(\d+)/edit', [], function ($id) use ($pdo) {
+route('GET|POST', '/(?:my/addresses|addresses|profile/addresses|account/addresses)/(\d+)/edit', [], function ($id) use ($pdo) {
     $user = require_login();
 
     $stmt = $pdo->prepare("SELECT * FROM addresses WHERE id = ? AND user_id = ?");
@@ -238,7 +254,11 @@ route('GET|POST', '/(?:profile|account)/addresses/(\d+)/edit', [], function ($id
         }
     }
 
-    layout_start('ویرایش آدرس', $user);
+    if ($user['role'] === 'customer') {
+        layout_customer_start('ویرایش آدرس', 'addresses', $user);
+    } else {
+        layout_start('ویرایش آدرس', $user);
+    }
     ?>
     <div class="page-header">
         <div class="page-title-wrap">
@@ -301,10 +321,14 @@ route('GET|POST', '/(?:profile|account)/addresses/(\d+)/edit', [], function ($id
         </div>
     </form>
     <?php
-    layout_end();
+    if ($user['role'] === 'customer') {
+        layout_customer_end();
+    } else {
+        layout_end();
+    }
 });
 
-route('POST', '/(?:profile|account)/addresses/(\d+)/delete', [], function ($id) use ($pdo) {
+route('POST', '/(?:my/addresses|addresses|profile/addresses|account/addresses)/(\d+)/delete', [], function ($id) use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 
@@ -330,7 +354,7 @@ route('POST', '/(?:profile|account)/addresses/(\d+)/delete', [], function ($id) 
     redirect('/profile/addresses');
 });
 
-route('POST', '/(?:profile|account)/addresses/(\d+)/default', [], function ($id) use ($pdo) {
+route('POST', '/(?:my/addresses|addresses|profile/addresses|account/addresses)/(\d+)/default', [], function ($id) use ($pdo) {
     $user = require_login();
     verify_csrf_or_die();
 
